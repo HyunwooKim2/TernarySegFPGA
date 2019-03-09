@@ -122,12 +122,30 @@ void quantiseAndPack(const tiny_cnn::vec_t & in, ExtMemWord * out, unsigned int 
   // first, fill the target buffer with padding data
   memset(out, 0, inBufSize * sizeof(ExtMemWord));
   ExtMemWord tmpv[bitsPerExtMemWord / inWidth];
+  /* hwkim commentted
+   * inWidth = 8 (cifar pixel)
+   */
   // now pack each quantised value as required.
   for(unsigned int i=0; i < in.size(); i++) {
     ap_fixed<inWidth, 1, AP_TRN, AP_SAT> fxdValue = in[i];
+    /* hwkim commented
+     *  ap_fixed<total_bit#, integer_bit#, quant_mode, overflow_mode>
+     * (소수 부분은 total_bit# - integer_bit#)
+     * 64-bit floating point에서 1-bit integer, 7-bit fractal fixed point로 quantization
+     */
     ap_uint<inWidth> uValue = *reinterpret_cast<ap_uint<inWidth> *>(&fxdValue); // Interpret the fixed value as an integer.
+    /* hwkim commented
+     * 단순 8-bit fixed point -> 8-bit unsigned int로 변환
+     */
     ExtMemWord v = ((ExtMemWord)uValue & (~(ExtMemWord)0 >> (bitsPerExtMemWord - inWidth))); // Zero all bits except for the (bitsPerExtMemWord - inWidth) least significant bits.
+    /* hwkim commented
+     * 8-bit -> 64-bit(ExtMemWord)로 변환
+     * inWidth인 8-bit 제외하고, 상위 모두 0으로
+     */
     out[i / (bitsPerExtMemWord / inWidth)] |= (v << inWidth*(i % (bitsPerExtMemWord / inWidth)));
+    /* hwkim commented
+     * 64-bit(ExtMemWord) out array에 8-bit int 차곡 차곡 packing
+     */
   }
 }
 
@@ -231,13 +249,26 @@ void testPrebuiltCIFAR10(std::vector<tiny_cnn::vec_t> & imgs, std::vector<tiny_c
 
 
 template<unsigned int inWidth, unsigned int outWidth, typename LowPrecType>
-std::vector<int>  testPrebuiltCIFAR10_from_image(std::vector<tiny_cnn::vec_t> & imgs, const unsigned int numCategories, float &usecPerImage) {
+std::vector<int>  testPrebuiltCIFAR10_from_image(std::vector<tiny_cnn::vec_t> & imgs,
+		const unsigned int numCategories, float &usecPerImage) {
   const unsigned int count = 1;
   cout << "Packing and interleaving CIFAR-10 inputs..." << endl;
   // number of ExtMemWords per image
   const unsigned int psi = paddedSize(imgs[0].size()*inWidth, bitsPerExtMemWord) / bitsPerExtMemWord;
+  /* hwkim commented
+   * imgs[0].size는
+   * 	imgs[0]의 bit width를 의미?
+   * 		-> inWidth가 input image의 bit-width를 나타내는 듯
+   * 	image 1개의 원소 개수를 의미? (이거일 듯)
+   * 		-> cifar 32x32=1024개의 8-bit짜리 데이터가 있으므로
+   * 		ExtMemWord로는 몇 개인지를 나타내는 듯
+   * paddedSize()는 ExtMemWord로 나누어 떨어지지 않는 경우
+   */
   // number of ExtMemWords per output
   const unsigned int pso = paddedSize(64*outWidth, bitsPerExtMemWord) / bitsPerExtMemWord;
+  /* hwkim commented
+   *  out은 score를 의미? (맞는 듯) -> outWidth는 score의 bit-width?
+   */
   if(INPUT_BUF_ENTRIES < count*psi) {
     throw "Not enough space in accelBufIn";
   }
@@ -252,13 +283,24 @@ std::vector<int>  testPrebuiltCIFAR10_from_image(std::vector<tiny_cnn::vec_t> & 
   // interleave and pack inputs
   for(unsigned int i = 0; i < count; i++) {
     tiny_cnn::vec_t interleaved = interleaver.forward_propagation(imgs[i], 0);
+    /* hwkim commented
+     * 기존 x->y->c로 order된 imgs(input)를 c->x->y로 reorder (interleaving)
+     */
     quantiseAndPack<inWidth, 1>(interleaved, &packedImages[i * psi], psi);
+    /* hwkim commented
+     * -1~1 사이 floating point를 8-bit fixed point로 quantise 후,
+     *  단순히 8-bit fixed point를 8-bit int로 변환하고,
+     *  ExtMemWord size 64-bit에 packing
+     */
   }
   cout << "Running prebuilt CIFAR-10 test for " << count << " images..." << endl;
 
   auto t1 = chrono::high_resolution_clock::now();
   // call the accelerator in compute mode
   BlackBoxJam((ap_uint<64> *)packedImages, (ap_uint<64> *)packedOut, false, 0, 0, 0, 0, 0, count);
+  /* hwkim commented
+   * input, output array의 주소만 전달 -> DRAM 주소?
+   */
   auto t2 = chrono::high_resolution_clock::now();
 
   // compare against labels

@@ -60,7 +60,15 @@ template<unsigned int ConvKernelDim,
 		 unsigned int OFMDim,
 		 unsigned int SIMD,
 		 unsigned int Stride = 1>  			
- 
+/* hwkim commented
+ * for layer 0
+ * 		ConvKernelDim -> 3
+ * 		IFMChannels -> 3
+ * 		Input_precision -> TSrcI::width -> 8
+ * 		IFMDim -> 32
+ * 		OFMDim -> 30
+ * 		SIMD -> 3
+ */
 void ConvolutionInputGenerator(
 		stream<ap_uint<SIMD*Input_precision> > & in,
 		stream<ap_uint<SIMD*Input_precision> > & out,
@@ -73,95 +81,197 @@ void ConvolutionInputGenerator(
     cout << "Error: Kernel size has to be multiple of Stride" << endl;
   }
   const unsigned int multiplying_factor = IFMChannels/SIMD;
+  /* hwkim commented
+   * input channel에 대해 몇 번 연산해야 할 지
+   */
   const unsigned int number_blocks = ConvKernelDim/Stride + 1 ;
-  ap_uint<SIMD*Input_precision> inputBuf[number_blocks][Stride * IFMDim * multiplying_factor];
 
+  ap_uint<SIMD*Input_precision> inputBuf[number_blocks][Stride * IFMDim * multiplying_factor];
 #pragma HLS ARRAY_PARTITION variable=inputBuf complete dim=1
 #pragma HLS RESOURCE variable inputBuf core=RAM_2P
+  /* hwkim commented
+   * inputBuf -> input buffer array (stream 아니고 memory!!!)
+   * SIMD 개수만큼의 input을 한 element로 담음
+   * 1-D index는 x,y 좌표
+   * 2-D index는 ??
+   * RAM_2P -> A dual-port RAM
+   * 	read operations on one port / both read and write operations on the other port
+   */
+
   const unsigned int cycles_write_block = (OFMDim * ConvKernelDim * ConvKernelDim * multiplying_factor);
+  /* hwkim commented
+   * output 가로 한 줄에 대한 data 다 쓰기 위한 cycle?
+   * output write은 stride와 무관계
+   */
   const unsigned int cycles_read_block = Stride * IFMDim * multiplying_factor;
+  /* hwkim commented
+   * input data 가로 한 줄 SIMD 단위로 읽어올 때 cycle?
+   * stride가 있으면 건너뛰면서 읽으므로, index가 *stride만큼 더 많이 가 있음
+   */
   const unsigned int max_cycles = MAX(cycles_write_block,cycles_read_block);
   const unsigned int baseIter = IFMDim * ConvKernelDim * multiplying_factor// Initial buffer
 			                  + OFMDim * MAX(cycles_write_block,cycles_read_block);
+  /* hwkim commented
+   * 32 * 3 * (input channel / SIMD)
+   * + 30 * ??
+   */
   unsigned int counter_internal_block = 0;
   unsigned int current_block_write = 0;
   unsigned int next_block_write = 0;	
   unsigned int current_line = 0;
   unsigned int read_block = 0; 
   unsigned int inp = 0, ofm_y = 0, ofm_x = 0, k_y = 0, k_x = 0, count_simd =0;
+
 #pragma HLS reset variable=inp
+  /* hwkim commented
+   * inp 변수에 reset logic 생성
+   */
   for (unsigned int count_image = 0; count_image < numReps; count_image++) {
     for (unsigned int i = 0; i < baseIter; i++) {
 #pragma HLS PIPELINE II=1
-      if (inp < IFMDim * ConvKernelDim*multiplying_factor) {// Initial buffer of ConvKernelDim lines	
-        ap_uint<SIMD*Input_precision> inElem;
-        inElem = in.read();
-        inputBuf[current_block_write][current_line] = inElem;
-        current_line++;
-        inp++;
-        if (current_line == Stride * IFMDim * multiplying_factor ) {
-          current_line = 0;
-          current_block_write++;
-          if (current_block_write == number_blocks) {
-            current_block_write=0;
-          }
-          read_block++;
-          counter_internal_block = 0;
-        }
-      } else {
-        if (counter_internal_block < cycles_write_block-1) { // We are writing output, MMV IFMChan per cycle
-          unsigned int current_block_read = (current_block_write + 1 + k_y / Stride);
-          if (current_block_read >= number_blocks) {
-            current_block_read-= number_blocks;
-		  }
-          unsigned int current_line_in_block = ((k_y%Stride) * IFMDim + ofm_x*Stride + k_x)*multiplying_factor + count_simd;
-          ap_uint<SIMD*Input_precision> outElem = inputBuf[current_block_read][(current_line_in_block)];
-          out.write(outElem);
-          count_simd++;
-          if (count_simd == multiplying_factor) {
-            count_simd=0;					
-            k_x++;
-            if (k_x == ConvKernelDim) {
-              k_x = 0;
-              k_y++;
-              if (k_y == ConvKernelDim) {
-                k_y = 0;
-                ofm_x ++;
-                if (ofm_x == OFMDim) {
-                  ofm_x = 0;
-                  ofm_y++;
-                  if (ofm_y == OFMDim) {
-                    ofm_y = 0;
-                    inp = 0;
-                  }
-                }
-              }
-            }
-          }
-        }
-        if ((counter_internal_block < cycles_read_block-1) && (read_block<IFMDim/Stride)) { // In parallel we write in the buffer, in the current block write if we still need to
-          ap_uint<SIMD*Input_precision> inElem;
-          inElem = in.read();
-          inputBuf[current_block_write][current_line] = inElem;
+
+
+      if (inp < IFMDim * ConvKernelDim * multiplying_factor) {// Initial buffer of ConvKernelDim lines
+    	  /* hwkim commented
+    	   * 32 * 3 * (input channel / SIMD)
+    	   * 아래 그림과 같이 input의 kernel size 가로 한 줄(가로 3줄) 다 안 읽었으면
+    	   *     ┌┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┐
+    	   *   ┌┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┐┤
+    	   * ┌┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┐┤┤
+    	   * ├┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┤┤┘
+    	   * ├┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┤┘
+    	   * └┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┘
+    	   */
+    	  ap_uint<SIMD*Input_precision> inElem;
+
+    	  /* hwkim commented
+    	   * ========= input read ==========================================
+    	   */
+    	  inElem = in.read();
+    	  /* hwkim commented
+    	   * in은 wa_in -> input image(activation)로 채워진 stream
+    	   * input을 SIMD channel 만큼 읽어옴
+    	   */
+    	  inputBuf[current_block_write][current_line] = inElem;
+    	  /* hwkim commented
+		   * ===============================================================
+		   */
+
+    	  current_line++;
+    	  inp++;
+    	  /* hwkim commented
+    	   * current_line/inp -> SIMD 단위 index, SIMD->x->y 순
+    	   * 두 변수가 초기화하는 순간이 다름
+    	   */
+    	  if (current_line == Stride * IFMDim * multiplying_factor ) {
+    		  current_line = 0;
+    		  /* hwkim commented
+    		   * current_line -> read? block 단위 초기화
+    		   * input 가로 한 줄 모든 input channel 다 읽어온 경우
+    		   * -> read block 하나가 input data 가로 한 줄
+    		   *     ┌┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┐
+    		   *   ┌┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┐┘
+    		   * ┌┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┐┘
+    		   * └┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┘
+    		   */
+    		  current_block_write++;
+    		  if (current_block_write == number_blocks) {
+    			  /* hwkim commented
+    			   * number_block는 kernel 단위 block(가로 3줄) 이 몇 개의 block(가로 한 줄)으로 구성되는지?
+    			   * current_block_write는 kernel 세로 길이 만큼 읽어올 때마다 초기화
+    			   */
+    			  current_block_write=0;
+    		  }
+    		  read_block++;
+    		  counter_internal_block = 0;
+    		  /* hwkim commented
+    		   * current_line과 동일하게 초기화
+    		   * 가로 1줄 다 읽으면 초기화
+    		   */
+    	  }
+      }
+
+
+      else {
+    	  /* hwkim commented
+    	   * 32 * 3 * (input channel / SIMD)
+    	   * 아래 그림과 같이 input의 kernel size 가로 한 줄 다 읽은 경우
+    	   *     ┌┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┐
+    	   *   ┌┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┐┤
+    	   * ┌┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┐┤┤
+    	   * ├┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┤┤┘
+    	   * ├┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┼┤┘
+    	   * └┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┘
+    	   */
+    	  if (counter_internal_block < cycles_write_block-1) { // We are writing output, MMV IFMChan per cycle
+    		  /*
+    		   * (OFMDim * ConvKernelDim * ConvKernelDim * multiplying_factor);
+    		   */
+    		  /* hwkim commented
+    		   * counter_internal_block은 input 가로 한 줄(3줄 아님) 다 읽으면 초기화 됨
+    		   */
+    		  unsigned int current_block_read = (current_block_write + 1 + k_y / Stride);
+    		  if (current_block_read >= number_blocks) {
+    			  current_block_read-= number_blocks;
+    		  }
+			  unsigned int current_line_in_block = ((k_y%Stride) * IFMDim + ofm_x*Stride + k_x)*multiplying_factor + count_simd;
+			  ap_uint<SIMD*Input_precision> outElem = inputBuf[current_block_read][(current_line_in_block)];
+			  out.write(outElem);
+			  count_simd++;
+
+			  if (count_simd == multiplying_factor) {
+				  count_simd=0;
+				  k_x++;
+				  if (k_x == ConvKernelDim) {
+					  k_x = 0;
+					  k_y++;
+					  if (k_y == ConvKernelDim) {
+						  k_y = 0;
+						  ofm_x ++;
+						  if (ofm_x == OFMDim) {
+							  ofm_x = 0;
+							  ofm_y++;
+							  if (ofm_y == OFMDim) {
+								  ofm_y = 0;
+								  inp = 0;
+							  }
+						  }
+					  }
+				  }
+			  }
+
+    	  }
+
+          if ((counter_internal_block < cycles_read_block-1) && (read_block<IFMDim/Stride)) {
+        	  // In parallel we write in the buffer, in the current block write if we still need to
+        	  ap_uint<SIMD*Input_precision> inElem;
+        	  inElem = in.read();
+        	  inputBuf[current_block_write][current_line] = inElem;
 #pragma AP dependence variable=inputBuf intra false
 #pragma AP dependence variable=inputBuf inter false
-          current_line++;
-          if (current_line == Stride * IFMDim * multiplying_factor) {// We read the whole block, we change the next block in which we want to we
-            // We filled up a block, let's not read until
-            current_line = 0;
-            read_block++;
-            current_block_write++;
-            if (current_block_write == number_blocks) {
-              current_block_write=0;
-			}
+        	  current_line++;
+        	  if (current_line == Stride * IFMDim * multiplying_factor) {// We read the whole block, we change the next block in which we want to we
+				// We filled up a block, let's not read until
+        		  current_line = 0;
+        		  read_block++;
+        		  current_block_write++;
+        		  if (current_block_write == number_blocks) {
+        			  current_block_write=0;
+        		  }
 #pragma AP dependence variable=current_block_write intra false	
+        	  }
           }
-        }
-        counter_internal_block++; // = (counter_internal_block +1) % max_cycles;
-        if (counter_internal_block == (max_cycles-1)) {
-          counter_internal_block = 0;
-        }
+
+          counter_internal_block++; // = (counter_internal_block +1) % max_cycles;
+
+          if (counter_internal_block == (max_cycles-1)) {
+        	  counter_internal_block = 0;
+          }
       }
+      /* hwkim commented
+       * end of else
+       */
+
     } // End base_iter
 	read_block = 0;
   } // End count_image

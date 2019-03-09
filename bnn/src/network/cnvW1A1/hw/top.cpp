@@ -75,13 +75,50 @@ unsigned int paddedSizeHW(unsigned int in, unsigned int padTo) {
   }
 }
 
-void DoMemInit(unsigned int targetLayer, unsigned int targetMem, unsigned int targetInd, unsigned int targetThresh, ap_uint<64> val) {
+void DoMemInit(unsigned int targetLayer, unsigned int targetMem, unsigned int targetInd,
+		unsigned int targetThresh, ap_uint<64> val) {
   switch (targetLayer) {
     case 0:
       weights0.m_weights[targetMem][targetInd] = val;
+      /* hwkim commented
+       *
+       * weights0
+       * 	-> static BinaryWeights<L0_SIMD, L0_PE, L0_WMEM>  weights0;
+       * 	-> m_weights를 멤버로 갖는 class
+       *
+       * m_weights
+       * 	-> ap_uint<SIMD>  m_weights[PE][TILES];
+       * 	-> SIMD - input channel number가 아님
+       * 		>> input channel 중 SIMD 개수만큼 한 번에 한다는 말
+       * 	-> PE - targetMem - output channel number가 아님
+       * 		>> PE 별 - layer 0은 16개 PE - out ch가 64니까 PE 당 4번 씩 함
+       * 		>> PE가 16개라는 말은 한 번에 output channel 16개씩 계산한다는 말
+       * 	-> TILES - target ind(ex?) - 64-bit 단위 index - 그냥 다음 pixel 위치에 해당하는 x-channel ap_uint<x>
+       *
+       * layer 0의 경우, SIMD가 3이기 때문에, weights0.m_weights는 ap_uint<3>인데 64-bit짜리 val을 넣음
+       * 	-> weight file에서 64-bit에 3-bit만 저장되어 있음
+       */
       break;
     case 1:
       threshs0.m_thresholds[targetMem][targetInd][targetThresh] = *reinterpret_cast<ap_fixed<64, 56> *>(&val);
+      /* hwkim comment
+       *
+       * threshs0
+       * 	-> static ThresholdsActivation< , L0_PE, L0_API, ap_fixed<24, 16>, ap_uint<L0_API> > threshs0;
+       * 	-> m_thresholds를 멤버로 갖는 class
+       *
+       * m_thresholds
+       * 	-> TA m_thresholds[PE][NF][NumTH]; <-L0_PE
+       *                  L0_PE^   ^L0_TMEM(4)
+       * 	-> TA - ap_fixed<24, 16> - 24-bit fixed point (with sign), 16-bit int/8-bit fractal
+       * 	-> NF - targetInd - L0_TMEM(4) - 64-bit line(output channel?) 단위
+       * 	-> PE - 걍 PE number - targetMem
+       * 	-> NumTH - 64-bit ExtMemWord 중에 24-bit 단위 index?
+       *
+       * targetMem - PE number
+       * targetInd - 64-bit line(pixel) index
+       * targetThresh - 0 고정
+       */
       break;
     case 2:
       weights1.m_weights[targetMem][targetInd] = val;
@@ -140,6 +177,9 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
   stream<ap_uint<192>> inter0_1("DoCompute.inter0_1");
   stream<ap_uint<24>> inter0_2("DoCompute.inter0_2");
 #pragma HLS STREAM variable=inter0_2 depth=128
+  /* hwkim commented
+   *  단순 FIFO size 지정
+   */
   stream<ap_uint<64>> inter1("DoCompute.inter1");
 #pragma HLS STREAM variable=inter1 depth=128
   stream<ap_uint<64>> inter2("DoCompute.inter2");
@@ -165,11 +205,41 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
   const unsigned int outBits = L8_MH*16;
 
   Mem2Stream_Batch<64, inBits / 8>(in, inter0, numReps);
+  /* hwkim commented
+   * 64 -> word 수 - stream해 올 interface(AXI)의 data width
+   * inBits -> image 1장 당 bit 수
+   * inBits/8 -> image 1장 당 bytes 수
+   * 이 함수는 in의 주소가 가리키는 DRAM에서 inter0 stream으로
+   * image를 numReps만큼 streaming해 오는 함수 (16 image 단위로 pipelining해서 streaming?)
+   */
   StreamingDataWidthConverter_Batch<64, 192, (32 * 32 * 3 * 8) / 64>(inter0, inter0_1, numReps);
+  /* hwkim commented
+   * inter0은 interleave된(quantized&packed) channel first order - c->x->y
+   * 192-bit에 3채널 64 pixel 들어감
+   */
   StreamingDataWidthConverter_Batch<192, 24, (32 * 32 * 3 * 8) / 192>(inter0_1, inter0_2, numReps);
+  /* hwkim commented
+   * 내부에 memory가 있는게 아니라 stream이므로, width 변환해주는 hardware가 내부에 필요함
+   * 24-bit에는 3채널 짜리 pixel 1개 들어감
+   */
   // convolutional layers
-  ConvLayer_Batch<L0_K, L0_IFM_CH, L0_IFM_DIM, L0_OFM_CH, L0_OFM_DIM, L0_SIMD, L0_PE, Slice<ap_fixed<8, 1, AP_TRN, AP_SAT>>, Identity, Recast<Binary>>(inter0_2, inter1, weights0, threshs0, numReps, ap_resource_lut());
-  ConvLayer_Batch<L1_K, L1_IFM_CH, L1_IFM_DIM, L1_OFM_CH, L1_OFM_DIM, L1_SIMD, L1_PE, Recast<XnorMul>>(inter1, inter2, weights1, threshs1, numReps, ap_resource_lut());
+  ConvLayer_Batch<L0_K, L0_IFM_CH, L0_IFM_DIM, L0_OFM_CH, L0_OFM_DIM, L0_SIMD, L0_PE,
+  	  	  Slice<ap_fixed<8, 1, AP_TRN, AP_SAT>>, Identity, Recast<Binary>>
+	  (inter0_2, inter1, weights0, threshs0, numReps, ap_resource_lut());
+  /* hwkim commented
+   * template
+   * 	-> ConvKernelDim, IFMch, IFMdim, OFMch, OFMdim,
+   * 		SIMD, PE,
+   * 		src width -> Slice<ap_fixed<~~>> -> ap_fixed의 width,
+   * 		dst width -> Identity -> width는 1,
+   * 		weight width -> Recast<Binary> -> width는 1
+   * arguments
+   * 	-> in(stream), out(stream), weight(memory), activation?(memory), reps, R???
+   */
+
+  ConvLayer_Batch<L1_K, L1_IFM_CH, L1_IFM_DIM, L1_OFM_CH, L1_OFM_DIM, L1_SIMD, L1_PE,
+  	  Recast<XnorMul>>
+  	  (inter1, inter2, weights1, threshs1, numReps, ap_resource_lut());
 
   StreamingMaxPool_Batch<L1_OFM_DIM, 2, L1_OFM_CH>(inter2, inter3, numReps);
 
@@ -195,6 +265,9 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 void BlackBoxJam(ap_uint<64> *in, ap_uint<64> *out, bool doInit,
 		unsigned int targetLayer, unsigned int targetMem,
 		unsigned int targetInd, unsigned int targetThresh, ap_uint<64> val, unsigned int numReps) {
+	/* hwkim commented
+	 * numReps - number of repetitions? (input image 장 수)
+	 */
 // pragmas for MLBP jam interface
 // signals to be mapped to the AXI Lite slave port
 #pragma HLS INTERFACE s_axilite port=return bundle=control

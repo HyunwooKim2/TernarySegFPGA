@@ -69,6 +69,13 @@ extern "C" void load_parameters(const char* path) {
   makeNetwork(nn);
   cout << "Setting network weights and thresholds in accelerator..." << endl;
   FoldedMVLoadLayerMem(path, 0, L0_PE, L0_WMEM, L0_TMEM, L0_API);
+  	  /* hwkim comment
+  	   * L0_PE - layer 별로 PE 갯수 설정
+  	   * L0_WMEM - weight가 64-bit 단위 몇 개인지 - 몇 pixel에 해당하는지
+  	   * 	layer 0의 경우 PE 당 4개임(output channel이 64인데 16PE라서) - L0_WMEM이 36인 이유는 3x3커널이라 4*9
+  	   * L0_TMEM - threshold의 크기를 64-bit 단위 몇 개인지
+  	   * L0_API
+  	  */
   FoldedMVLoadLayerMem(path, 1, L1_PE, L1_WMEM, L1_TMEM, L1_API);
   FoldedMVLoadLayerMem(path, 2, L2_PE, L2_WMEM, L2_TMEM, L2_API);
   FoldedMVLoadLayerMem(path, 3, L3_PE, L3_WMEM, L3_TMEM, L3_API);
@@ -80,15 +87,26 @@ extern "C" void load_parameters(const char* path) {
 }
 
 extern "C" int inference(const char* path, int results[64], int number_class, float* usecPerImage) {
+	/* hwkim commented
+	 * class_inference = inference(argv[2], scores, atol(argv[3]), &execution_time);
+	 * 							   input^    ^output    ^class#
+	 */
   std::vector<label_t> test_labels;
   std::vector<vec_t> test_images;
   std::vector<int> class_result;
   float usecPerImage_int;
 
   FoldedMVInit("cnvW1A1");
+  /* hwkim comment
+   * input, output buffer new 할당
+   */
   network<mse, adagrad> nn;
   makeNetwork(nn);
   parse_cifar10(path, &test_images, &test_labels, -1.0, 1.0, 0, 0);
+  /* hwkim commented
+   * 1-byte x->y->c 순서로 씌어진 input file을 읽어,
+   * 0~255 input을 -1~1 사이 64-bit floating point로 scaling
+   */
   class_result=testPrebuiltCIFAR10_from_image<8, 16, ap_int<16>>(test_images, number_class, usecPerImage_int);
 
   if(results) {
@@ -140,7 +158,7 @@ extern "C" void deinit() {
 
 extern "C" int main(int argc, char** argv) {
   if (argc != 5) {
-    cout << "4 parameters are needed: " << endl;
+    cout << "4 parameters arBSSe needed: " << endl;
     cout << "1 - folder for the binarized weights (binparam-***) - full path " << endl;
     cout << "2 - path to image to be classified" << endl;
     cout << "3 - number of classes in the dataset" << endl;

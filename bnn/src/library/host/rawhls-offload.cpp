@@ -73,9 +73,22 @@ void FoldedMVDeinit() {
   bufOut = 0;
 }
 
-void FoldedMVMemSet(unsigned int targetLayer, unsigned int targetMem, unsigned int targetInd,unsigned int targetThresh, ExtMemWord val) {
+void FoldedMVMemSet(unsigned int targetLayer, unsigned int targetMem,
+		unsigned int targetInd, unsigned int targetThresh, ExtMemWord val) {
   // call the accelerator in weight init mode
-  BlackBoxJam((ap_uint<64> *)bufIn, (ap_uint<64> *)bufOut, true, targetLayer, targetMem, targetInd,targetThresh, val, 0);
+	/* hwkim commented
+	 * FoldedMVMemSet(layerNo * 2, pe, line, 0, e);
+	 * targetLayer - layerNo*2
+	 * targetMem - pe
+	 * targetInd - line (64-bit 단위)
+	 * 		-> targetMem에서 64-bit 단위 index
+	 * val - 64-bit word
+	 */
+  BlackBoxJam((ap_uint<64> *)bufIn, (ap_uint<64> *)bufOut, true, targetLayer,
+		  targetMem, targetInd, targetThresh, val, 0);
+  /* hwkim commented
+   * bufIn/bufOut - testbench buffer -> DRAM
+   */
 }
 
 // TODO implement batch execution version

@@ -275,17 +275,30 @@ void testPrebinarized(std::vector<vec_t> & imgs, std::vector<label_t> & labels, 
   delete[] binLabels;
 }
 
-void FoldedMVLoadLayerMem(std::string dir, unsigned int layerNo, unsigned int peCount, unsigned int linesWMem, unsigned int linesTMem, unsigned int cntThresh) {
+void FoldedMVLoadLayerMem(std::string dir, unsigned int layerNo, unsigned int peCount, unsigned int linesWMem,
+		unsigned int linesTMem, unsigned int cntThresh) {
   for(unsigned int pe = 0; pe < peCount; pe++) {
     // load weights
     ifstream wf(dir + "/" + to_string(layerNo) + "-" + to_string(pe) + "-weights.bin", ios::binary | ios::in);
+    /* hwkim comment
+     * weight file naming - layer - PE number0
+     */
     if(!wf.is_open()) {
       throw "Could not open file";
     }
     for(unsigned int line = 0 ; line < linesWMem; line++) {
       ExtMemWord e = 0;
       wf.read((char *)&e, sizeof(ExtMemWord));
+      /* hwkim commentted
+       * 64-bit 씩 읽어서, 아래 함수로 hw(BlackBoxJam->DoMemInit)에 바로 64-bit 씩 streaming
+       */
       FoldedMVMemSet(layerNo * 2, pe, line, 0, e);
+      /* hwkim comment
+       * layerNo*2 - target layer 번호 - 곱하기2는 layer마다 weight, thres 2번 하므로
+       * pe - 현재 PE number -> target mem 번호
+       * line - 64-bit 단위 현재 line number -> target index - target mem 내에서 64-bit 단위(pixel 단위)index
+       * 0 - target thresh?
+       */
     }
     wf.close();
 
@@ -297,7 +310,14 @@ void FoldedMVLoadLayerMem(std::string dir, unsigned int layerNo, unsigned int pe
       for(unsigned int i = 0; i < cntThresh; i++){
         ExtMemWord e = 0;
         tf.read((char *)&e, sizeof(ExtMemWord));
+        /* hwkim commented
+         * 64-bit 씩 읽어서, 아래 함수로 hw에 바로 streaming
+         */
         FoldedMVMemSet(layerNo * 2 + 1, pe, line,i, e);
+        /* hwkim comment
+         * line - 64-bit 단위 line
+         * i - 24-bit? 단위 line(threshold 1개)
+         */
       }
     }
     tf.close();

@@ -57,6 +57,9 @@ void Mem2Stream(ap_uint<DataWidth> * in, hls::stream<ap_uint<DataWidth> > & out)
   for (unsigned int i = 0; i < numWords; i++) {
 #pragma HLS PIPELINE II=1
     ap_uint<DataWidth> e = in[i];
+    /* hwkim commented
+     * DataWidth -> 64-bit
+     */
     out.write(e);
   }
 }
@@ -80,7 +83,15 @@ void Stream2Mem(hls::stream<ap_uint<DataWidth> > & in, ap_uint<DataWidth> * out)
 // checking the modulo takes a lot more resources)
 template<unsigned int DataWidth, unsigned int numBytes>
 void Mem2Stream_Batch(ap_uint<DataWidth> * in, hls::stream<ap_uint<DataWidth> > & out, const unsigned int numReps) {
+	/* hwkim commented
+	 * input array의 주소만 전달 받음 -> DRAM 상의 주소?
+	 * out은 stream으로, DRAM에서 (out) stream으로 읽어오는 함수
+	 */
   const unsigned int indsPerRep = numBytes / (DataWidth / 8);
+  /* hwkim commented
+   * numBytes - image 1장 당 byte 수
+   * indsPerRep - image 1장 당 word(64-bit) 수
+   */
   unsigned int rep = 0;
   // make sure Mem2Stream does not get inlined here
   // we lose burst inference otherwise
@@ -89,6 +100,11 @@ void Mem2Stream_Batch(ap_uint<DataWidth> * in, hls::stream<ap_uint<DataWidth> > 
     if ((repsLeft & 0xF) == 0) {
       // repsLeft divisable by 16, read 16 images
       Mem2Stream<DataWidth, numBytes * 16>(&in[rep * indsPerRep], out);
+      /* hwkim commented
+       * DataWidth -> 64-bit (word size)
+       * in[] -> 64-bit으로 packed image
+       * numBytes*16 -> 16장 image 단위로 pipelining?
+       */
       rep += 16;
     } else {
       // fallback, read single image
