@@ -50,9 +50,16 @@
 
 // essentially small DMA generators, moving data between mem-mapped arrays and streams
 template<unsigned int DataWidth, unsigned int numBytes>
+/* hwkim commented
+ * DataWidth == 64
+ * numBytes == 32x32x3
+ */
 void Mem2Stream(ap_uint<DataWidth> * in, hls::stream<ap_uint<DataWidth> > & out) {
   CASSERT_DATAFLOW(DataWidth % 8 == 0);
   const unsigned int numWords = numBytes / (DataWidth / 8);
+  /* hwkim commented
+   * numWords == image 1장의 word 개수
+   */
   CASSERT_DATAFLOW(numWords != 0);
   for (unsigned int i = 0; i < numWords; i++) {
 #pragma HLS PIPELINE II=1
@@ -103,12 +110,21 @@ void Mem2Stream_Batch(ap_uint<DataWidth> * in, hls::stream<ap_uint<DataWidth> > 
       /* hwkim commented
        * DataWidth -> 64-bit (word size)
        * in[] -> 64-bit으로 packed image
-       * numBytes*16 -> 16장 image 단위로 pipelining?
+       *
+       * input image가 여러 장일 때만 여기의 batch로 수행
+       * numBytes*16 -> 16장 image 단위로 pipelining
        */
       rep += 16;
     } else {
       // fallback, read single image
+    	/* hwkim commented
+    	 * image가 1장일 경우
+    	 */
       Mem2Stream<DataWidth, numBytes>(&in[rep * indsPerRep], out);
+      /* hwkim commented
+       * rep는 0, single image이므로
+       * 따라서 in[0]의 주소가 전달 됨(맨 처음 주소)
+       */
       rep += 1;
     }
   }

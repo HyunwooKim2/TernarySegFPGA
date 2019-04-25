@@ -95,13 +95,20 @@ template<unsigned int InWidth,		// width of input stream
 void StreamingDataWidthConverter_Batch(hls::stream<ap_uint<InWidth> > & in,
 		hls::stream<ap_uint<OutWidth> > & out, const unsigned int numReps) {
 	/* hwkim commented
-	 * caller
-	 * 	-> StreamingDataWidthConverter_Batch<IW, OW, N>(source, m_target, reps);
-	 * 		-> ConvLayer_Batch 내 함수에서 call
-	 * 	InWidth -> IW -> input data 1 channel의 width
-	 * 	OutWidth -> OW -> SIMD * TSrcI -> 한 번에 처리할 input channel 개수
-	 * 	N -> input word 개수 - 모든 channel을 1개의 word로 본 것
-	 * 		(아마 SIMD 개수만큼을 하나로 본 것)
+	 * caller -> StreamingDataWidthConverter_Batch<IW, OW, N>(source, m_target, reps);
+	 * 		ConvLayer_Batch 내 함수에서 call
+	 *
+	 * InWidth -> IW
+	 * 		input data 모든 channel의 총 width
+	 * 		layer 0의 경우 24-bit
+	 * OutWidth -> OW
+	 * 		SIMD * TSrcI
+	 * 		한 번에 처리할 input channel 개수
+	 * N -> input word 개수
+	 * 		IFMDim*IFMDim*IFMChannels/InStreamW * TSrcI::width
+	 * 		3개 채널 하나로 묶어서 취급했을 때, image 당 input 개수
+	 * in -> source -> input image/activation
+	 * 		layer 0의 경우 24-bit stream
 	 */
   if (InWidth > OutWidth) {
     // emit multiple output words per input word read
@@ -116,7 +123,8 @@ void StreamingDataWidthConverter_Batch(hls::stream<ap_uint<InWidth> > & in,
       if (o == 0) {
         ei = in.read();
         /* hwkim commented
-         * stream 하나를 통째로 다 읽음(원소를 하나 읽는 것이 아님)
+         * stream 하나를 통째로 다 읽음(원소를 하나 읽는 것이 아님)?????? -> X
+         * 원소 1개 씩 읽는 듯
          */
 	  }
       // pick output word from the rightmost position
@@ -169,11 +177,17 @@ template<unsigned IW, unsigned OW, unsigned N>
  public:
   WidthAdjustedInputStream(hls::stream<ap_uint<IW> >&  source, unsigned const  reps) {
 	  /* hwkim commented
-	   * IW -> InStreamW -> layer 0의 경우 24-bit
-	   * OW -> SIMD * TSrcI -> 한 번에 처리할 input channel 개수 * input data 1개 width
-	   * 	-> 한 번에 처리할 input의 width
-	   * N -> InpPerImage -> IFMDim*IFMDim*IFMChannels/InStreamW * TSrcI::width
-	   * source -> input image(activation) -> layer 0의 경우 24-bit stream
+	   * IW -> InStreamW
+	   * 	layer 0의 경우 24-bit
+	   * OW -> SIMD * TSrcI
+	   * 	한 번에 처리할 input channel 개수 * input data 1개 width
+	   * 	한 번에 처리할 input의 width
+	   * N -> InpPerImage
+	   * 	IFMDim*IFMDim*IFMChannels/InStreamW * TSrcI::width
+	   * 	3개 채널 하나로 묶어서 취급했을 때,
+	   * 		image 당 input 개수
+	   * source -> input image/activation
+	   * 	layer 0의 경우 24-bit stream
 	   */
     StreamingDataWidthConverter_Batch<IW, OW, N>(source, m_target, reps);
     /* hwkim commented

@@ -124,6 +124,12 @@ template<unsigned NF, unsigned PE, unsigned NumTH,
 class ThresholdsActivation {
 public:
   TA m_thresholds[PE][NF][NumTH];
+  /* hwkim commented
+   * TA
+   * 	layer 0 -> ap_fixed<24,16>
+   * 	other layers -> ap_int<16>
+   * NumTH -> threshold 개수?
+   */
   
 public:
   TA init(unsigned const  nf, unsigned const  pe) const {

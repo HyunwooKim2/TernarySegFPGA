@@ -249,6 +249,10 @@ void testPrebuiltCIFAR10(std::vector<tiny_cnn::vec_t> & imgs, std::vector<tiny_c
 
 
 template<unsigned int inWidth, unsigned int outWidth, typename LowPrecType>
+/* hwkim commented
+ * inWidth -> input의 bit width = 8
+ * outWidth -> score의 bit width? = 16
+ */
 std::vector<int>  testPrebuiltCIFAR10_from_image(std::vector<tiny_cnn::vec_t> & imgs,
 		const unsigned int numCategories, float &usecPerImage) {
   const unsigned int count = 1;
@@ -256,17 +260,20 @@ std::vector<int>  testPrebuiltCIFAR10_from_image(std::vector<tiny_cnn::vec_t> & 
   // number of ExtMemWords per image
   const unsigned int psi = paddedSize(imgs[0].size()*inWidth, bitsPerExtMemWord) / bitsPerExtMemWord;
   /* hwkim commented
+   * psi -> input image가 ExtMemWord로 몇 개인지
+   *
    * imgs[0].size는
    * 	imgs[0]의 bit width를 의미?
    * 		-> inWidth가 input image의 bit-width를 나타내는 듯
    * 	image 1개의 원소 개수를 의미? (이거일 듯)
    * 		-> cifar 32x32=1024개의 8-bit짜리 데이터가 있으므로
    * 		ExtMemWord로는 몇 개인지를 나타내는 듯
-   * paddedSize()는 ExtMemWord로 나누어 떨어지지 않는 경우
+   * paddedSize()는 ExtMemWord로 나누어 떨어지지 않는 경우 +1을 해주기 위해
    */
   // number of ExtMemWords per output
   const unsigned int pso = paddedSize(64*outWidth, bitsPerExtMemWord) / bitsPerExtMemWord;
   /* hwkim commented
+   * pso -> output score가 ExtMemWord로 몇 개인지
    *  out은 score를 의미? (맞는 듯) -> outWidth는 score의 bit-width?
    */
   if(INPUT_BUF_ENTRIES < count*psi) {
@@ -284,13 +291,13 @@ std::vector<int>  testPrebuiltCIFAR10_from_image(std::vector<tiny_cnn::vec_t> & 
   for(unsigned int i = 0; i < count; i++) {
     tiny_cnn::vec_t interleaved = interleaver.forward_propagation(imgs[i], 0);
     /* hwkim commented
-     * 기존 x->y->c로 order된 imgs(input)를 c->x->y로 reorder (interleaving)
+     * 기존 x->y->c로 order된 imgs(input)를 c->x->y로 reorder(interleaving)
      */
     quantiseAndPack<inWidth, 1>(interleaved, &packedImages[i * psi], psi);
     /* hwkim commented
      * -1~1 사이 floating point를 8-bit fixed point로 quantise 후,
      *  단순히 8-bit fixed point를 8-bit int로 변환하고,
-     *  ExtMemWord size 64-bit에 packing
+     *  ExtMemWord size 64-bit에 packing(8-bit짜리 8개를 64-bit에 packing)
      */
   }
   cout << "Running prebuilt CIFAR-10 test for " << count << " images..." << endl;
@@ -299,7 +306,7 @@ std::vector<int>  testPrebuiltCIFAR10_from_image(std::vector<tiny_cnn::vec_t> & 
   // call the accelerator in compute mode
   BlackBoxJam((ap_uint<64> *)packedImages, (ap_uint<64> *)packedOut, false, 0, 0, 0, 0, 0, count);
   /* hwkim commented
-   * input, output array의 주소만 전달 -> DRAM 주소?
+   * input, output array의 주소만 전달 -> DRAM 주소?(maybe)
    */
   auto t2 = chrono::high_resolution_clock::now();
 

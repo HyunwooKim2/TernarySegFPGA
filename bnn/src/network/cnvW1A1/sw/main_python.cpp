@@ -56,7 +56,15 @@ using namespace tiny_cnn::activation;
 void makeNetwork(network<mse, adagrad> & nn) {
   nn
 #ifdef OFFLOAD
+  /* hwkim commented
+   * network.h에서 overloading 한 operator<<를 호출
+   * 	network class nn의 add function을 호출하여 우변의 chaninterleave_layer layer를 추가
+   */
     << chaninterleave_layer<identity>(3, 32 * 32, false)
+	/* hwkim commented
+	 * chaninterleave_layer class의 operator<<를 호출? -> 없음
+	 * 여기서도 network.h에서 overloading 한 operator<<를 호출할 듯
+	 */
     << offloaded_layer(3 * 32 * 32, 10, &FixedFoldedMVOffload<8, 1, ap_int<16>>, 0xdeadbeef, 0)
 #endif
   ;
@@ -72,9 +80,13 @@ extern "C" void load_parameters(const char* path) {
   	  /* hwkim comment
   	   * L0_PE - layer 별로 PE 갯수 설정
   	   * L0_WMEM - weight가 64-bit 단위 몇 개인지 - 몇 pixel에 해당하는지
-  	   * 	layer 0의 경우 PE 당 4개임(output channel이 64인데 16PE라서) - L0_WMEM이 36인 이유는 3x3커널이라 4*9
-  	   * L0_TMEM - threshold의 크기를 64-bit 단위 몇 개인지
-  	   * L0_API
+  	   * 	layer 0의 경우 PE 당 4개임(output channel이 64인데 16PE라서)
+  	   * 	L0_WMEM이 36인 이유는 3x3커널이라 4*9
+  	   * 		즉, PE 당 4개의 output channel을 담당하므로, 4개의 weight kernel(3x3)만 있으면 됨
+  	   * L0_TMEM
+  	   * 	threshold의 크기를 64-bit 단위 몇 개인지
+  	   * 	PE 당 몇 개 threshold인 지
+  	   * L0_API - threshold 개수
   	  */
   FoldedMVLoadLayerMem(path, 1, L1_PE, L1_WMEM, L1_TMEM, L1_API);
   FoldedMVLoadLayerMem(path, 2, L2_PE, L2_WMEM, L2_TMEM, L2_API);
@@ -89,7 +101,7 @@ extern "C" void load_parameters(const char* path) {
 extern "C" int inference(const char* path, int results[64], int number_class, float* usecPerImage) {
 	/* hwkim commented
 	 * class_inference = inference(argv[2], scores, atol(argv[3]), &execution_time);
-	 * 							   input^    ^output    ^class#
+	 * 							   input^    ^output    ^# of classes
 	 */
   std::vector<label_t> test_labels;
   std::vector<vec_t> test_images;

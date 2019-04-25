@@ -79,6 +79,14 @@ auto mul(TC const &c, TD const &d, ap_resource_dflt const&) -> decltype(c*d) {
 template<typename TC, typename TD>
 auto mul(TC const &c, TD const &d, ap_resource_lut const&) -> decltype(c*d) {
 #pragma HLS inline
+	/* hwkim commented
+	 * caller
+	 * 	res += mul(c[i], d[i], r);
+	 * c -> wgt -> weights
+	 * d -> act -> thresholds
+	 * r -> resource
+	 * i -> SIMD #
+	 */
   decltype(c*d) const  res = c*d;
 #pragma HLS RESOURCE variable=res core=Mul_LUT
   return  res;
@@ -96,10 +104,30 @@ auto mul(TC const &c, TD const &d, ap_resource_dsp const&) -> decltype(c*d) {
 //- MAC with selectable implementation resource
 template<unsigned N, typename T, typename TC, typename TD, typename R>
 T mac(T const &a, TC const &c, TD const &d, R const &r) {
+	/* hwkim commented
+	 * a -> accu[pe] -> accumulation
+	 * 		ThresholdsActivation class
+	 * c -> wgt -> weights
+	 *		TWeightI()(w[pe]) -> Recast<Binary>()(w[pe])
+	 *		-> w[pe] type과 w[pe]로 초기화된 m_val을 갖는 Container class
+	 * d -> act -> thresholds
+	 * 		TSrcI()(inElem) -> Slice<ap_fixed<8, 1, AP_TRN, AP_SAT>>
+	 * 		-> inElem type == ap_uint<SIMD*TSrcI::width>
+	 * r -> resource
+	 */
 #pragma HLS inline
   T  res = a;
   for(unsigned  i = 0; i < N; i++) {
+	  /* hwkim commented
+	   * N == SIMD
+	   * SIMD개 병렬 연산
+	   * i -> SIMD 번호
+	   */
 #pragma HLS unroll
+	  /* hwkim commented
+	   * r에 따라 다른 resource를 사용하는 mul이 호출
+	   * 	-> LUT 또는 DSP48
+	   */
     res += mul(c[i], d[i], r);
   }
   return  res;

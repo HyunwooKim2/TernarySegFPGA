@@ -93,7 +93,16 @@ void DoMemInit(unsigned int targetLayer, unsigned int targetMem, unsigned int ta
        * 	-> PE - targetMem - output channel number가 아님
        * 		>> PE 별 - layer 0은 16개 PE - out ch가 64니까 PE 당 4번 씩 함
        * 		>> PE가 16개라는 말은 한 번에 output channel 16개씩 계산한다는 말
-       * 	-> TILES - target ind(ex?) - 64-bit 단위 index - 그냥 다음 pixel 위치에 해당하는 x-channel ap_uint<x>
+       * 	-> TILES - target ind(ex?) - 64-bit 단위 index
+       * 		>> kernel의 다음 pixel 위치에 해당하는 x-channel ap_uint<x>
+       * 		>> PE 별 weight 들
+       * 			TILES == PE 당 가지는 weight 개수
+       * 			PE 당 가지는 weight kernel 수는 out_ch/PE
+       * 				layer0의 경우 64/16=4.
+       * 				즉, 16개의 PE가 16개 output channel 동시에 계산,
+       * 				즉, 각 PE는 output channel 4개 씩 수행
+       * 					(4개의 weight kernel에 대해 conv 수행)
+       * 				따라서 TILES == 36 = 3x3x4
        *
        * layer 0의 경우, SIMD가 3이기 때문에, weights0.m_weights는 ap_uint<3>인데 64-bit짜리 val을 넣음
        * 	-> weight file에서 64-bit에 3-bit만 저장되어 있음
@@ -106,17 +115,23 @@ void DoMemInit(unsigned int targetLayer, unsigned int targetMem, unsigned int ta
        * threshs0
        * 	-> static ThresholdsActivation< , L0_PE, L0_API, ap_fixed<24, 16>, ap_uint<L0_API> > threshs0;
        * 	-> m_thresholds를 멤버로 갖는 class
-       *
        * m_thresholds
-       * 	-> TA m_thresholds[PE][NF][NumTH]; <-L0_PE
+       * 	-> TA m_thresholds[PE][NF][NumTH]; <-L0_API
        *                  L0_PE^   ^L0_TMEM(4)
-       * 	-> TA - ap_fixed<24, 16> - 24-bit fixed point (with sign), 16-bit int/8-bit fractal
-       * 	-> NF - targetInd - L0_TMEM(4) - 64-bit line(output channel?) 단위
+       * 	-> TA (Threshold Accuracy?)
+       * 		layer 0의 경우 ap_fixed<24, 16> - 24-bit fixed point (with sign), 16-bit int/8-bit fractal
+       * 		다른 layer의 경우 ap_int<16>
+       * 	-> NF - targetInd
+       * 		L0_TMEM(4) - 64-bit line(output channel?) 단위
+       * 		layer 0의 L0_TMEM(NF)가 4인 이유
+       * 			각 PE 당, output channel 4개 씩 계산함
+       * 			output channel 당 batch normalization 수행하므로 threshold가 1개 존재
        * 	-> PE - 걍 PE number - targetMem
-       * 	-> NumTH - 64-bit ExtMemWord 중에 24-bit 단위 index?
-       *
+       * 	-> NumTH - output channel 당 여러 개의 threshold가 있을 수 있는 듯
+       * 		하지만 여기서는 1개만 있음
        * targetMem - PE number
        * targetInd - 64-bit line(pixel) index
+       * 	layer 0의 경우 0~3으로 4개
        * targetThresh - 0 고정
        */
       break;
@@ -206,35 +221,56 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 
   Mem2Stream_Batch<64, inBits / 8>(in, inter0, numReps);
   /* hwkim commented
-   * 64 -> word 수 - stream해 올 interface(AXI)의 data width
-   * inBits -> image 1장 당 bit 수
-   * inBits/8 -> image 1장 당 bytes 수
+   * dma.h에 선언
+   *
+   * 64 -> word bit 수 - stream해 올 interface(AXI)의 data width
+   * inBits -> image 1장 당 총 bit 수
+   * inBits/8 -> image 1장 당 총 byte 수
+   *
    * 이 함수는 in의 주소가 가리키는 DRAM에서 inter0 stream으로
-   * image를 numReps만큼 streaming해 오는 함수 (16 image 단위로 pipelining해서 streaming?)
+   * image를 numReps만큼 streaming해 오는 함수
+   * (16 image 단위로 pipelining해서 streaming)
+   * (single image일 경우, no pipelining)
+   *
+   * in stream의 ordering
+   * 	-> c->x->y
+   * 	-> 64-bit에 위의 ordering으로 8개 꽉 채움
    */
   StreamingDataWidthConverter_Batch<64, 192, (32 * 32 * 3 * 8) / 64>(inter0, inter0_1, numReps);
   /* hwkim commented
-   * inter0은 interleave된(quantized&packed) channel first order - c->x->y
+   * < InWidth, OutWidth, NumInWords >
+   * InWidth를 OutWidth로 NumInWords(InWidth의 word 수)만큼 변환
+   * inter0은 interleave(+quantized+packed)된 channel first order (c->x->y)
    * 192-bit에 3채널 64 pixel 들어감
+   * 64-bit에 8개 들어가는데, channel이 3채널 씩이라 애매하게 끊어지므로,
+   * 	192-bit으로 변환하고 아래에서 24-bit 단위(채널 묶음)으로 다시 변환
    */
   StreamingDataWidthConverter_Batch<192, 24, (32 * 32 * 3 * 8) / 192>(inter0_1, inter0_2, numReps);
   /* hwkim commented
-   * 내부에 memory가 있는게 아니라 stream이므로, width 변환해주는 hardware가 내부에 필요함
+   * 내부에 memory가 있는게 아니라 stream이므로,
+   * 	width 변환해주는 hardware가 내부에 필요함
    * 24-bit에는 3채널 짜리 pixel 1개 들어감
+   * inter0_1 stream의 ordering
+   * 	-> x->y
+   * 	-> c는 이미 24-bit 단위로 3개 묶여서 ordering되어 있음
    */
   // convolutional layers
-  ConvLayer_Batch<L0_K, L0_IFM_CH, L0_IFM_DIM, L0_OFM_CH, L0_OFM_DIM, L0_SIMD, L0_PE,
+  ConvLayer_Batch<L0_K, L0_IFM_CH, L0_IFM_DIM, L0_OFM_CH, L0_OFM_DIM,
+  	  	  L0_SIMD, L0_PE,
   	  	  Slice<ap_fixed<8, 1, AP_TRN, AP_SAT>>, Identity, Recast<Binary>>
 	  (inter0_2, inter1, weights0, threshs0, numReps, ap_resource_lut());
   /* hwkim commented
    * template
    * 	-> ConvKernelDim, IFMch, IFMdim, OFMch, OFMdim,
    * 		SIMD, PE,
-   * 		src width -> Slice<ap_fixed<~~>> -> ap_fixed의 width,
-   * 		dst width -> Identity -> width는 1,
-   * 		weight width -> Recast<Binary> -> width는 1
+   * 		TSrcI -> src width -> Slice<ap_fixed<~~>> -> ap_fixed의 width,
+   * 		TDstI -> dst width -> Identity -> width는 1,
+   * 		TWeightI -> weight width -> Recast<Binary> -> width는 1
    * arguments
-   * 	-> in(stream), out(stream), weight(memory), activation?(memory), reps, R???
+   * 	-> in(stream), out(stream), weight(memory), activation(memory),
+   * 		reps, R(resource;LUT/DSP)
+   * 	-> 여기서는 thresholding을 activation function으로 보고
+   * 		activation 값으로 여김
    */
 
   ConvLayer_Batch<L1_K, L1_IFM_CH, L1_IFM_DIM, L1_OFM_CH, L1_OFM_DIM, L1_SIMD, L1_PE,

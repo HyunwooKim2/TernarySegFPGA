@@ -68,10 +68,10 @@ template<
 		typename TDstI = Identity,		// redefine I/O interpretation as needed for output activations
 		typename TWeightI = Identity,	// redefine I/O interpretation as needed for weigths
 
-		int InStreamW, int OutStreamW,  // safely deducible (stream width must be int though!)
 		/* hwkim commented
-		 * argument에서 InStreamW와 OutStreamW를 알아냄
+		 * 여기 아래는 argument에서 알아냄
 		 */
+		int InStreamW, int OutStreamW,  // safely deducible (stream width must be int though!)
 		typename TW,   typename TA,  typename R
 >
 void ConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
@@ -83,55 +83,55 @@ void ConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
 #pragma HLS INLINE
   unsigned const MatrixW = ConvKernelDim * ConvKernelDim * IFMChannels;
   /* hwkim commented
+   * kernel 1개의 pixel 개수
    * kernel 1개 크기 convolution을 한 번에 함?
    */
   unsigned const MatrixH = OFMChannels;
   /* hwkim commented
-   * kernel 개수와 동일
+   * kernel 개수
    */
   unsigned const InpPerImage = IFMDim*IFMDim*IFMChannels/InStreamW * TSrcI::width;
   /* hwkim commented
-   * InPerImage -> input word 개수
+   * InpPerImage -> input word 개수
    * 	-> TSrcI/InStreamW -> layer 0의 경우 8/24 - 의미는?
-   * 	-> InStreamW는 IFMChannels*TSrcI와 같음 (만약 InStreamW가 모든 input channel을 포함한다면)
-   * 	-> TSrcI는 data 1개의 width를 의미하는 듯
+   * 	-> InStreamW는 IFMChannels*TSrcI와 같음
+   * 		(만약 InStreamW가 모든 input channel을 포함한다면)
+   * 		>> 3개의 channel을 묶어서 하나로 보겠다는 말?
    */
   WidthAdjustedInputStream <InStreamW, SIMD*TSrcI::width, InpPerImage>  wa_in (in,  reps);
   /* hwkim commented
    *
    * wa_in은 WidthAdjustedInputStream class로써, m_target stream을 가지고 있음
-   * 	wa_in class에서 생성자 호출하면서 in의 width(InStreamW)를 SIMD*TSrcI::width로 바꿔서
+   * wa_in class에서 생성자 호출하면서 in의 width(InStreamW)를
+   * 	SIMD*TSrcI::width로 바꿔서
    * 	m_target stream에 채워줌
    *
-   * layer 0의 경우 24-bit -> 24 bit 변환 (SIMD 3 * TSrcI::width 8)
+   * layer 0의 경우 24-bit -> 24 bit 변환
+   * 	SIMD*TSrcI::width = 3*8
    *
-   * InStreamW -> 모든 input channel 다 합친 width?
-   * SIMD * TSrcI::width -> 한 번에 처리할 input channel data 개수(SIMD) * data 1개 width
-   *
-   * template<unsigned IW, unsigned OW, unsigned N>
-		 class WidthAdjustedInputStream {
-		  hls::stream<ap_uint<OW>>  m_target;
-		   public:
-		  WidthAdjustedInputStream(hls::stream<ap_uint<IW> >&  source, unsigned const  reps) {
-			StreamingDataWidthConverter_Batch<IW, OW, N>(source, m_target, reps);
-  }
+   * InStreamW
+   * 	-> 모든 input channel 다 합친 width
+   * SIMD * TSrcI::width
+   * 	-> 한 번에 처리할 input channel data 개수(SIMD) * data 1개 width
+   * InpPerImage
+   * 	-> input word 개수
+   * 	-> 3개 채널 하나로 묶어서 취급했을 때, image 당 input 개수
    */
   WidthAdjustedOutputStream <PE*TDstI::width, OutStreamW,
   	  OFMDim * OFMDim * (OFMChannels / PE)> mvOut (out,  reps);
   /* hwkim commented
    * mvOut은 WidthAdjustedOutputStream class
-   * 	WidthAdjustedOutputStream은 ~~InputStream과 달리 값을 채워주지 않고,
-   * 	그냥 buffer 할당만 해 줌
-   *
-   * PE*TDstI::width의 out stream을 OutStream width로 변환하는 것이 아님!!!
-   * 	layer 0의 경우,
+   * WidthAdjustedOutputStream은 ~~InputStream과 달리 값을 채워주지 않고,
+   * 	그냥 stream 할당만 해 줌
+   * 	-> out을 (WidthAdjustedOutputStream class 내) m_target stream에 할당
+   *	-> 생성자가 아니라 소멸자 호출 시,
+   *		WidthAdjustedOutputStream class 내 m_buffer stream의 내용을
+   *		m_target stream에 data width convert하여 값을 채움
+   *	-> 즉, m_buffer는 PE*TDstI::width의 bit width를 가지므로
+   *		모든 PE의 kernel 1개에 대해 convolution 수행한 결과를 가지고 있음
+   * 	-> layer 0의 경우,
    * 		PE*TDstI::width = 16*1 = 16-bit
    * 		OutStream = 64-bit (out channel 수)
-   *
-   * mvOut은 생성자 호출 시 out을 WidthAdjustedOutputStream 내 m_target buffer에 할당만 함
-   * 소멸자 호출 시, WidthAdjustedOutputStream mvOut class 내 m_buffer의 width를 OutStreamW로 변환해서
-   * 넣어줌
-   * 	WidthAdjustedOutputStream mvOut class의 m_buffer는 convolution 연산 결과를 채울 듯
    */
 
   hls::stream<ap_uint<SIMD*TSrcI::width> > convInp("StreamingConvLayer_Batch.convInp");
@@ -140,11 +140,15 @@ void ConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
   ConvolutionInputGenerator<ConvKernelDim, IFMChannels, TSrcI::width, IFMDim,
 			OFMDim, SIMD,1>(wa_in, convInp, reps);
   /* hwkim commented
-   * wa_in -> SIMD*TSrcI::width의 width를 갖는 m_target stream을 class member로 갖음
-   * convInp -> SIMD*TSrcI::width의 stream
-   * reps -> input image 장 수
+   * (c->)x->y로 order된 wa_in stream을 1 block(input 가로 세 줄;kernel 세로 size) 씩
+   * 	buffer(memory)에 저장
+   * 	-> conv kernel sliding하면서 단순히 순차적으로 input을 읽으면 되도록
+   * 	   input을 중복되게 convInp stream에 저장
    *
-   * ConvKernelDim -> 3
+   * (in) wa_in -> SIMD*TSrcI::width의 width를 갖는 m_target stream을 class member로 갖음
+   * (out) convInp -> SIMD*TSrcI::width의 stream
+   * 	24-bit for layer 0
+   * reps -> input image 장 수
    */
 
   Matrix_Vector_Activate_Batch<MatrixW, MatrixH, SIMD, PE, TSrcI, TDstI, TWeightI>

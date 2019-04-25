@@ -87,7 +87,8 @@ void FoldedMVMemSet(unsigned int targetLayer, unsigned int targetMem,
   BlackBoxJam((ap_uint<64> *)bufIn, (ap_uint<64> *)bufOut, true, targetLayer,
 		  targetMem, targetInd, targetThresh, val, 0);
   /* hwkim commented
-   * bufIn/bufOut - testbench buffer -> DRAM
+   * bufIn/bufOut - testbench buffer의 주소 -> DRAM의 주소
+   * true -> memory init 수행한다는 의미
    */
 }
 
