@@ -71,6 +71,10 @@ class BinaryWeights {
    */
   class TileIndex {
     BinaryWeights const &m_par;
+    /* hwkim commented
+     * BinaryWeights의 참조자
+     * 	-> BinaryWeights class instance(object)가 아님!!!
+     */
     unsigned      const  m_idx;
 
    public:

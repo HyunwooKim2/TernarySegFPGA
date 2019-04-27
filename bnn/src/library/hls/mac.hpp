@@ -81,9 +81,9 @@ auto mul(TC const &c, TD const &d, ap_resource_lut const&) -> decltype(c*d) {
 #pragma HLS inline
 	/* hwkim commented
 	 * caller
-	 * 	res += mul(c[i], d[i], r);
+	 * 		res += mul(c[i], d[i], r);
 	 * c -> wgt -> weights
-	 * d -> act -> thresholds
+	 * d -> act -> input
 	 * r -> resource
 	 * i -> SIMD #
 	 */
@@ -108,12 +108,12 @@ T mac(T const &a, TC const &c, TD const &d, R const &r) {
 	 * a -> accu[pe] -> accumulation
 	 * 		ThresholdsActivation class
 	 * c -> wgt -> weights
-	 *		TWeightI()(w[pe]) -> Recast<Binary>()(w[pe])
-	 *		-> w[pe] type과 w[pe]로 초기화된 m_val을 갖는 Container class
-	 * d -> act -> thresholds
-	 * 		TSrcI()(inElem) -> Slice<ap_fixed<8, 1, AP_TRN, AP_SAT>>
-	 * 		-> inElem type == ap_uint<SIMD*TSrcI::width>
-	 * r -> resource
+	 * 		weights의 m_weights[pe][tile]에 연결된 참조자
+	 * 		즉, pe 및 tile에 해당하는 weight를 가리키고 있음
+	 * d -> act -> input
+	 * 		TSrcI()(inElem)
+	 * 			layer 0 -> ap_fixed<8,1>값 3개(SIMD)를 가진 24-bit
+	 * r -> resource -> LUT
 	 */
 #pragma HLS inline
   T  res = a;
@@ -124,11 +124,18 @@ T mac(T const &a, TC const &c, TD const &d, R const &r) {
 	   * i -> SIMD 번호
 	   */
 #pragma HLS unroll
+    res += mul(c[i], d[i], r);
 	  /* hwkim commented
 	   * r에 따라 다른 resource를 사용하는 mul이 호출
 	   * 	-> LUT 또는 DSP48
+	   * c[i], d[i]
+	   * 	Slice class의 operator []가 호출
+	   *	weight의 SIMD bits 중 해당 index에 해당하는 bits가 반환
+	   * mul은 단순 곱하기
+	   * 	-> operator*(곱하기)가 d[i]의 type에 따라 여러 개로
+	   * 		overloading되어 있으며, layer 0을 제외한
+	   * 		다른 layer는 XNOR로 연산하게 되어 있는 듯
 	   */
-    res += mul(c[i], d[i], r);
   }
   return  res;
 }
