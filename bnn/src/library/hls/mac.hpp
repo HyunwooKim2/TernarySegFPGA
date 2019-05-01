@@ -105,6 +105,7 @@ auto mul(TC const &c, TD const &d, ap_resource_dsp const&) -> decltype(c*d) {
 template<unsigned N, typename T, typename TC, typename TD, typename R>
 T mac(T const &a, TC const &c, TD const &d, R const &r) {
 	/* hwkim commented
+	 * N -> SIMD
 	 * a -> accu[pe] -> accumulation
 	 * 		ThresholdsActivation class
 	 * c -> wgt -> weights
@@ -132,9 +133,14 @@ T mac(T const &a, TC const &c, TD const &d, R const &r) {
 	   * 	Slice class의 operator []가 호출
 	   *	weight의 SIMD bits 중 해당 index에 해당하는 bits가 반환
 	   * mul은 단순 곱하기
-	   * 	-> operator*(곱하기)가 d[i]의 type에 따라 여러 개로
+	   * 	-> operator*(곱하기)가 c[i]의 type에 따라 여러 개로
 	   * 		overloading되어 있으며, layer 0을 제외한
 	   * 		다른 layer는 XNOR로 연산하게 되어 있는 듯
+	   * 	-> overloading 시, argument는 *연산자 우측, 즉 d[i]
+	   * 	-> layer 0을 제외한 layer는 XNorMul class로 Recast되어 있음
+	   * 		XNorMul class의 operator*는 아래와 같이 xnor로 구현
+	   * 		m_val == b? 1 : 0;
+	   * 		m_val과 b가 같으면 1, 다르면 0
 	   */
   }
   return  res;

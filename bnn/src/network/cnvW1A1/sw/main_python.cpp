@@ -96,6 +96,11 @@ extern "C" void load_parameters(const char* path) {
   FoldedMVLoadLayerMem(path, 6, L6_PE, L6_WMEM, L6_TMEM, L6_API);
   FoldedMVLoadLayerMem(path, 7, L7_PE, L7_WMEM, L7_TMEM, L7_API);
   FoldedMVLoadLayerMem(path, 8, L8_PE, L8_WMEM, L8_TMEM, 0);
+  /* hwkim commented
+   * L8_API는 의미 없는 듯?
+   * 0이라는 것은 cntThresh가 0이라서
+   * 실제 threshold(activation) read를 하지 않는 듯
+   */
 }
 
 extern "C" int inference(const char* path, int results[64], int number_class, float* usecPerImage) {

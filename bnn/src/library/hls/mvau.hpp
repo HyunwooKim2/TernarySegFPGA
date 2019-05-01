@@ -88,14 +88,18 @@ void Matrix_Vector_Activate_Batch(hls::stream<TI> & in,
 				  int const  reps,
 				  R const &r) {
 /* hwkim commented
- * in (hls::stream<ap_uint<SIMD*TSrcI::width>>)
+ * in (stream)
+ * 		-> hls::stream<ap_uint<SIMD*TSrcI::width>>
  * 		-> convInp -> sliding 순서로 저장된 input stream
- * out (hls::stream<ap_uint<PE*TDstI::width>>)
+ * out (stream)
+ * 		-> hls::stream<ap_uint<PE*TDstI::width>>
  * 		-> mvOut -> WidthAdjustedOutputStream class로 그냥 할당만 된 m_buffer stream
- * weights (BinaryWeights)
+ * weights (stream)
+ * 		-> BinaryWeights
  * 		-> BlackBoxJam의 mem init에서 load한 weights memory(not stream)
  * 		-> weight 값이 저장되어 있음
- * activation (ThresholdsActivation)
+ * activation (stream)
+ * 		-> ThresholdsActivation
  * 		-> BlackBoxJam의 mem init에서 load한 threshold memory(activation function을 위한)
  * 		-> threshold 값이 저장되어 있음
  * reps -> reps*OFDim*OFDim -> 1*30*30
@@ -104,9 +108,14 @@ void Matrix_Vector_Activate_Batch(hls::stream<TI> & in,
   // alternatively: number of vertical matrix chunks
   unsigned const  NF = MatrixH / PE;
   /* hwkim commented
-   * layer 0의 경우
+   * MatrixH -> output channel 수
+   * layer 0(convolution layer)의 경우
    * 	NF = 64 / 16 = 4;
    * 	즉, 16개 PE로 4번 수행해야 output channel 64개를 완료
+   * fc layer들의 경우,
+   * 	PE가 1 or 4
+   * 	왜 굳이 PE를 작게 설정했는지?
+   * 	PE가 1인 경우, NF가 256 or 512정도로 많음
    * NF = neuron fold
    */
 
@@ -114,27 +123,45 @@ void Matrix_Vector_Activate_Batch(hls::stream<TI> & in,
   // alternatively: number of horizontal matrix chunks
   unsigned const  SF = MatrixW / SIMD;
   /* hwkim commented
-   * SF = 3x3x3/3 = 9
-   * 3x3 kernel을 한 방에 하는 것이 아님
-   * 	-> pipeline으로 처리
+   * MatrixW
+   * 	convolution layer의 경우 ->  ConvKernelDim * ConvKernelDim * IFMChannels;
+   * 	fc layer의 경우 -> input channel 수
+   * layer 0(convolution)의 경우
+   * 	SF = 3x3x3/3 = 9 = kernel size x input channel # / SIMD
+   * 	3x3 kernel을 한 방에 하는 것이 아님
+   * 		-> pipeline으로 처리
+   * fc layer들의 경우, SIMD가 1 or 4 or 8
+   * 	SIMD 1 -> SF = 512/1 = 512
+   * 	SIMD 1개로 512번 연산함...
    * SF = synapse fold
-  */
+   */
 
   // input vector buffers
   TI  inputBuf[SF];
   /* hwkim commented
-   * for layer 0
+   * memory (for reuse)
+   * layer 0의 경우
    * 	TI -> 24-bit
    * 	SF -> 3x3
    * 	inputBuf[9]는 3x3 kernel에 해당하는 각 input(3-ch)을 가지고 있음
+   * fc layer들의 경우
+   * 	TI -> 1-bit
+   * 	SF -> input channel 수 / SIMD -> ex) 64
+   * 즉, inputBuf의 다음 element는 다음 SIMD(sf) 계산을 위한
+   * 	input이 저장되어 있음
   */
 #pragma HLS ARRAY_PARTITION variable=inputBuf complete dim=1
 
   decltype(activation.init(0,0))  accu[PE];
   /* hwkim commented
-   * ThresholdsActivation class 타입의 PE(16)개 원소를 가지는 배열
+   * memory
+   * ThresholdsActivation class 타입의 PE개 원소를 가지는 배열
+   * 	convolution layers
    * 	-> layer 0의 경우 24-bit fixed point
    * 	-> 나머지 layer는 16-bit integer
+   * 	fc layers
+   * 	-> layer 6/7 - 16-bit integer
+   * 	-> layer 8(마지막) - 16-bit integer
    * PE 당 1개의 threshold를 가짐
    * accumulation 값은 output channel(PE) 당 하나
    * 	-> 1 pixel씩(만) 계산하므로
@@ -167,8 +194,12 @@ void Matrix_Vector_Activate_Batch(hls::stream<TI> & in,
    */
   for(unsigned  i = 0; i < reps * TOTAL_FOLD; i++) {
       /* hwkim commented
-       * 여기에서의 reps는 reps* OFMDim * OFMDim
-       * 즉, output pixel 총 개수
+       * 여기에서의 reps는
+       * 	convolution layer의 경우
+       * 		reps* OFMDim * OFMDim
+       * 		즉, output pixel 총 개수
+       * 	fc layer의 경우 1
+       * 		즉, 1 pixel
        */
 #pragma HLS PIPELINE II=1
     TI  inElem;
@@ -282,7 +313,7 @@ void Matrix_Vector_Activate_Batch(hls::stream<TI> & in,
     ++tile;
     if(++sf == SF) {
     	/* hwkim commented
-    	 * kernel 하나 계산이 다 끝난 경우
+    	 * input channel 방향 끝까지 계산 다 했으면
     	 */
       // produce output and clear accumulators
       auto  outElem = TDstI().template operator()<TO>();
@@ -303,6 +334,9 @@ void Matrix_Vector_Activate_Batch(hls::stream<TI> & in,
       // next folded neuron or image
       sf = 0;
       if(++nf == NF) {
+    	  /* hwkim commented
+    	   * 모든 kernel에 대해 연산 다 했으면
+    	   */
 	    nf   = 0;
 	    tile = 0;
       }

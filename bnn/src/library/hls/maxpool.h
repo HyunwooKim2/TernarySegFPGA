@@ -55,6 +55,9 @@ void StreamingMaxPool(stream<ap_uint<NumChannels> > & in,
   CASSERT_DATAFLOW(ImgDim % PoolDim == 0);
   // need buffer space for a single maxpooled row of the image
   ap_uint<NumChannels> buf[ImgDim / PoolDim];
+  /* hwkim commented
+   * buf -> output buffer(memory)
+   */
   for(unsigned int i = 0; i < ImgDim / PoolDim; i++) {
 #pragma HLS UNROLL
     buf[i] = 0;
@@ -66,6 +69,13 @@ void StreamingMaxPool(stream<ap_uint<NumChannels> > & in,
 #pragma HLS PIPELINE II=1
         ap_uint<NumChannels> acc = 0;
         for (unsigned int kx = 0; kx < PoolDim; kx++) {
+        	/* hwkim commented
+        	 * in이 x->y 순으로 ordering 된 stream이므로
+        	 * x 방향 먼저 pooling window size만큼 accum(OR)한 후,
+        	 * x 방향 끝까지 가고 다음 줄(y++)에서
+        	 * pooling window의 나머지 input들을 x방향으로
+        	 * 더 누적
+        	 */
           acc = acc | in.read();
         }
         // pool with old value in row buffer
@@ -75,6 +85,9 @@ void StreamingMaxPool(stream<ap_uint<NumChannels> > & in,
 	for (unsigned int outpix = 0; outpix < ImgDim / PoolDim; outpix++) {
 #pragma HLS PIPELINE II=1
       out.write(buf[outpix]);
+      /* hwkim commented
+       * out stream에 write
+       */
       // get buffer ready for next use
       buf[outpix] = 0;
     }
