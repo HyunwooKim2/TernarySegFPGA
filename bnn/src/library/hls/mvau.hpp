@@ -317,6 +317,14 @@ void Matrix_Vector_Activate_Batch(hls::stream<TI> & in,
     	 */
       // produce output and clear accumulators
       auto  outElem = TDstI().template operator()<TO>();
+      /* hwkim commented
+       * outElem은 TO-width의 ap_uint -> ap_uint<TO>
+       * TO는 PE*TDstI::width
+       * 즉, output은 PE-width의 stream
+       * mvau 함수 끝나고, 밖에서 WidthAdjustedOutputStream의
+       * 	소멸자 호출 시, PE-width -> OutStreamWidth(output channel 개수)로
+       * 	변환함
+       */
       for (unsigned  pe = 0; pe < PE; pe++) {
 #pragma HLS UNROLL
 	    outElem[pe] = activation.activate(nf, pe, accu[pe]);
