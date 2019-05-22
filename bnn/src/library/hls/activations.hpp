@@ -153,6 +153,10 @@ public:
        * Threshold가 여러 개일 경우,(NumTh가 1보다 클 경우)
        * result에 compare 결과 누적
        * 하지만 현재 threshold는 1개라서 딱히 누적 안함
+       *
+       * compare -> std::less
+       * 	1 : thresholds < accu
+       * 	0 : thresholds >=  accu
        */
     }
     return result;

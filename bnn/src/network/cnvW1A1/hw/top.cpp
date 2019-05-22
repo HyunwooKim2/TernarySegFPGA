@@ -263,6 +263,13 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
   ConvLayer_Batch<L0_K, L0_IFM_CH, L0_IFM_DIM, L0_OFM_CH, L0_OFM_DIM, L0_SIMD, L0_PE,
   	  	  Slice<ap_fixed<8, 1, AP_TRN, AP_SAT>>, Identity, Recast<Binary>>
 	  (inter0_2, inter1, weights0, threshs0, numReps, ap_resource_lut());
+  // hwkim added for debug
+  ap_uint<64> hwkim_act;
+  while(!inter1.empty()){
+	  hwkim_act = inter1.read();
+	  std::cout << hex << hwkim_act << std::endl;
+  }
+
   /* hwkim commented
    * template
    * 	-> ConvKernelDim, IFMch, IFMdim, OFMch, OFMdim,

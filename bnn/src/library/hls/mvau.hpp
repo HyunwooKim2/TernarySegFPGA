@@ -305,7 +305,7 @@ void Matrix_Vector_Activate_Batch(hls::stream<TI> & in,
        * 	wgt -> BinaryWeight class
        * 		layer 0 -> 1-bit
        * 	act -> ThresholdsActivaiton
-       * 		layer 0 -> 24-bit fixed
+       * 		layer 0 -> 8-bit fixed
        */
     }
 
