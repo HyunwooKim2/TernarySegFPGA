@@ -125,6 +125,17 @@ void quantiseAndPack(const tiny_cnn::vec_t & in, ExtMemWord * out, unsigned int 
   /* hwkim commentted
    * inWidth = 8 (cifar pixel)
    */
+  // hwkim test
+  ap_fixed<inWidth, 1, AP_TRN, AP_SAT> i_one = 1;
+  ap_fixed<inWidth, 1, AP_TRN, AP_SAT> i_zero = 0;
+  ap_fixed<inWidth, 1, AP_TRN, AP_SAT> i_m_one = -1;
+  ap_uint<inWidth> one = *reinterpret_cast<ap_uint<inWidth> *>(&i_one);
+  ap_uint<inWidth> zero = *reinterpret_cast<ap_uint<inWidth> *>(&i_zero);
+  ap_uint<inWidth> m_one = (float)-1 * 128;	//*reinterpret_cast<ap_uint<inWidth> *>(&i_m_one);
+  cout << hex << one << endl;
+  cout << hex << zero << endl;
+  cout << hex << m_one << endl;
+
   // now pack each quantised value as required.
   for(unsigned int i=0; i < in.size(); i++) {
     ap_fixed<inWidth, 1, AP_TRN, AP_SAT> fxdValue = in[i];
@@ -137,8 +148,27 @@ void quantiseAndPack(const tiny_cnn::vec_t & in, ExtMemWord * out, unsigned int 
     /* hwkim commented
      * 단순 8-bit fixed point -> 8-bit unsigned int로 변환
      */
+    // hwkim modified for FPGA
+    unsigned char uValue_khw;
+    if(in[i]==1){	//AP_SAT
+    	uValue_khw = 0x7F;
+    }
+    else if(in[i]==-1){
+    	uValue_khw = 0x80;
+    }
+    else if(in[i]<0){	//AP_TRN (truncate to minus infinity)
+    	uValue_khw = (unsigned char)(in[i]*128) - 1;
+    }
+    else{
+    	uValue_khw = (unsigned char)(in[i]*128);
+    }
+    if(uValue!=uValue_khw){
+    	cout << "in[i] = " << in[i] << ", " << hex << uValue;
+    	printf(", uValue_khw = %x\n", uValue_khw);
+    }
+
     ExtMemWord v = ((ExtMemWord)uValue & (~(ExtMemWord)0 >> (bitsPerExtMemWord - inWidth))); // Zero all bits except for the (bitsPerExtMemWord - inWidth) least significant bits.
-    /* hwkim commented
+   /* hwkim commented
      * 8-bit -> 64-bit(ExtMemWord)로 변환
      * inWidth인 8-bit 제외하고, 상위 모두 0으로
      */
