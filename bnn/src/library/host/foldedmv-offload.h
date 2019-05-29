@@ -42,8 +42,9 @@
 #pragma once
 #include <string>
 #include <iostream>
+// hwkim modified for FPGA
 #include "tiny_cnn/tiny_cnn.h"
-#include "ap_int.h"
+//#include "ap_int.h"
 
 using namespace std;
 
@@ -125,29 +126,22 @@ void quantiseAndPack(const tiny_cnn::vec_t & in, ExtMemWord * out, unsigned int 
   /* hwkim commentted
    * inWidth = 8 (cifar pixel)
    */
-  // hwkim test
-  ap_fixed<inWidth, 1, AP_TRN, AP_SAT> i_one = 1;
-  ap_fixed<inWidth, 1, AP_TRN, AP_SAT> i_zero = 0;
-  ap_fixed<inWidth, 1, AP_TRN, AP_SAT> i_m_one = -1;
-  ap_uint<inWidth> one = *reinterpret_cast<ap_uint<inWidth> *>(&i_one);
-  ap_uint<inWidth> zero = *reinterpret_cast<ap_uint<inWidth> *>(&i_zero);
-  ap_uint<inWidth> m_one = (float)-1 * 128;	//*reinterpret_cast<ap_uint<inWidth> *>(&i_m_one);
-  cout << hex << one << endl;
-  cout << hex << zero << endl;
-  cout << hex << m_one << endl;
 
   // now pack each quantised value as required.
   for(unsigned int i=0; i < in.size(); i++) {
-    ap_fixed<inWidth, 1, AP_TRN, AP_SAT> fxdValue = in[i];
+    // hwkim modified for FPGA
+    //ap_fixed<inWidth, 1, AP_TRN, AP_SAT> fxdValue = in[i];
     /* hwkim commented
      *  ap_fixed<total_bit#, integer_bit#, quant_mode, overflow_mode>
      * (소수 부분은 total_bit# - integer_bit#)
      * 64-bit floating point에서 1-bit integer, 7-bit fractal fixed point로 quantization
      */
-    ap_uint<inWidth> uValue = *reinterpret_cast<ap_uint<inWidth> *>(&fxdValue); // Interpret the fixed value as an integer.
+
+    //ap_uint<inWidth> uValue = *reinterpret_cast<ap_uint<inWidth> *>(&fxdValue); // Interpret the fixed value as an integer.
     /* hwkim commented
      * 단순 8-bit fixed point -> 8-bit unsigned int로 변환
      */
+
     // hwkim modified for FPGA
     unsigned char uValue_khw;
     if(in[i]==1){	//AP_SAT
@@ -162,16 +156,19 @@ void quantiseAndPack(const tiny_cnn::vec_t & in, ExtMemWord * out, unsigned int 
     else{
     	uValue_khw = (unsigned char)(in[i]*128);
     }
-    if(uValue!=uValue_khw){
-    	cout << "in[i] = " << in[i] << ", " << hex << uValue;
-    	printf(", uValue_khw = %x\n", uValue_khw);
-    }
+    //if(uValue!=uValue_khw){
+    //	cout << "in[i] = " << in[i] << ", " << hex << uValue;
+    //	printf(", uValue_khw = %x\n", uValue_khw);
+    //}
 
-    ExtMemWord v = ((ExtMemWord)uValue & (~(ExtMemWord)0 >> (bitsPerExtMemWord - inWidth))); // Zero all bits except for the (bitsPerExtMemWord - inWidth) least significant bits.
-   /* hwkim commented
+    // hwkim modified for FPGA
+    //ExtMemWord v = ((ExtMemWord)uValue & (~(ExtMemWord)0 >> (bitsPerExtMemWord - inWidth))); // Zero all bits except for the (bitsPerExtMemWord - inWidth) least significant bits.
+    ExtMemWord v = ((ExtMemWord)uValue_khw & (~(ExtMemWord)0 >> (bitsPerExtMemWord - inWidth))); // Zero all bits except for the (bitsPerExtMemWord - inWidth) least significant bits.
+    /* hwkim commented
      * 8-bit -> 64-bit(ExtMemWord)로 변환
      * inWidth인 8-bit 제외하고, 상위 모두 0으로
      */
+
     out[i / (bitsPerExtMemWord / inWidth)] |= (v << inWidth*(i % (bitsPerExtMemWord / inWidth)));
     /* hwkim commented
      * 64-bit(ExtMemWord) out array에 8-bit int 차곡 차곡 packing

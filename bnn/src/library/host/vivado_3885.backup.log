@@ -1,0 +1,26 @@
+#-----------------------------------------------------------
+# Vivado v2018.3 (64-bit)
+# SW Build 2405991 on Thu Dec  6 23:36:41 MST 2018
+# IP Build 2404404 on Fri Dec  7 01:43:56 MST 2018
+# Start of session at: Tue May 28 13:32:07 2019
+# Process ID: 3885
+# Current directory: /home/khw1204/work/pynq-bnn/BNN-PYNQ/bnn/src/library/host
+# Command line: vivado
+# Log file: /home/khw1204/work/pynq-bnn/BNN-PYNQ/bnn/src/library/host/vivado.log
+# Journal file: /home/khw1204/work/pynq-bnn/BNN-PYNQ/bnn/src/library/host/vivado.jou
+#-----------------------------------------------------------
+start_gui
+open_project /home/khw1204/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/cnvW1A1-ultra96/cnvW1A1-ultra96.xpr
+Scanning sources...
+Finished scanning sources
+INFO: [IP_Flow 19-234] Refreshing IP repositories
+INFO: [IP_Flow 19-1700] Loaded user IP repository '/home/khw1204/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/cnvW1A1-ultra96/sol1/impl/ip'.
+INFO: [IP_Flow 19-2313] Loaded Vivado IP repository '/home/khw1204/Xilinx/Vivado/2018.3/data/ip'.
+open_project: Time (s): cpu = 00:00:27 ; elapsed = 00:00:26 . Memory (MB): peak = 6489.680 ; gain = 194.277 ; free physical = 3327 ; free virtual = 40468
+update_compile_order -fileset sources_1
+launch_sdk -workspace /home/khw1204/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/cnvW1A1-ultra96/cnvW1A1-ultra96.sdk -hwspec /home/khw1204/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/cnvW1A1-ultra96/cnvW1A1-ultra96.sdk/procsys_wrapper.hdf
+INFO: [Vivado 12-393] Launching SDK...
+INFO: [Vivado 12-417] Running xsdk -workspace /home/khw1204/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/cnvW1A1-ultra96/cnvW1A1-ultra96.sdk -hwspec /home/khw1204/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/cnvW1A1-ultra96/cnvW1A1-ultra96.sdk/procsys_wrapper.hdf
+INFO: [Vivado 12-3157] SDK launch initiated. Please check console for any further messages.
+exit
+INFO: [Common 17-206] Exiting Vivado at Tue May 28 15:17:14 2019...

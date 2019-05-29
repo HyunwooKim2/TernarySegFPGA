@@ -1,0 +1,148 @@
+/*
+
+Xilinx Vivado v2018.3 (64-bit) [Major: 2018, Minor: 3]
+SW Build: 2405991 on Thu Dec  6 23:36:41 MST 2018
+IP Build: 2404404 on Fri Dec  7 01:43:56 MST 2018
+
+Process ID (PID): 21633
+License: Customer
+
+Current time: 	Tue May 28 16:54:51 KST 2019
+Time zone: 	Korean Standard Time (Asia/Seoul)
+
+OS: Ubuntu
+OS Version: 4.15.0-50-generic
+OS Architecture: amd64
+Available processors (cores): 4
+
+Display: :11.0
+Screen size: 1364x768
+Screen resolution (DPI): 95
+Available screens: 1
+Available disk space: 329 GB
+Default font: family=Dialog,name=Dialog,style=plain,size=12
+
+Java version: 	9.0.4 64-bit
+Java home: 	/home/khw1204/Xilinx/Vivado/2018.3/tps/lnx64/jre9.0.4
+Java executable location: 	/home/khw1204/Xilinx/Vivado/2018.3/tps/lnx64/jre9.0.4/bin/java
+Java initial memory (-Xms): 	128 MB
+Java maximum memory (-Xmx):	 3 GB
+
+
+User name: 	khw1204
+User home directory: /home/khw1204
+User working directory: /home/khw1204/work/pynq-bnn/BNN-PYNQ/bnn/src/network
+User country: 	US
+User language: 	en
+User locale: 	en_US
+
+RDI_BASEROOT: /home/khw1204/Xilinx/Vivado
+HDI_APPROOT: /home/khw1204/Xilinx/Vivado/2018.3
+RDI_DATADIR: /home/khw1204/Xilinx/Vivado/2018.3/data
+RDI_BINDIR: /home/khw1204/Xilinx/Vivado/2018.3/bin
+
+Vivado preferences file location: /home/khw1204/.Xilinx/Vivado/2018.3/vivado.xml
+Vivado preferences directory: /home/khw1204/.Xilinx/Vivado/2018.3/
+Vivado layouts directory: /home/khw1204/.Xilinx/Vivado/2018.3/layouts
+PlanAhead jar file location: 	/home/khw1204/Xilinx/Vivado/2018.3/lib/classes/planAhead.jar
+Vivado log file location: 	/home/khw1204/work/pynq-bnn/BNN-PYNQ/bnn/src/network/vivado.log
+Vivado journal file location: 	/home/khw1204/work/pynq-bnn/BNN-PYNQ/bnn/src/network/vivado.jou
+Engine tmp dir: 	./.Xil/Vivado-21633-khw1204-15UD560-KX7DK
+
+Xilinx Environment Variables
+----------------------------
+XILINX: /home/khw1204/Xilinx/Vivado/2018.3/ids_lite/ISE
+XILINX_DSP: /home/khw1204/Xilinx/Vivado/2018.3/ids_lite/ISE
+XILINX_PLANAHEAD: /home/khw1204/Xilinx/Vivado/2018.3
+XILINX_SDK: /home/khw1204/Xilinx/SDK/2018.3
+XILINX_VIVADO: /home/khw1204/Xilinx/Vivado/2018.3
+XILINX_VIVADO_HLS: /home/khw1204/Xilinx/Vivado/2018.3
+
+
+GUI allocated memory:	216 MB
+GUI max memory:		3,072 MB
+Engine allocated memory: 884 MB
+
+Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
+
+*/
+
+// TclEventType: START_GUI
+// Tcl Message: start_gui 
+selectList(PAResourceQtoS.SyntheticaGettingStartedView_RECENT_PROJECTS, "/home/khw1204/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/cnvW1A1-ultra96/cnvW1A1-ultra96.xpr", 0); // q (Q, cp)
+// [GUI Memory]: 59 MB (+58899kb) [00:00:09]
+// [Engine Memory]: 881 MB (+772602kb) [00:00:09]
+// bx (cp):  Open Project : addNotify
+// Opening Vivado Project: /home/khw1204/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/cnvW1A1-ultra96/cnvW1A1-ultra96.xpr. Version: Vivado v2018.3 
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// Tcl Message: open_project /home/khw1204/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/cnvW1A1-ultra96/cnvW1A1-ultra96.xpr 
+// TclEventType: MSGMGR_MOVEMSG
+// TclEventType: FILE_SET_NEW
+// TclEventType: RUN_COMPLETED
+// TclEventType: RUN_CURRENT
+// TclEventType: PROJECT_DASHBOARD_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// HMemoryUtils.trashcanNow. Engine heap size: 843 MB. GUI used memory: 41 MB. Current time: 5/28/19, 4:54:53 PM KST
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: PROJECT_NEW
+// [GUI Memory]: 102 MB (+42220kb) [00:00:19]
+// [Engine Memory]: 944 MB (+19490kb) [00:00:21]
+// [GUI Memory]: 110 MB (+2891kb) [00:00:21]
+// WARNING: HEventQueue.dispatchEvent() is taking  4369 ms.
+// Tcl Message: open_project /home/khw1204/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/cnvW1A1-ultra96/cnvW1A1-ultra96.xpr 
+// Tcl Message: Scanning sources... Finished scanning sources 
+// Tcl Message: INFO: [IP_Flow 19-234] Refreshing IP repositories INFO: [IP_Flow 19-1700] Loaded user IP repository '/home/khw1204/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/cnvW1A1-ultra96/sol1/impl/ip'. INFO: [IP_Flow 19-2313] Loaded Vivado IP repository '/home/khw1204/Xilinx/Vivado/2018.3/data/ip'. 
+// [Engine Memory]: 1,013 MB (+22765kb) [00:00:23]
+// WARNING: HEventQueue.dispatchEvent() is taking  1710 ms.
+// WARNING: HEventQueue.dispatchEvent() is taking  1088 ms.
+// [Engine Memory]: 1,417 MB (+370248kb) [00:00:25]
+// Tcl Message: open_project: Time (s): cpu = 00:00:23 ; elapsed = 00:00:13 . Memory (MB): peak = 6476.422 ; gain = 176.113 ; free physical = 2908 ; free virtual = 40525 
+// Project name: cnvW1A1-ultra96; location: /home/khw1204/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/cnvW1A1-ultra96; part: xczu7ev-ffvc1156-2-e
+// [GUI Memory]: 122 MB (+6707kb) [00:00:26]
+// Elapsed time: 17 seconds
+dismissDialog("Open Project"); // bx (cp)
+// HMemoryUtils.trashcanNow. Engine heap size: 1,064 MB. GUI used memory: 61 MB. Current time: 5/28/19, 4:55:08 PM KST
+// Tcl Message: update_compile_order -fileset sources_1 
+selectMenu(PAResourceItoN.MainMenuMgr_FILE, "File"); // X (q, cp)
+selectMenu(PAResourceItoN.MainMenuMgr_PROJECT, "Project"); // ac (cp)
+selectMenu(PAResourceItoN.MainMenuMgr_EXPORT, "Export"); // ac (cp)
+selectMenuItem(PAResourceCommand.PACommandNames_LAUNCH_HARDWARE, "Launch SDK"); // af (cp)
+dismissMenu(PAResourceItoN.MainMenuMgr_FILE, "File"); // X (q, cp)
+// Run Command: PAResourceCommand.PACommandNames_LAUNCH_HARDWARE
+// aa (cp): Launch SDK: addNotify
+selectButton(RDIResource.BaseDialog_OK, "OK"); // a (aa)
+dismissDialog("Launch SDK"); // aa (cp)
+// Tcl Message: launch_sdk -workspace /home/khw1204/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/cnvW1A1-ultra96/cnvW1A1-ultra96.sdk -hwspec /home/khw1204/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/cnvW1A1-ultra96/cnvW1A1-ultra96.sdk/procsys_wrapper.hdf 
+// Tcl Message: INFO: [Vivado 12-393] Launching SDK... INFO: [Vivado 12-417] Running xsdk -workspace /home/khw1204/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/cnvW1A1-ultra96/cnvW1A1-ultra96.sdk -hwspec /home/khw1204/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/cnvW1A1-ultra96/cnvW1A1-ultra96.sdk/procsys_wrapper.hdf INFO: [Vivado 12-3157] SDK launch initiated. Please check console for any further messages. 
+// Elapsed time: 25 seconds
+selectTreeTableHeader(PAResourceEtoH.ExpRunTreePanel_EXP_RUN_TREE_TABLE, "Incremental", 4); // ax (Q, cp)
+// WARNING: HEventQueue.dispatchEvent() is taking  1062 ms.
+// Elapsed time: 1323 seconds
+selectMenu(PAResourceItoN.MainMenuMgr_FILE, "File"); // X (q, cp)
+selectMenu(PAResourceItoN.MainMenuMgr_CHECKPOINT, "Checkpoint"); // ac (cp)
+selectMenu(PAResourceItoN.MainMenuMgr_TEXT_EDITOR, "Text Editor"); // ac (cp)
+selectMenu(PAResourceItoN.MainMenuMgr_EXPORT, "Export"); // ac (cp)
+selectMenuItem(PAResourceCommand.PACommandNames_LAUNCH_HARDWARE, "Launch SDK"); // af (cp)
+dismissMenu(PAResourceItoN.MainMenuMgr_FILE, "File"); // X (q, cp)
+// Run Command: PAResourceCommand.PACommandNames_LAUNCH_HARDWARE
+// aa (cp): Launch SDK: addNotify
+selectButton(RDIResource.BaseDialog_OK, "OK"); // a (aa)
+dismissDialog("Launch SDK"); // aa (cp)
+// Tcl Message: launch_sdk -workspace /home/khw1204/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/cnvW1A1-ultra96/cnvW1A1-ultra96.sdk -hwspec /home/khw1204/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/cnvW1A1-ultra96/cnvW1A1-ultra96.sdk/procsys_wrapper.hdf 
+// Tcl Message: INFO: [Vivado 12-393] Launching SDK... INFO: [Vivado 12-417] Running xsdk -workspace /home/khw1204/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/cnvW1A1-ultra96/cnvW1A1-ultra96.sdk -hwspec /home/khw1204/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/cnvW1A1-ultra96/cnvW1A1-ultra96.sdk/procsys_wrapper.hdf INFO: [Vivado 12-3157] SDK launch initiated. Please check console for any further messages. 
+// HMemoryUtils.trashcanNow. Engine heap size: 1,120 MB. GUI used memory: 63 MB. Current time: 5/28/19, 5:25:13 PM KST
+// HMemoryUtils.trashcanNow. Engine heap size: 1,107 MB. GUI used memory: 59 MB. Current time: 5/28/19, 5:55:13 PM KST
+// HMemoryUtils.trashcanNow. Engine heap size: 1,095 MB. GUI used memory: 56 MB. Current time: 5/28/19, 6:25:13 PM KST
+// HMemoryUtils.trashcanNow. Engine heap size: 1,095 MB. GUI used memory: 56 MB. Current time: 5/28/19, 6:55:13 PM KST
+// HMemoryUtils.trashcanNow. Engine heap size: 1,095 MB. GUI used memory: 56 MB. Current time: 5/28/19, 7:25:14 PM KST
