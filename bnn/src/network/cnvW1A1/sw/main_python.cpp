@@ -94,8 +94,8 @@ extern "C" void load_parameters(const char* path) {
   FoldedMVLoadLayerMem(path, 4, L4_PE, L4_WMEM, L4_TMEM, L4_API);
   FoldedMVLoadLayerMem(path, 5, L5_PE, L5_WMEM, L5_TMEM, L5_API);
   FoldedMVLoadLayerMem(path, 6, L6_PE, L6_WMEM, L6_TMEM, L6_API);
-  FoldedMVLoadLayerMem(path, 7, L7_PE, L7_WMEM, L7_TMEM, L7_API);
-  FoldedMVLoadLayerMem(path, 8, L8_PE, L8_WMEM, L8_TMEM, 0);
+  //FoldedMVLoadLayerMem(path, 7, L7_PE, L7_WMEM, L7_TMEM, L7_API);
+  //FoldedMVLoadLayerMem(path, 8, L8_PE, L8_WMEM, L8_TMEM, 0);
   /* hwkim commented
    * L8_API는 의미 없는 듯?
    * 0이라는 것은 cntThresh가 0이라서

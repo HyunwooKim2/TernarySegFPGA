@@ -286,9 +286,21 @@ void FoldedMVLoadLayerMem(std::string dir, unsigned int layerNo, unsigned int pe
     if(!wf.is_open()) {
       throw "Could not open file";
     }
+
+// hwkim modified for debug
+#ifdef ACTIVATION_LOG
+  	ofstream weight_read_log_file("weight_read_log.txt");
+  	if(!weight_read_log_file.is_open()){
+  		cout << "weight_read_log_file open error!!" << endl;
+  	}
+#endif
     for(unsigned int line = 0 ; line < linesWMem; line++) {
       ExtMemWord e = 0;
       wf.read((char *)&e, sizeof(ExtMemWord));
+// hwkim modified for debug
+#ifdef ACTIVATION_LOG
+      weight_read_log_file << setw(10) << hex << e << endl;
+#endif
       /* hwkim commentted
        * 64-bit 씩 읽어서, 아래 함수로 hw(BlackBoxJam->DoMemInit)에 바로 64-bit 씩 streaming
        */
@@ -301,6 +313,12 @@ void FoldedMVLoadLayerMem(std::string dir, unsigned int layerNo, unsigned int pe
        */
     }
     wf.close();
+
+// hwkim modified for debug
+#ifdef ACTIVATION_LOG
+    weight_read_log_file << "==============" << endl;
+  	weight_read_log_file.close();
+#endif
 
     // load thresholds
     ifstream tf(dir + "/" + to_string(layerNo) + "-" + to_string(pe) + "-thres.bin", ios::binary | ios::in);

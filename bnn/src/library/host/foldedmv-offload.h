@@ -45,6 +45,8 @@
 #include "tiny_cnn/tiny_cnn.h"
 #include "ap_int.h"
 
+#include <iomanip>
+
 using namespace std;
 
 typedef unsigned long long ExtMemWord;
@@ -147,6 +149,34 @@ void quantiseAndPack(const tiny_cnn::vec_t & in, ExtMemWord * out, unsigned int 
      * 64-bit(ExtMemWord) out array에 8-bit int 차곡 차곡 packing
      */
   }
+#ifdef	ACTIVATION_LOG
+	std::ofstream quantise_log_file("quantise_log.txt");
+	if(!quantise_log_file.is_open()){
+		std::cout << "quantise_log_file open error!!" << std::endl;
+	}
+	for(int c=0; c<3; c++){
+		for(int y=0; y<34; y++){
+			for(int x=0; x<34; x++){
+				ap_fixed<inWidth, 1, AP_TRN, AP_SAT> fxdValue = in[y*34*3 + x*3 + c];
+				ap_uint<inWidth> uValue = *reinterpret_cast<ap_uint<inWidth> *>(&fxdValue);
+				quantise_log_file << setw(10) << std::hex << uValue << "|";
+			}
+			quantise_log_file << endl;
+		}
+		quantise_log_file << "==============================================="
+			  << "==============================================="
+			  << "==============================================="
+			  << "==============================================="
+			  << "==============================================="
+			  << "==============================================="
+			  << "==============================================="
+			  << "==============================================="
+			  << "==============================================="
+			  << "==============================================="
+			  << endl;
+	}
+	quantise_log_file.close();
+#endif
 }
 
 #if defined(OFFLOAD) && defined(RAWHLS)
@@ -286,7 +316,10 @@ std::vector<int>  testPrebuiltCIFAR10_from_image(std::vector<tiny_cnn::vec_t> & 
   ExtMemWord * packedImages = new ExtMemWord[(count * psi)];
   ExtMemWord * packedOut = new ExtMemWord[(count * pso)];
   
-  tiny_cnn::chaninterleave_layer<tiny_cnn::activation::identity> interleaver(3, 32 * 32, false);
+  // hwkim fixed bug of padding
+  //tiny_cnn::chaninterleave_layer<tiny_cnn::activation::identity> interleaver(3, 32 * 32, false);
+  tiny_cnn::chaninterleave_layer<tiny_cnn::activation::identity> interleaver(3, (32+2) * (32+2), false);
+
   // interleave and pack inputs
   for(unsigned int i = 0; i < count; i++) {
     tiny_cnn::vec_t interleaved = interleaver.forward_propagation(imgs[i], 0);

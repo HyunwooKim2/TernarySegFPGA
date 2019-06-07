@@ -90,7 +90,12 @@ void ConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
   /* hwkim commented
    * kernel 개수
    */
-  unsigned const InpPerImage = IFMDim*IFMDim*IFMChannels/InStreamW * TSrcI::width;
+
+  // hwkim modified for debug
+  // there may be fractal, so it cause difference
+  //unsigned const InpPerImage = IFMDim*IFMDim*IFMChannels/InStreamW * TSrcI::width;
+  unsigned const InpPerImage = (float)(IFMDim*IFMDim*IFMChannels)/InStreamW * TSrcI::width;
+
   /* hwkim commented
    * InpPerImage -> input word 개수
    * 	-> TSrcI/InStreamW -> layer 0의 경우 8/24 - 의미는?
@@ -150,6 +155,31 @@ void ConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
    * 	24-bit for layer 0
    * reps -> input image 장 수
    */
+
+  // hwkim modified for debug
+#ifdef ACTIVATION_LOG
+            std::ofstream conv_in_gen_log_file("conv_in_gen_log.txt");
+            if(!conv_in_gen_log_file.is_open()){
+            	std::cout << "conv_in_gen_log_file open error!!" << std::endl;
+            }
+            for(int y=0; y<32; y++){
+            	for(int x=0; x<32; x++){
+            		for(int ky=0; ky<3; ky++){
+            			for(int kx=0; kx<3; kx++){
+            				conv_in_gen_log_file << hex;
+            				conv_in_gen_log_file << std::setw(15);
+            				conv_in_gen_log_file << convInp.read() << "|";
+            			}
+            			conv_in_gen_log_file << std::endl;
+            		}
+            		conv_in_gen_log_file << "x,y=" << dec << x << "," << y << std::endl;
+            	}
+            	conv_in_gen_log_file << std::endl;
+            }
+            conv_in_gen_log_file.close();
+            cout << "convInp.size = " << convInp.size() << endl;
+#endif
+  cout << "convInp.size = " << convInp.size() << endl;
 
   Matrix_Vector_Activate_Batch<MatrixW, MatrixH, SIMD, PE, TSrcI, TDstI, TWeightI>
     (static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>&>(convInp),

@@ -74,7 +74,7 @@ fi
 
 if [ ! -d "$NETWORK" ]; then
     echo "Error: Network is not available. Available are: $NETWORKS."
-    exit 1
+    #exit 1
 fi
 
 
@@ -121,13 +121,21 @@ if [[ ("$MODE" == "h") || ("$MODE" == "a")  ]]; then
 	PARAMS="$XILINX_BNN_ROOT/../params/mnist/$NETWORK"
 	TEST_INPUT="$XILINX_BNN_ROOT/../../tests/Test_image/3.image-idx3-ubyte"
 	TEST_RESULT=3
+  elif [[ ("$NETWORK" == "kjh_cifar_net") ]]; then
+	PARAMS="/home/khw1204/work/params/finn_params/cifar10_params/190529"
+	TEST_INPUT="/home/khw1204/work/params/finn_params/cifar10_params/190529/input.bin"
+	TEST_RESULT=4
   fi
+
   if [[ ("$PLATFORM" == "pynqZ1-Z2") ]]; then
     PLATFORM_PART="xc7z020clg400-1"
     TARGET_CLOCK=5
   elif [[ ("$PLATFORM" == "ultra96") ]]; then
     PLATFORM_PART="xczu3eg-sbva484-1-i"
     TARGET_CLOCK=3
+  elif [[ ("$PLATFORM" == "zcu104") ]]; then
+    PLATFORM_PART="xczu7ev-ffvc1156-2-e"
+    TARGET_CLOCK=10
   else
 	echo "Error: Platform not supported. Please choose between pynqZ1-Z2 and ultra96."
 	exit 1

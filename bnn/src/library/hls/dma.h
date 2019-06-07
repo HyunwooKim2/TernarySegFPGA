@@ -48,6 +48,9 @@
 #include <ap_int.h>
 #include <hls_stream.h>
 
+// hwkim modified for padding
+unsigned int paddedSizeHW(unsigned int in, unsigned int padTo);
+
 // essentially small DMA generators, moving data between mem-mapped arrays and streams
 template<unsigned int DataWidth, unsigned int numBytes>
 /* hwkim commented
@@ -56,7 +59,10 @@ template<unsigned int DataWidth, unsigned int numBytes>
  */
 void Mem2Stream(ap_uint<DataWidth> * in, hls::stream<ap_uint<DataWidth> > & out) {
   CASSERT_DATAFLOW(DataWidth % 8 == 0);
-  const unsigned int numWords = numBytes / (DataWidth / 8);
+  // hwkim modified for padding
+  //const unsigned int numWords = numBytes / (DataWidth / 8);
+  const unsigned int numWords = paddedSizeHW(numBytes, (DataWidth / 8)) / (DataWidth / 8);
+
   /* hwkim commented
    * numWords == image 1장의 word 개수
    */
@@ -94,7 +100,10 @@ void Mem2Stream_Batch(ap_uint<DataWidth> * in, hls::stream<ap_uint<DataWidth> > 
 	 * input array의 주소만 전달 받음 -> DRAM 상의 주소?
 	 * out은 stream으로, DRAM에서 (out) stream으로 읽어오는 함수
 	 */
-  const unsigned int indsPerRep = numBytes / (DataWidth / 8);
+	// hwkim modifiedf for padding
+  //const unsigned int indsPerRep = numBytes / (DataWidth / 8);
+  const unsigned int indsPerRep = paddedSizeHW(numBytes, (DataWidth / 8)) / (DataWidth / 8);
+
   /* hwkim commented
    * numBytes - image 1장 당 byte 수
    * indsPerRep - image 1장 당 word(64-bit) 수

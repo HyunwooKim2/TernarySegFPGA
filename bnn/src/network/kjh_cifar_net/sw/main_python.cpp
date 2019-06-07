@@ -126,8 +126,13 @@ extern "C" int inference(const char* path, int results[64], int number_class, fl
    */
   network<mse, adagrad> nn;
   makeNetwork(nn);
-//  parse_cifar10(path, &test_images, &test_labels, -1.0, 1.0, 0, 0);
-  parse_cifar10(path, &test_images, &test_labels, -1.0, 1.0, 1, 1);
+
+  // hwkim modified for padding
+  int padding;
+  padding = 1;
+  //parse_cifar10(path, &test_images, &test_labels, -1.0, 1.0, 0, 0);
+  parse_cifar10(path, &test_images, &test_labels, -1.0, 1.0, padding, padding);
+
   /* hwkim commented
    * 1-byte x->y->c 순서로 씌어진 input file을 읽어,
    * 0~255 input을 -1~1 사이 64-bit floating point로 scaling

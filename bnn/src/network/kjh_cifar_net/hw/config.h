@@ -17,7 +17,11 @@
 
 #define L0_K 3
 #define L0_IFM_CH 3
-#define L0_IFM_DIM 32
+
+// hwkim modified for padding
+//#define L0_IFM_DIM 32
+#define L0_IFM_DIM 34
+
 #define L0_OFM_CH 64
 #define L0_OFM_DIM 32
 #define L0_SIMD 3

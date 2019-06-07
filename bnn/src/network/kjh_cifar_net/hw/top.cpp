@@ -220,12 +220,20 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 #pragma HLS STREAM variable=inter10 depth=3
   stream<ap_uint<64>> memOutStrm("DoCompute.memOutStrm");
 
-  const unsigned int inBits = 32 * 32 * 3 * 8;
+  // hwkim modified for padding
+  //const unsigned int inBits = 32 * 32 * 3 * 8;
+  const unsigned int inBits = 34 * 34 * 3 * 8;
+
+  // commented by author
   // const unsigned int inBitsPadded = paddedSize(inBits, 64);
-//  const unsigned int outBits = L8_MH*16;
+
+  //const unsigned int outBits = L8_MH*16;
   const unsigned int outBits = L6_MH*16;
 
   Mem2Stream_Batch<64, inBits / 8>(in, inter0, numReps);
+  // hwkim modified for debug
+  cout << inter0.size() << endl;
+
   /* hwkim commented
    * dma.h에 선언
    *
@@ -242,7 +250,13 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
    * 	-> c->x->y
    * 	-> 64-bit에 위의 ordering으로 8개 꽉 채움
    */
-  StreamingDataWidthConverter_Batch<64, 192, (32 * 32 * 3 * 8) / 64>(inter0, inter0_1, numReps);
+
+  // hwkim modified for padding
+  //StreamingDataWidthConverter_Batch<64, 192, (32 * 32 * 3 * 8) / 64>(inter0, inter0_1, numReps);
+  StreamingDataWidthConverter_Batch<64, 192, (34*34*3*8)/64+1>(inter0, inter0_1, numReps);
+  // hwkim modified for debug
+  cout << inter0_1.size() << endl;
+
   /* hwkim commented
    * < InWidth, OutWidth, NumInWords >
    * InWidth를 OutWidth로 NumInWords(InWidth의 word 수)만큼 변환
@@ -251,7 +265,13 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
    * 64-bit에 8개 들어가는데, channel이 3채널 씩이라 애매하게 끊어지므로,
    * 	192-bit으로 변환하고 아래에서 24-bit 단위(채널 묶음)으로 다시 변환
    */
-  StreamingDataWidthConverter_Batch<192, 24, (32 * 32 * 3 * 8) / 192>(inter0_1, inter0_2, numReps);
+
+  // hwkim modified for padding
+  //StreamingDataWidthConverter_Batch<192, 24, (32 * 32 * 3 * 8) / 192>(inter0_1, inter0_2, numReps);
+  StreamingDataWidthConverter_Batch<192, 24, (34*34*3*8)/192+1>(inter0_1, inter0_2, numReps);
+  // hwkim modified for debug
+  cout << inter0_2.size() << endl;
+
   /* hwkim commented
    * 내부에 memory가 있는게 아니라 stream이므로,
    * 	width 변환해주는 hardware가 내부에 필요함
@@ -260,6 +280,11 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
    * 	-> x->y
    * 	-> c는 이미 24-bit 단위로 3개 묶여서 ordering되어 있음
    */
+  // hwkim modified for debug
+//  while(!inter0_2.empty()){
+//	  cout << hex << inter0_2.read() << endl;
+//  }
+
   // convolutional layers
   ConvLayer_Batch<L0_K, L0_IFM_CH, L0_IFM_DIM, L0_OFM_CH, L0_OFM_DIM, L0_SIMD, L0_PE,
   	  	  Slice<ap_fixed<8, 1, AP_TRN, AP_SAT>>, Identity, Recast<Binary>>
@@ -277,6 +302,11 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
    * 	-> 여기서는 thresholding을 activation function으로 보고
    * 		activation 값으로 여김
    */
+  // hwkim modified for debug
+  while(!inter1.empty()){
+	  cout << hex << inter1.read() << endl;
+  }
+
 
   ConvLayer_Batch<L1_K, L1_IFM_CH, L1_IFM_DIM, L1_OFM_CH, L1_OFM_DIM, L1_SIMD, L1_PE,
   	  Recast<XnorMul>>

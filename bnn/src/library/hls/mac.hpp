@@ -65,6 +65,9 @@
 
 #include "utils.hpp"
 
+// hwkim modified for debug
+#include <iostream>
+
 //- Multipliers with selectable implementation resource
 
 //- Default: Let HLS choose
@@ -142,6 +145,8 @@ T mac(T const &a, TC const &c, TD const &d, R const &r) {
 	   * 		m_val == b? 1 : 0;
 	   * 		m_val과 b가 같으면 1, 다르면 0
 	   */
+    // hwkim modified for debug
+    //cout << "res=c[" << i << "]*d[" << i << "]" << "=" << res << endl;
   }
   return  res;
 }
