@@ -48,6 +48,14 @@
 #include "interpret.hpp"
 #include "mvau.hpp"
 
+// hwkim modified for debug
+//#define ACTIVATION_LOG
+#ifdef ACTIVATION_LOG
+#include <fstream>
+int weighted_layer_cnt = 0;
+int pooling_layer_cnt = 0;
+#endif
+
 static BinaryWeights<L0_SIMD, L0_PE, L0_WMEM>  weights0;
 static BinaryWeights<L1_SIMD, L1_PE, L1_WMEM>  weights1;
 static BinaryWeights<L2_SIMD, L2_PE, L2_WMEM>  weights2;
@@ -71,6 +79,101 @@ static ThresholdsActivation<L5_TMEM, L5_PE, L5_API, ap_int<16>, ap_uint<L5_API>>
  * 마지막 layer라 thresholding(activation) 안 하고,
  * pass through activation
  */
+
+// hwkim modified for debug
+#ifdef ACTIVATION_LOG
+string golden_file_dir = "/home/khw1204/work/params/guinness_params/cifar10_params/190606/Activations/";
+template <int InWidth>
+void activation_log(
+		stream<ap_uint<InWidth>>& in_stream,
+		int layer_cnt){
+
+	unsigned char out_dim_config[11] = {32 ,32, 16, 16, 16, 8, 8, 8, 4, 1, 1};
+	unsigned char layer_type[11] = {1, 2, 4, 2, 2, 4, 2, 2, 4, 8, 16};
+
+	// file open
+	string act_file_name;
+	string golden_file_name;
+	string compare_result_file_name;
+
+	ofstream activation_log_file;
+	ifstream golden_file;
+	ofstream compare_result_file;
+
+	act_file_name = "activation_" + to_string(layer_cnt+1) + "_log.txt";
+	activation_log_file.open(act_file_name);
+	if(!activation_log_file.is_open()){
+		cout << act_file_name << " open error!!" << endl;
+	}
+	switch(layer_type[layer_cnt]){
+	case 1:
+	case 2:
+		golden_file_name = golden_file_dir + "Sign" + to_string(weighted_layer_cnt+1) + ".txt";
+		break;
+	case 4:
+		golden_file_name = golden_file_dir + "MaxPool" + to_string(pooling_layer_cnt+1) + ".txt";
+		break;
+	case 8:
+	case 16:
+		break;
+	}
+	golden_file.open(golden_file_name);
+	if(!golden_file.is_open()){
+		cout << golden_file_name << " open error!!" << endl;
+	}
+
+	compare_result_file_name = "compare_result_" + to_string(layer_cnt+1) + ".txt";
+	compare_result_file.open(compare_result_file_name);
+	if(!compare_result_file.is_open()){
+	  cout << compare_result_file_name << " open error!" << endl;
+	}
+
+	// activation logging & compare result logging
+	ap_uint<InWidth> act_buf;
+	ap_uint<InWidth> gold_buf;
+	cout << "inter" << (layer_cnt+1) << " stream size = " << in_stream.size() << endl;
+	for(int y=0; y<out_dim_config[layer_cnt]; y++){
+		  for(int x=0; x<out_dim_config[layer_cnt]; x++){
+			  act_buf = in_stream.read();
+			  golden_file >> hex >> gold_buf;
+			  if(act_buf!=gold_buf){
+				  compare_result_file << dec << "@(" << setw(2) << y << "," << setw(2) << x << ")" <<
+						  hex << " golden: ";
+				  if(InWidth>=64){
+					  for(int i=0; i<InWidth/64; i++){
+						  compare_result_file << (unsigned long long )(gold_buf >> 64*(InWidth/64-i-1));
+					  }
+					  compare_result_file << "," << endl << setw(17) << hex << "act: ";
+					  for(int i=0; i<InWidth/64; i++){
+						  compare_result_file << (unsigned long long )(act_buf >> 64*(InWidth/64-i-1));
+					  }
+					  compare_result_file << endl;
+				  }
+				  else{
+					  compare_result_file << (unsigned long long )gold_buf << "," << endl
+							  << setw(17) << hex << "act: "  << (unsigned long long )act_buf << endl;
+				  }
+			  }
+			  if(InWidth>=64){
+				  activation_log_file << hex;
+				  for(int i=0; i<InWidth/64; i++){
+					  activation_log_file << (unsigned long long )(act_buf >> 64*(InWidth/64-i-1));
+				  }
+				  activation_log_file << " | ";
+			  }
+			  else{
+				  activation_log_file << hex << setw(20) << (unsigned long long )act_buf << " | ";
+			  }
+		  }
+		  activation_log_file << endl;
+	}
+
+	activation_log_file.close();
+	golden_file.close();
+	compare_result_file.close();
+
+}
+#endif
 
 unsigned int paddedSizeHW(unsigned int in, unsigned int padTo) {
   if(in % padTo == 0) {
@@ -214,11 +317,29 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 #pragma HLS STREAM variable=inter7 depth=1
   stream<ap_uint<256>> inter8("DoCompute.inter8");
 #pragma HLS STREAM variable=inter8 depth=1
-  stream<ap_uint<64>> inter9("DoCompute.inter9");
-#pragma HLS STREAM variable=inter9 depth=128
-  stream<ap_uint<64>> inter10("DoCompute.inter10");
-#pragma HLS STREAM variable=inter10 depth=3
+//  stream<ap_uint<64>> inter9("DoCompute.inter9");
+//#pragma HLS STREAM variable=inter9 depth=128
+//  stream<ap_uint<64>> inter10("DoCompute.inter10");
+//#pragma HLS STREAM variable=inter10 depth=3
   stream<ap_uint<64>> memOutStrm("DoCompute.memOutStrm");
+
+  // hwkim modified for debug
+#ifdef ACTIVATION_LOG
+  stream<ap_uint<64>> inter1_log("DoCompute.inter1_log");
+#pragma HLS STREAM variable=inter1_log depth=128
+  stream<ap_uint<64>> inter2_log("DoCompute.inter2_log");
+  stream<ap_uint<64>> inter3_log("DoCompute.inter3_log");
+#pragma HLS STREAM variable=inter3_log depth=128
+  stream<ap_uint<128>> inter4_log("DoCompute.inter4_log");
+#pragma HLS STREAM variable=inter4_log depth=128
+  stream<ap_uint<128>> inter5_log("DoCompute.inter5_log");
+  stream<ap_uint<128>> inter6_log("DoCompute.inter6_log");
+#pragma HLS STREAM variable=inter6_log depth=81
+  stream<ap_uint<256>> inter7_log("DoCompute.inter7_log");
+#pragma HLS STREAM variable=inter7_log depth=1
+  stream<ap_uint<256>> inter8_log("DoCompute.inter8_log");
+#pragma HLS STREAM variable=inter8_log depth=1
+#endif
 
   // hwkim modified for padding
   //const unsigned int inBits = 32 * 32 * 3 * 8;
@@ -227,113 +348,144 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
   // commented by author
   // const unsigned int inBitsPadded = paddedSize(inBits, 64);
 
+  // hwkim modified for padding
   //const unsigned int outBits = L8_MH*16;
   const unsigned int outBits = L6_MH*16;
 
   Mem2Stream_Batch<64, inBits / 8>(in, inter0, numReps);
-  // hwkim modified for debug
-  cout << inter0.size() << endl;
-
-  /* hwkim commented
-   * dma.h에 선언
-   *
-   * 64 -> word bit 수 - stream해 올 interface(AXI)의 data width
-   * inBits -> image 1장 당 총 bit 수
-   * inBits/8 -> image 1장 당 총 byte 수
-   *
-   * 이 함수는 in의 주소가 가리키는 DRAM에서 inter0 stream으로
-   * image를 numReps만큼 streaming해 오는 함수
-   * (16 image 단위로 pipelining해서 streaming)
-   * (single image일 경우, no pipelining)
-   *
-   * in stream의 ordering
-   * 	-> c->x->y
-   * 	-> 64-bit에 위의 ordering으로 8개 꽉 채움
-   */
 
   // hwkim modified for padding
   //StreamingDataWidthConverter_Batch<64, 192, (32 * 32 * 3 * 8) / 64>(inter0, inter0_1, numReps);
   StreamingDataWidthConverter_Batch<64, 192, (34*34*3*8)/64+1>(inter0, inter0_1, numReps);
-  // hwkim modified for debug
-  cout << inter0_1.size() << endl;
-
-  /* hwkim commented
-   * < InWidth, OutWidth, NumInWords >
-   * InWidth를 OutWidth로 NumInWords(InWidth의 word 수)만큼 변환
-   * inter0은 interleave(+quantized+packed)된 channel first order (c->x->y)
-   * 192-bit에 3채널 64 pixel 들어감
-   * 64-bit에 8개 들어가는데, channel이 3채널 씩이라 애매하게 끊어지므로,
-   * 	192-bit으로 변환하고 아래에서 24-bit 단위(채널 묶음)으로 다시 변환
-   */
-
-  // hwkim modified for padding
   //StreamingDataWidthConverter_Batch<192, 24, (32 * 32 * 3 * 8) / 192>(inter0_1, inter0_2, numReps);
   StreamingDataWidthConverter_Batch<192, 24, (34*34*3*8)/192+1>(inter0_1, inter0_2, numReps);
-  // hwkim modified for debug
-  cout << inter0_2.size() << endl;
-
-  /* hwkim commented
-   * 내부에 memory가 있는게 아니라 stream이므로,
-   * 	width 변환해주는 hardware가 내부에 필요함
-   * 24-bit에는 3채널 짜리 pixel 1개 들어감
-   * inter0_1 stream의 ordering
-   * 	-> x->y
-   * 	-> c는 이미 24-bit 단위로 3개 묶여서 ordering되어 있음
-   */
-  // hwkim modified for debug
-//  while(!inter0_2.empty()){
-//	  cout << hex << inter0_2.read() << endl;
-//  }
-
   // convolutional layers
   ConvLayer_Batch<L0_K, L0_IFM_CH, L0_IFM_DIM, L0_OFM_CH, L0_OFM_DIM, L0_SIMD, L0_PE,
   	  	  Slice<ap_fixed<8, 1, AP_TRN, AP_SAT>>, Identity, Recast<Binary>>
-	  (inter0_2, inter1, weights0, threshs0, numReps, ap_resource_lut());
-  /* hwkim commented
-   * template
-   * 	-> ConvKernelDim, IFMch, IFMdim, OFMch, OFMdim,
-   * 		SIMD, PE,
-   * 		TSrcI -> src width -> Slice<ap_fixed<~~>> -> ap_fixed의 width,
-   * 		TDstI -> dst width -> Identity -> width는 1,
-   * 		TWeightI -> weight width -> Recast<Binary> -> width는 1
-   * arguments
-   * 	-> in(stream), out(stream), weight(memory), activation(memory),
-   * 		reps, R(resource;LUT/DSP)
-   * 	-> 여기서는 thresholding을 activation function으로 보고
-   * 		activation 값으로 여김
-   */
+	  (inter0_2, inter1,
+// hwkim modified for debug
+#ifdef ACTIVATION_LOG
+			  inter1_log,
+#endif
+			  weights0, threshs0, numReps, ap_resource_lut());
+
   // hwkim modified for debug
-  while(!inter1.empty()){
-	  cout << hex << inter1.read() << endl;
+#ifdef ACTIVATION_LOG
+  activation_log(inter1_log, 0);
+  weighted_layer_cnt++;
+#endif
+
+  // hwkim modified for padding
+  stream<ap_uint<64>> inter1_pad("DoCompute.inter1_pad");
+  for(int y=0; y<L1_IFM_DIM; y++){
+	  for(int x=0; x<L1_IFM_DIM; x++){
+		  if(x==0 || y==0 || x==(L1_IFM_DIM-1) || y==(L1_IFM_DIM-1)){
+			  inter1_pad.write(0);
+			  //inter1_pad.write((ap_uint<64>)0xFFFFFFFFFFFFFFFF);
+		  }
+		  else{
+			  inter1_pad.write(inter1.read());
+		  }
+//		  cout << setw(20) << hex << inter1_pad.read() << "|";
+	  }
+//	  cout << endl;
   }
 
+  // hwkim modified for padding
+//  ConvLayer_Batch<L1_K, L1_IFM_CH, L1_IFM_DIM, L1_OFM_CH, L1_OFM_DIM, L1_SIMD, L1_PE, Recast<XnorMul>>
+//  	  (inter1, inter2, weights1, threshs1, numReps, ap_resource_lut());
+  ConvLayer_Batch<L1_K, L1_IFM_CH, L1_IFM_DIM, L1_OFM_CH, L1_OFM_DIM, L1_SIMD, L1_PE, Recast<XnorMul>>
+	  (inter1_pad, inter2,
+// hwkim modified for debug
+#ifdef ACTIVATION_LOG
+			  inter2_log,
+#endif
+			  weights1, threshs1, numReps, ap_resource_lut());
 
-  ConvLayer_Batch<L1_K, L1_IFM_CH, L1_IFM_DIM, L1_OFM_CH, L1_OFM_DIM, L1_SIMD, L1_PE,
-  	  Recast<XnorMul>>
-  	  (inter1, inter2, weights1, threshs1, numReps, ap_resource_lut());
+  // hwkim modified for debug
+#ifdef ACTIVATION_LOG
+  activation_log(inter2_log,1);
+  weighted_layer_cnt++;
+#endif
 
-  StreamingMaxPool_Batch<L1_OFM_DIM, 2, L1_OFM_CH>(inter2, inter3, numReps);
+  StreamingMaxPool_Batch<L1_OFM_DIM, 2, L1_OFM_CH>(inter2, inter3,
+		  // hwkim modified for debug
+#ifdef ACTIVATION_LOG
+		  inter3_log,
+#endif
+		  numReps);
 
-  ConvLayer_Batch<L2_K, L2_IFM_CH, L2_IFM_DIM, L2_OFM_CH, L2_OFM_DIM, L2_SIMD, L2_PE, Recast<XnorMul>>(inter3, inter4, weights2, threshs2, numReps, ap_resource_lut());
-  ConvLayer_Batch<L3_K, L3_IFM_CH, L3_IFM_DIM, L3_OFM_CH, L3_OFM_DIM, L3_SIMD, L3_PE, Recast<XnorMul>>(inter4, inter5, weights3, threshs3, numReps, ap_resource_lut());
+  // hwkim modified for debug
+#ifdef ACTIVATION_LOG
+  activation_log(inter3_log,2);
+  pooling_layer_cnt++;
+#endif
 
-  StreamingMaxPool_Batch<L3_OFM_DIM, 2, L3_OFM_CH>(inter5, inter6, numReps);
 
-  ConvLayer_Batch<L4_K, L4_IFM_CH, L4_IFM_DIM, L4_OFM_CH, L4_OFM_DIM, L4_SIMD, L4_PE, Recast<XnorMul>>(inter6, inter7, weights4, threshs4, numReps, ap_resource_lut());
+  // hwkim modified for padding
+  stream<ap_uint<64>> inter3_pad("DoCompute.inter3_pad");
+  for(int y=0; y<L2_IFM_DIM; y++){
+	  for(int x=0; x<L2_IFM_DIM; x++){
+		  if(x==0 || y==0 || x==(L2_IFM_DIM-1) || y==(L2_IFM_DIM-1)){
+			  inter3_pad.write(0);
+			  //inter1_pad.write((ap_uint<64>)0xFFFFFFFFFFFFFFFF);
+		  }
+		  else{
+			  inter3_pad.write(inter3.read());
+		  }
+//		  cout << setw(20) << hex << inter1_pad.read() << "|";
+	  }
+//	  cout << endl;
+  }
+  cout << "inter3_pad size = " << inter3_pad.size() << endl;
+
+  // hwkim modified for padding
+  //ConvLayer_Batch<L2_K, L2_IFM_CH, L2_IFM_DIM, L2_OFM_CH, L2_OFM_DIM, L2_SIMD, L2_PE, Recast<XnorMul>>(inter3,inter4,weights2, threshs2, numReps, ap_resource_lut());
+  ConvLayer_Batch<L2_K, L2_IFM_CH, L2_IFM_DIM, L2_OFM_CH, L2_OFM_DIM, L2_SIMD, L2_PE, Recast<XnorMul>>
+  (inter3_pad, inter4,
+		  // hwkim modified for debug
+  #ifdef ACTIVATION_LOG
+			  inter4_log,
+  #endif
+			  weights2, threshs2, numReps, ap_resource_lut());
+
+#ifdef ACTIVATION_LOG
+  activation_log(inter4_log,3);
+  weighted_layer_cnt++;
+#endif
+
+  ConvLayer_Batch<L3_K, L3_IFM_CH, L3_IFM_DIM, L3_OFM_CH, L3_OFM_DIM, L3_SIMD, L3_PE, Recast<XnorMul>>(inter4, inter5,
+// hwkim modified for debug
+#ifdef ACTIVATION_LOG
+		  inter5_log,
+#endif
+		  weights3, threshs3, numReps, ap_resource_lut());
+
+  StreamingMaxPool_Batch<L3_OFM_DIM, 2, L3_OFM_CH>(inter5, inter6,
+		  // hwkim modified for debug
+#ifdef ACTIVATION_LOG
+		  inter6_log,
+#endif
+		  numReps);
+
+  ConvLayer_Batch<L4_K, L4_IFM_CH, L4_IFM_DIM, L4_OFM_CH, L4_OFM_DIM, L4_SIMD, L4_PE, Recast<XnorMul>>(inter6, inter7,
+// hwkim modified for debug
+#ifdef ACTIVATION_LOG
+		  inter7_log,
+#endif
+		  weights4, threshs4, numReps, ap_resource_lut());
   ConvLayer_Batch<L5_K, L5_IFM_CH, L5_IFM_DIM, L5_OFM_CH, L5_OFM_DIM, L5_SIMD, L5_PE,
-  	  Recast<XnorMul>>(inter7, inter8, weights5, threshs5, numReps, ap_resource_lut());
+  	  Recast<XnorMul>>(inter7, inter8,
+// hwkim modified for debug
+#ifdef ACTIVATION_LOG
+			  inter8_log,
+#endif
+  			  weights5, threshs5, numReps, ap_resource_lut());
 
   // fully connected layers
 //  WidthAdjustedOutputStream<16 * L8_PE, 64, L8_MH / L8_PE>  wa_out(memOutStrm, numReps);
   WidthAdjustedOutputStream<16 * L6_PE, 64, L6_MH / L6_PE>  wa_out(memOutStrm, numReps);
-  /* hwkim commented
-   * 마지막 output을 받기 위한 stream (16-bit integer 값 score)
-   * WidthAdjustedOutputStream은 argument로 들어온 stream을
-   * 	자신의 class member m_target에 연결시켜 놓고,
-   * 	소멸자가 호출될 때, class member m_buffer의 내용을
-   * 	width adjust하여 연결했던 stream에 채워넣음
-   * 	16*L8_PE=16*4=64-bit -> 64-bit
-   */
+
 //  StreamingFCLayer_Batch<L6_MW, L6_MH, L6_SIMD, L6_PE, Recast<XnorMul>>
 //    (inter8, inter9,  weights6, threshs6, numReps, ap_resource_lut());
 //  StreamingFCLayer_Batch<L7_MW, L7_MH, L7_SIMD, L7_PE, Recast<XnorMul>>

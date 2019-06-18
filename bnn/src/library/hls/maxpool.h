@@ -51,7 +51,12 @@
  
 template<unsigned int ImgDim, unsigned int PoolDim, unsigned int NumChannels>
 void StreamingMaxPool(stream<ap_uint<NumChannels> > & in,
-		stream<ap_uint<NumChannels> > & out) {
+		stream<ap_uint<NumChannels> > & out
+		// hwkim modified for debug
+#ifdef ACTIVATION_LOG
+		,stream<ap_uint<NumChannels> > & out_log
+#endif
+		) {
   CASSERT_DATAFLOW(ImgDim % PoolDim == 0);
   // need buffer space for a single maxpooled row of the image
   ap_uint<NumChannels> buf[ImgDim / PoolDim];
@@ -85,6 +90,10 @@ void StreamingMaxPool(stream<ap_uint<NumChannels> > & in,
 	for (unsigned int outpix = 0; outpix < ImgDim / PoolDim; outpix++) {
 #pragma HLS PIPELINE II=1
       out.write(buf[outpix]);
+      // hwkim modified for debug
+#ifdef ACTIVATION_LOG
+      out_log.write(buf[outpix]);
+#endif
       /* hwkim commented
        * out stream에 write
        */
@@ -97,9 +106,19 @@ void StreamingMaxPool(stream<ap_uint<NumChannels> > & in,
 // calling 1-image maxpool in a loop works well enough for now
 template<unsigned int ImgDim, unsigned int PoolDim, unsigned int NumChannels>
 void StreamingMaxPool_Batch(stream<ap_uint<NumChannels> > & in,
-		stream<ap_uint<NumChannels> > & out, unsigned int numReps) {
+		stream<ap_uint<NumChannels> > & out,
+		// hwkim modified for debug
+#ifdef ACTIVATION_LOG
+		stream<ap_uint<NumChannels> > & out_log,
+#endif
+		unsigned int numReps) {
   for (unsigned int rep = 0; rep < numReps; rep++) {
-    StreamingMaxPool<ImgDim, PoolDim, NumChannels>(in, out);
+    StreamingMaxPool<ImgDim, PoolDim, NumChannels>(in, out
+    		// hwkim modified for debug
+#ifdef ACTIVATION_LOG
+    		,out_log
+#endif
+    		);
   }
 }
 

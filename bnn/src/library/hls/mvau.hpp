@@ -56,6 +56,13 @@
 #include "mac.hpp"
 #include "interpret.hpp"
 
+// hwkim modified for debug
+//#define ACTIVATION_LOG
+#ifdef ACTIVATION_LOG
+#include <fstream>
+extern int weighted_layer_cnt;
+#endif
+
 template<
   unsigned MatrixW, unsigned MatrixH, unsigned SIMD, unsigned PE,
   typename TSrcI = Identity, typename TDstI = Identity, typename TWeightI = Identity,
@@ -350,5 +357,191 @@ void Matrix_Vector_Activate_Batch(hls::stream<TI> & in,
       }
     }
   }
+}
+
+
+
+
+template<
+  unsigned MatrixW, unsigned MatrixH, unsigned SIMD, unsigned PE,
+  // hwkim modified for padding
+  unsigned OFMDim,
+
+  typename TSrcI = Identity, typename TDstI = Identity, typename TWeightI = Identity,
+  typename TI, typename TO, typename TW, typename TA, typename R
+>
+/* hwkim commented
+ * 	MatrixW -> 3x3x3
+ * 		ConvKernelDim * ConvKernelDim * IFMChannels
+ *	MatrixH -> 64
+ *		OFMChannels -> output neuron channels
+ *	SIMD -> 3
+ *	PE -> 16
+ *	TSrcI -> 8-bit
+ *	TDstI -> 1-bit
+ *	TWeightI -> 1-bit
+ *	TI -> 24-bit
+ *		static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>&>(convInp)
+ *	TO -> 16-bit
+ *		static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>  (mvOut)
+ *	TW -> BinaryWeights<L0_SIMD, L0_PE, L0_WMEM>
+ *		해당 class type 임
+ *	TA -> ThresholdsActivation<L0_TMEM, L0_PE, L0_API, ap_fixed<24, 16>, ap_uint<L0_API> >
+ *		해당 class type 임
+ *	R -> LUT
+*/
+void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
+				  hls::stream<TO> &out,
+				  // hwkim modified for debug
+#ifdef ACTIVATION_LOG
+				  hls::stream<TO> &out_log,
+#endif
+				  TW  const &weights,
+				  TA  const &activation,
+				  int const  reps,
+				  R const &r) {
+  // how many different rows each neuron will compute
+  // alternatively: number of vertical matrix chunks
+  unsigned const  NF = MatrixH / PE;
+  // how many synapse groups each row is split into
+  // alternatively: number of horizontal matrix chunks
+  unsigned const  SF = MatrixW / SIMD;
+
+  // hwkim modified for padding (fan-in scaling)
+  //unsigned const FAN_IN = MatrixW;
+
+  // hwkim modified for debug
+#ifdef ACTIVATION_LOG
+  string conv_out_file_name = "conv_" + to_string(weighted_layer_cnt+1) + "_out_file.txt";
+  ofstream conv_out_log_file(conv_out_file_name);
+  if(!conv_out_log_file.is_open()){
+ 	 cout << "conv_out_log_file open error" << endl;
+  }
+#endif
+
+  // input vector buffers
+  TI  inputBuf[SF];
+#pragma HLS ARRAY_PARTITION variable=inputBuf complete dim=1
+
+  decltype(activation.init(0,0))  accu[PE];
+#pragma HLS ARRAY_PARTITION variable=accu complete dim=0
+
+  unsigned  nf   = 0;
+  unsigned  sf   = 0;
+  unsigned  tile = 0; // invariant: tile = nf*SF + sf
+
+  // everything merged into a common iteration space (one "big" loop instead
+  // of smaller nested loops) to get the pipelinening the way we want
+  unsigned const TOTAL_FOLD = NF * SF;
+  for(unsigned  i = 0; i < reps * TOTAL_FOLD; i++) {
+#pragma HLS PIPELINE II=1
+    TI  inElem;
+    if(nf == 0) {
+      // read input from stream
+      inElem = in.read();
+      // store in appropriate buffer for reuse
+      inputBuf[sf] = inElem;
+    }
+    else {
+      // reuse buffered input
+      inElem = inputBuf[sf];
+    }
+
+    // Threshold Initialisation
+    if(sf == 0) {
+      for(unsigned  pe = 0; pe < PE; pe++) {
+#pragma HLS UNROLL
+	    accu[pe] = activation.init(nf, pe);
+      }
+    }
+
+    // compute matrix-vector product for each processing element
+    auto const &w = weights.weights(tile);
+
+    // hwkim modified for padding (fan-in scaling)
+//    ap_uint<1> padding[PE];
+//    unsigned int fan_in_loss[PE];
+//    for(unsigned  pe = 0; pe < PE; pe++) {
+//#pragma HLS UNROLL
+//    	padding[pe] = 0;
+//    	fan_in_loss[pe] = 0;
+//    }
+
+    for(unsigned  pe = 0; pe < PE; pe++) {
+#pragma HLS UNROLL
+      auto const  wgt = TWeightI()(w[pe]);
+      auto const  act = TSrcI()(inElem);
+
+      // hwkim modified for padding
+      //accu[pe] = mac<SIMD>(accu[pe], wgt, act, r);
+      int xy = i/TOTAL_FOLD;
+      int y = xy/OFMDim;
+      int x = xy%OFMDim;
+      //tile: sf -> kx -> ky -> nf
+      int ky = ((tile/(SF/9))%9)/3;
+      int kx = ((tile/(SF/9))%9)%3;
+      //cout << "nf=" << nf << ", sf=" << sf << ", pe=" << pe << ", y=" << y << ", x=" << x << ", ky=" << ky << ", kx=" << kx << ", tile=" << tile << endl;
+      if((x==0 && kx==0)
+    	  ||(y==0 && ky==0)
+		  ||(x==(OFMDim-1) && kx==2)
+		  ||(y==(OFMDim-1) && ky==2)){
+    	  // for fan-in scaling
+    	  //padding[pe] = 1;
+    	  //fan_in_loss[pe] += SIMD;
+    	  ;
+       }
+      else{
+    	  accu[pe] = mac<SIMD>(accu[pe], wgt, act, r);
+       }
+    }
+
+    // keep track of which folded synapse/neuron we are processing
+    ++tile;
+    if(++sf == SF) {
+      // produce output and clear accumulators
+      auto  outElem = TDstI().template operator()<TO>();
+      for (unsigned  pe = 0; pe < PE; pe++) {
+#pragma HLS UNROLL
+    	outElem[pe] = activation.activate(nf, pe, accu[pe]);
+    	// hwkim modified for padding (fan-in scaling)
+//    	if((TI::width==1) && (padding[pe])){
+//			accu[pe] = accu[pe]*(decltype(activation.init(0,0)))((float)FAN_IN/(FAN_IN - fan_in_loss[pe]));
+//			outElem[pe] = activation.activate(nf, pe, accu[pe]);
+//		}
+//    	else{
+//    		outElem[pe] = activation.activate(nf, pe, accu[pe]);
+//    	}
+	     // hwkim modified for padding (fan-in scaling)
+	     //padding[pe] = 0;
+	     //fan_in_loss[pe] = 0;
+	     // hwkim modified for debug
+#ifdef ACTIVATION_LOG
+	     conv_out_log_file << setw(10) << accu[pe] << " | ";
+#endif
+      }
+      out.write(outElem);
+      // hwkim modified for debug
+#ifdef ACTIVATION_LOG
+      out_log.write(outElem);
+#endif
+
+      // next folded neuron or image
+      sf = 0;
+      if(++nf == NF) {
+    	  /* hwkim commented
+    	   * 모든 kernel에 대해 연산 다 했으면
+    	   */
+	    nf   = 0;
+	    tile = 0;
+#ifdef ACTIVATION_LOG
+	    conv_out_log_file << endl;
+#endif
+      }
+    }
+  }
+
+#ifdef ACTIVATION_LOG
+  conv_out_log_file.close();
+#endif
 }
 #endif

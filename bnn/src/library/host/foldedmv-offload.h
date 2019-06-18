@@ -46,6 +46,9 @@
 #include "ap_int.h"
 
 #include <iomanip>
+#ifdef ACTIVATION_LOG
+#include <fstream>
+#endif
 
 using namespace std;
 
@@ -139,7 +142,10 @@ void quantiseAndPack(const tiny_cnn::vec_t & in, ExtMemWord * out, unsigned int 
     /* hwkim commented
      * 단순 8-bit fixed point -> 8-bit unsigned int로 변환
      */
+    // hwkim modified for input debug 190614
     ExtMemWord v = ((ExtMemWord)uValue & (~(ExtMemWord)0 >> (bitsPerExtMemWord - inWidth))); // Zero all bits except for the (bitsPerExtMemWord - inWidth) least significant bits.
+//    ExtMemWord v = ((ExtMemWord)(uValue+1) & (~(ExtMemWord)0 >> (bitsPerExtMemWord - inWidth))); // Zero all bits except for the (bitsPerExtMemWord - inWidth) least significant bits.
+
     /* hwkim commented
      * 8-bit -> 64-bit(ExtMemWord)로 변환
      * inWidth인 8-bit 제외하고, 상위 모두 0으로
@@ -150,16 +156,41 @@ void quantiseAndPack(const tiny_cnn::vec_t & in, ExtMemWord * out, unsigned int 
      */
   }
 #ifdef	ACTIVATION_LOG
-	std::ofstream quantise_log_file("quantise_log.txt");
+	ofstream quantise_log_file("quantise_log.txt");
 	if(!quantise_log_file.is_open()){
-		std::cout << "quantise_log_file open error!!" << std::endl;
+		cout << "quantise_log_file open error!!" << endl;
 	}
+//	ifstream golden_file("/home/khw1204/work/params/guinness_params/cifar10_params/190606/Activations/Scale1.txt");
+//	if(!golden_file.is_open()){
+//		cout << "golden input file open error!!" << endl;
+//	}
+//	ofstream input_comp_file("input_comp.txt");
+//	if(!golden_file.is_open()){
+//		cout << "input comp file open error!!" << endl;
+//	}
 	for(int c=0; c<3; c++){
 		for(int y=0; y<34; y++){
 			for(int x=0; x<34; x++){
 				ap_fixed<inWidth, 1, AP_TRN, AP_SAT> fxdValue = in[y*34*3 + x*3 + c];
 				ap_uint<inWidth> uValue = *reinterpret_cast<ap_uint<inWidth> *>(&fxdValue);
-				quantise_log_file << setw(10) << std::hex << uValue << "|";
+				// printing in decimal
+				//quantise_log_file << setw(10) << std::hex << (unsigned int)uValue << "|";
+				// compare input with golden input file & print in binary
+				char golden_buf;
+				unsigned int input_buf;
+				for(int i=0; i<8; i++){
+					input_buf = ((*reinterpret_cast<unsigned char *>(&uValue) >> (8-i-1))&0x1);
+					quantise_log_file << input_buf;
+//					if((x!=0) && (y!=0) && (x!=33) && (y!=33)){
+//						golden_file.read(&golden_buf, 1);
+//						if((golden_buf&0x1) != input_buf){
+//							cout << "difference @ (" << setw(2) << y << "," << setw(2) << x << ") bit " << i << endl;
+//						}
+//					}
+				}
+//				if((x!=0) && (y!=0) && (x!=33) && (y!=33))	//for \n
+//					golden_file.read(&golden_buf,1);
+				quantise_log_file << " | ";
 			}
 			quantise_log_file << endl;
 		}

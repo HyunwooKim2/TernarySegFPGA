@@ -51,6 +51,9 @@
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define MIN(x, y) (((x) > (y)) ? (y) : (x))
 
+// hwkim modified for debug
+//#define ACTIVATION_LOG
+
 // sliding window unit that produces several vectors simultaneously for feeding
 // a matrix multiple vectors unit
 template<unsigned int ConvKernelDim, 
@@ -72,6 +75,10 @@ template<unsigned int ConvKernelDim,
 void ConvolutionInputGenerator(
 		stream<ap_uint<SIMD*Input_precision> > & in,
 		stream<ap_uint<SIMD*Input_precision> > & out,
+		// hwkim modified for debug
+#ifdef ACTIVATION_LOG
+		stream<ap_uint<SIMD*Input_precision> > & out_log,
+#endif
 		const unsigned int numReps = 1) {
 /* hwkim commented
  * in의 ordering
@@ -297,6 +304,10 @@ void ConvolutionInputGenerator(
 			   */
 			  ap_uint<SIMD*Input_precision> outElem = inputBuf[current_block_read][(current_line_in_block)];
 			  out.write(outElem);
+			  // hwkim modified for debug
+#ifdef ACTIVATION_LOG
+			  out_log.write(outElem);
+#endif
 			  count_simd++;
 
 			  if (count_simd == multiplying_factor) {

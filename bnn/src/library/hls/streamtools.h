@@ -256,4 +256,10 @@ template<unsigned W, unsigned N>
     return  m_target;
   }
 };
+
+//template<unsigned int Width>
+//void StreamingDataWidthConverter_Batch(hls::stream<ap_uint<Width> > & in,
+//		hls::stream<ap_uint<Width> > & out, const unsigned int numReps) {
+//
+//}
 #endif

@@ -94,7 +94,8 @@ BNN_PATH=$XILINX_BNN_ROOT/network
 HLS_SRC_DIR="$BNN_PATH/$NETWORK/hw"
 HLS_OUT_DIR="$BNN_PATH/output/hls-syn/$NETWORK-$PLATFORM"
 
-HLS_SCRIPT=$BNN_PATH/hls-syn.tcl
+#HLS_SCRIPT=$BNN_PATH/hls-syn.tcl
+HLS_SCRIPT=$BNN_PATH/kjh-hls-syn.tcl
 HLS_IP_REPO="$HLS_OUT_DIR/sol1/impl/ip"
 
 VIVADO_HLS_LOG="$BNN_PATH/output/hls-syn/vivado_hls.log"
@@ -122,8 +123,8 @@ if [[ ("$MODE" == "h") || ("$MODE" == "a")  ]]; then
 	TEST_INPUT="$XILINX_BNN_ROOT/../../tests/Test_image/3.image-idx3-ubyte"
 	TEST_RESULT=3
   elif [[ ("$NETWORK" == "kjh_cifar_net") ]]; then
-	PARAMS="/home/khw1204/work/params/finn_params/cifar10_params/190529"
-	TEST_INPUT="/home/khw1204/work/params/finn_params/cifar10_params/190529/input.bin"
+	PARAMS="/home/khw1204/work/params/finn_params/cifar10_params/190606"
+	TEST_INPUT="/home/khw1204/work/params/finn_params/cifar10_params/190606/input.bin"
 	TEST_RESULT=4
   fi
 

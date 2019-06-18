@@ -54,6 +54,12 @@
 #include "streamtools.h"
 #include "mvau.hpp"
 
+// hwkim modified for debug
+//#define ACTIVATION_LOG
+#ifdef ACTIVATION_LOG
+#include <fstream>
+#endif
+
 template<
 		unsigned int ConvKernelDim,		// e.g 3 for a 3x3 conv kernel (assumed square)
 		unsigned int IFMChannels,		// number of input feature maps
@@ -76,115 +82,80 @@ template<
 >
 void ConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
 			    hls::stream<ap_uint<OutStreamW>> &out,
+#ifdef ACTIVATION_LOG
+				hls::stream<ap_uint<OutStreamW>> &out_log,
+#endif
 			    TW const        &weights,
 			    TA const        &activation,
 			    unsigned const   reps,
 				R const &r) {
 #pragma HLS INLINE
   unsigned const MatrixW = ConvKernelDim * ConvKernelDim * IFMChannels;
-  /* hwkim commented
-   * kernel 1개의 pixel 개수
-   * kernel 1개 크기 convolution을 한 번에 함?
-   */
   unsigned const MatrixH = OFMChannels;
-  /* hwkim commented
-   * kernel 개수
-   */
 
   // hwkim modified for debug
   // there may be fractal, so it cause difference
   //unsigned const InpPerImage = IFMDim*IFMDim*IFMChannels/InStreamW * TSrcI::width;
   unsigned const InpPerImage = (float)(IFMDim*IFMDim*IFMChannels)/InStreamW * TSrcI::width;
 
-  /* hwkim commented
-   * InpPerImage -> input word 개수
-   * 	-> TSrcI/InStreamW -> layer 0의 경우 8/24 - 의미는?
-   * 	-> InStreamW는 IFMChannels*TSrcI와 같음
-   * 		(만약 InStreamW가 모든 input channel을 포함한다면)
-   * 		>> 3개의 channel을 묶어서 하나로 보겠다는 말?
-   */
   WidthAdjustedInputStream <InStreamW, SIMD*TSrcI::width, InpPerImage>  wa_in (in,  reps);
-  /* hwkim commented
-   *
-   * wa_in은 WidthAdjustedInputStream class로써, m_target stream을 가지고 있음
-   * wa_in class에서 생성자 호출하면서 in의 width(InStreamW)를
-   * 	SIMD*TSrcI::width로 바꿔서
-   * 	m_target stream에 채워줌
-   *
-   * layer 0의 경우 24-bit -> 24 bit 변환
-   * 	SIMD*TSrcI::width = 3*8
-   *
-   * InStreamW
-   * 	-> 모든 input channel 다 합친 width
-   * SIMD * TSrcI::width
-   * 	-> 한 번에 처리할 input channel data 개수(SIMD) * data 1개 width
-   * InpPerImage
-   * 	-> input word 개수
-   * 	-> 3개 채널 하나로 묶어서 취급했을 때, image 당 input 개수
-   */
   WidthAdjustedOutputStream <PE*TDstI::width, OutStreamW,
   	  OFMDim * OFMDim * (OFMChannels / PE)> mvOut (out,  reps);
-  /* hwkim commented
-   * mvOut은 WidthAdjustedOutputStream class
-   * WidthAdjustedOutputStream은 ~~InputStream과 달리 값을 채워주지 않고,
-   * 	그냥 stream 할당만 해 줌
-   * 	-> out을 (WidthAdjustedOutputStream class 내) m_target stream에 할당
-   *	-> 생성자가 아니라 소멸자 호출 시,
-   *		WidthAdjustedOutputStream class 내 m_buffer stream의 내용을
-   *		m_target stream에 data width convert하여 값을 채움
-   *	-> 즉, m_buffer는 PE*TDstI::width의 bit width를 가지므로
-   *		모든 PE의 kernel 1개에 대해 convolution 수행한 결과를 가지고 있음
-   * 	-> layer 0의 경우,
-   * 		PE*TDstI::width = 16*1 = 16-bit
-   * 		OutStream = 64-bit (out channel 수)
-   */
-
+#ifdef ACTIVATION_LOG
+  WidthAdjustedOutputStream <PE*TDstI::width, OutStreamW,
+	  OFMDim * OFMDim * (OFMChannels / PE)> mvOut_log (out_log,  reps);
+#endif
   hls::stream<ap_uint<SIMD*TSrcI::width> > convInp("StreamingConvLayer_Batch.convInp");
-
+  // hwkim modified for debug
+#ifdef ACTIVATION_LOG
+  hls::stream<ap_uint<SIMD*TSrcI::width> > convInp_log("StreamingConvLayer_Batch.convInp_log");
+#endif
 
   ConvolutionInputGenerator<ConvKernelDim, IFMChannels, TSrcI::width, IFMDim,
-			OFMDim, SIMD,1>(wa_in, convInp, reps);
-  /* hwkim commented
-   * (c->)x->y로 order된 wa_in stream을 1 block(input 가로 세 줄;kernel 세로 size) 씩
-   * 	buffer(memory)에 저장
-   * 	-> conv kernel sliding하면서 단순히 순차적으로 input을 읽으면 되도록
-   * 	   input을 중복되게 convInp stream에 저장
-   *
-   * (in) wa_in -> SIMD*TSrcI::width의 width를 갖는 m_target stream을 class member로 갖음
-   * (out) convInp -> SIMD*TSrcI::width의 stream
-   * 	24-bit for layer 0
-   * reps -> input image 장 수
-   */
+			OFMDim, SIMD,1>(wa_in, convInp,
+					// hwkim modified for debug
+#ifdef ACTIVATION_LOG
+					convInp_log,
+#endif
+					reps);
 
   // hwkim modified for debug
 #ifdef ACTIVATION_LOG
-            std::ofstream conv_in_gen_log_file("conv_in_gen_log.txt");
+            ofstream conv_in_gen_log_file("conv_in_gen_log.txt");
             if(!conv_in_gen_log_file.is_open()){
-            	std::cout << "conv_in_gen_log_file open error!!" << std::endl;
-            }
-            for(int y=0; y<32; y++){
-            	for(int x=0; x<32; x++){
+            	cout << "conv_in_gen_log_file open error!!" << endl;
+              }
+            for(int y=0; y<OFMDim; y++){
+            	for(int x=0; x<OFMDim; x++){
             		for(int ky=0; ky<3; ky++){
-            			for(int kx=0; kx<3; kx++){
-            				conv_in_gen_log_file << hex;
-            				conv_in_gen_log_file << std::setw(15);
-            				conv_in_gen_log_file << convInp.read() << "|";
+            			for(int kx=0; kx<3; kx++){;
+            				for(int in_ch=0; in_ch<IFMChannels/SIMD; in_ch++){
+            					conv_in_gen_log_file << setw(20) << hex << (unsigned int)convInp_log.read() << " ";
+            				}
+            				conv_in_gen_log_file << " | ";
             			}
-            			conv_in_gen_log_file << std::endl;
+            			conv_in_gen_log_file << endl;
             		}
-            		conv_in_gen_log_file << "x,y=" << dec << x << "," << y << std::endl;
+            		conv_in_gen_log_file << "x,y=" << dec << x << "," << y << endl;
             	}
-            	conv_in_gen_log_file << std::endl;
-            }
+            	conv_in_gen_log_file << endl;
+              }
             conv_in_gen_log_file.close();
             cout << "convInp.size = " << convInp.size() << endl;
 #endif
-  cout << "convInp.size = " << convInp.size() << endl;
 
-  Matrix_Vector_Activate_Batch<MatrixW, MatrixH, SIMD, PE, TSrcI, TDstI, TWeightI>
-    (static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>&>(convInp),
-     static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>  (mvOut),
-     weights, activation, reps* OFMDim * OFMDim, r);
+  // hwkim modified for padding
+//  Matrix_Vector_Activate_Batch<MatrixW, MatrixH, SIMD, PE, TSrcI, TDstI, TWeightI>
+//    (static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>&>(convInp),
+//     static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>  (mvOut),
+//     weights, activation, reps* OFMDim * OFMDim, r);
+	Matrix_Vector_Activate_Batch_Padding<MatrixW, MatrixH, SIMD, PE, OFMDim, TSrcI, TDstI, TWeightI>
+		(static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>&>(convInp),
+		static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>  (mvOut),
+#ifdef ACTIVATION_LOG
+		static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>  (mvOut_log),
+#endif
+		weights, activation, reps* OFMDim * OFMDim, r);
 }
 
 #endif

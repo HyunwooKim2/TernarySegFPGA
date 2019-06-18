@@ -64,7 +64,9 @@ class XnorMul {
  public:
   int operator*(ap_uint<1> const &b) const {
 #pragma HLS inline
-    return  m_val == b? 1 : 0;
+	  // hwkim commented for padding & +- accumulation
+    //return  m_val == b? 1 : 0;
+    return  m_val == b? 1 : -1;
   }
 };
 inline int operator*(ap_uint<1> const &a, XnorMul const &b) {

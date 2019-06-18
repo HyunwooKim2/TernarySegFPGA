@@ -20,7 +20,7 @@
 
 // hwkim modified for padding
 //#define L0_IFM_DIM 32
-#define L0_IFM_DIM 34
+#define L0_IFM_DIM (32+2)
 
 #define L0_OFM_CH 64
 #define L0_OFM_DIM 32
@@ -50,7 +50,10 @@
 
 #define L1_K 3
 #define L1_IFM_CH 64
-#define L1_IFM_DIM 32
+// hwkim modified for padding
+//#define L1_IFM_DIM 32
+#define L1_IFM_DIM (32+2)
+
 #define L1_OFM_CH 64
 #define L1_OFM_DIM 32
 #define L1_SIMD 32
@@ -73,7 +76,10 @@
 
 #define L2_K 3
 #define L2_IFM_CH 64
-#define L2_IFM_DIM 16
+// hwkim modified for padding
+//#define L2_IFM_DIM 16
+#define L2_IFM_DIM (16+2)
+
 #define L2_OFM_CH 128
 #define L2_OFM_DIM 16
 #define L2_SIMD 32
@@ -96,7 +102,10 @@
 
 #define L3_K 3
 #define L3_IFM_CH 128
-#define L3_IFM_DIM 16
+// hwkim modified for padding
+//#define L3_IFM_DIM 16
+#define L3_IFM_DIM (16+2)
+
 #define L3_OFM_CH 128
 #define L3_OFM_DIM 16
 #define L3_SIMD 32
@@ -119,7 +128,10 @@
 
 #define L4_K 3
 #define L4_IFM_CH 128
-#define L4_IFM_DIM 8
+// hwkim modified for padding
+//#define L4_IFM_DIM 8
+#define L4_IFM_DIM (8+2)
+
 #define L4_OFM_CH 256
 #define L4_OFM_DIM 8
 #define L4_SIMD 32
@@ -142,7 +154,10 @@
 
 #define L5_K 3
 #define L5_IFM_CH 256
-#define L5_IFM_DIM 8
+// hwkim modified for padding
+//#define L5_IFM_DIM 8
+#define L5_IFM_DIM (8+2)
+
 #define L5_OFM_CH 256
 #define L5_OFM_DIM 8
 #define L5_SIMD 32

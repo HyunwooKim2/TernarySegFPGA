@@ -82,14 +82,6 @@ auto mul(TC const &c, TD const &d, ap_resource_dflt const&) -> decltype(c*d) {
 template<typename TC, typename TD>
 auto mul(TC const &c, TD const &d, ap_resource_lut const&) -> decltype(c*d) {
 #pragma HLS inline
-	/* hwkim commented
-	 * caller
-	 * 		res += mul(c[i], d[i], r);
-	 * c -> wgt -> weights
-	 * d -> act -> input
-	 * r -> resource
-	 * i -> SIMD #
-	 */
   decltype(c*d) const  res = c*d;
 #pragma HLS RESOURCE variable=res core=Mul_LUT
   return  res;
@@ -107,46 +99,13 @@ auto mul(TC const &c, TD const &d, ap_resource_dsp const&) -> decltype(c*d) {
 //- MAC with selectable implementation resource
 template<unsigned N, typename T, typename TC, typename TD, typename R>
 T mac(T const &a, TC const &c, TD const &d, R const &r) {
-	/* hwkim commented
-	 * N -> SIMD
-	 * a -> accu[pe] -> accumulation
-	 * 		ThresholdsActivation class
-	 * c -> wgt -> weights
-	 * 		weights의 m_weights[pe][tile]에 연결된 참조자
-	 * 		즉, pe 및 tile에 해당하는 weight를 가리키고 있음
-	 * d -> act -> input
-	 * 		TSrcI()(inElem)
-	 * 			layer 0 -> ap_fixed<8,1>값 3개(SIMD)를 가진 24-bit
-	 * r -> resource -> LUT
-	 */
 #pragma HLS inline
   T  res = a;
   for(unsigned  i = 0; i < N; i++) {
-	  /* hwkim commented
-	   * N == SIMD
-	   * SIMD개 병렬 연산
-	   * i -> SIMD 번호
-	   */
 #pragma HLS unroll
     res += mul(c[i], d[i], r);
-	  /* hwkim commented
-	   * r에 따라 다른 resource를 사용하는 mul이 호출
-	   * 	-> LUT 또는 DSP48
-	   * c[i], d[i]
-	   * 	Slice class의 operator []가 호출
-	   *	weight의 SIMD bits 중 해당 index에 해당하는 bits가 반환
-	   * mul은 단순 곱하기
-	   * 	-> operator*(곱하기)가 c[i]의 type에 따라 여러 개로
-	   * 		overloading되어 있으며, layer 0을 제외한
-	   * 		다른 layer는 XNOR로 연산하게 되어 있는 듯
-	   * 	-> overloading 시, argument는 *연산자 우측, 즉 d[i]
-	   * 	-> layer 0을 제외한 layer는 XNorMul class로 Recast되어 있음
-	   * 		XNorMul class의 operator*는 아래와 같이 xnor로 구현
-	   * 		m_val == b? 1 : 0;
-	   * 		m_val과 b가 같으면 1, 다르면 0
-	   */
     // hwkim modified for debug
-    //cout << "res=c[" << i << "]*d[" << i << "]" << "=" << res << endl;
+//    cout << "res=c[" << i << "]*d[" << i << "]" << "=" << res << endl;
   }
   return  res;
 }
