@@ -84,6 +84,9 @@ auto mul(TC const &c, TD const &d, ap_resource_lut const&) -> decltype(c*d) {
 #pragma HLS inline
   decltype(c*d) const  res = c*d;
 #pragma HLS RESOURCE variable=res core=Mul_LUT
+  // hwkim modified for debug
+  //cout << res << endl;
+
   return  res;
 }
 
@@ -103,10 +106,14 @@ T mac(T const &a, TC const &c, TD const &d, R const &r) {
   T  res = a;
   for(unsigned  i = 0; i < N; i++) {
 #pragma HLS unroll
+	// hwkim modified for debug
+	//cout << "res=c[" << i << "]*d[" << i << "]" << "=";
+
     res += mul(c[i], d[i], r);
-    // hwkim modified for debug
-//    cout << "res=c[" << i << "]*d[" << i << "]" << "=" << res << endl;
   }
+  // hwkim modified for debug
+  //cout << "accum=" << res << endl;
+
   return  res;
 }
 template<unsigned N, typename T, typename TC, typename TD>

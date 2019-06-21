@@ -417,6 +417,14 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
   if(!conv_out_log_file.is_open()){
  	 cout << "conv_out_log_file open error" << endl;
   }
+
+  extern string golden_file_dir;
+  string golden_conv_out_file_name = golden_file_dir + "binConv" + to_string(weighted_layer_cnt+1) + "_minusBias.txt";
+  ifstream golden_conv_out_file(golden_conv_out_file_name);
+  if(!golden_conv_out_file.is_open()){
+	  cout << "golden_conv_out_file open error" << endl;
+  }
+
 #endif
 
   // input vector buffers
@@ -429,10 +437,13 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
   unsigned  nf   = 0;
   unsigned  sf   = 0;
   unsigned  tile = 0; // invariant: tile = nf*SF + sf
-
   // everything merged into a common iteration space (one "big" loop instead
   // of smaller nested loops) to get the pipelinening the way we want
   unsigned const TOTAL_FOLD = NF * SF;
+
+  // hwkim modified for padding
+  int xy, x, y, kx, ky;
+
   for(unsigned  i = 0; i < reps * TOTAL_FOLD; i++) {
 #pragma HLS PIPELINE II=1
     TI  inElem;
@@ -466,6 +477,20 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
 //    	padding[pe] = 0;
 //    	fan_in_loss[pe] = 0;
 //    }
+	// hwkim modified for padding
+	xy = i/TOTAL_FOLD;
+	y = xy/OFMDim;
+	x = xy%OFMDim;
+	//tile: sf -> kx -> ky -> nf
+	ky = ((tile/(SF/9))%9)/3;
+	kx = ((tile/(SF/9))%9)%3;
+	// hwkim modified for debug
+//	cout << "nf=" << nf << ", sf=" << sf << ", pe=" << pe << ",
+//		y=" << y << ", x=" << x << ", ky=" << ky << ", kx=" << kx << ", tile=" << tile << endl;
+//	if(y==7 && x==24){
+//		cout << "here" << endl;
+//	}
+
 
     for(unsigned  pe = 0; pe < PE; pe++) {
 #pragma HLS UNROLL
@@ -474,13 +499,6 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
 
       // hwkim modified for padding
       //accu[pe] = mac<SIMD>(accu[pe], wgt, act, r);
-      int xy = i/TOTAL_FOLD;
-      int y = xy/OFMDim;
-      int x = xy%OFMDim;
-      //tile: sf -> kx -> ky -> nf
-      int ky = ((tile/(SF/9))%9)/3;
-      int kx = ((tile/(SF/9))%9)%3;
-      //cout << "nf=" << nf << ", sf=" << sf << ", pe=" << pe << ", y=" << y << ", x=" << x << ", ky=" << ky << ", kx=" << kx << ", tile=" << tile << endl;
       if((x==0 && kx==0)
     	  ||(y==0 && ky==0)
 		  ||(x==(OFMDim-1) && kx==2)
@@ -491,7 +509,17 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
     	  ;
        }
       else{
+    	  // hwkim modified for debug
+//    	  if(pe==0){
+//    		  cout << "start =====================" << endl;
+//    	  }
+
     	  accu[pe] = mac<SIMD>(accu[pe], wgt, act, r);
+
+    	  // hwkim modified for debug
+//    	  if(pe==0){
+//    		  cout << "end =====================" << endl;
+//    	  }
        }
     }
 
@@ -502,6 +530,26 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
       auto  outElem = TDstI().template operator()<TO>();
       for (unsigned  pe = 0; pe < PE; pe++) {
 #pragma HLS UNROLL
+ 	     // hwkim modified for debug
+ #ifdef ACTIVATION_LOG
+   		conv_out_log_file << fixed;
+ 		conv_out_log_file.setf(ios::showpoint);
+ 		conv_out_log_file.precision(8);
+ 		conv_out_log_file << accu[pe] << " | ";
+ 		//decltype(activation.init(0,0))	golden_buf;
+// 		double golden_buf;
+// 		golden_conv_out_file >> golden_buf;
+// 		if(accu[pe]!=golden_buf){
+// 			cout << fixed;
+// 			cout.precision(7);
+// 			cout.setf(ios_base::showpoint);
+// 			cout << "differ @ (" << y << "," << x << ") gold: " << golden_buf << ", accu[" << nf << ", " << pe << "]: " << accu[pe] << endl;
+// 		}
+
+ #endif
+    	  // hwkim modified for bias
+    	accu[pe] = accu[pe] + activation.m_thresholds[pe][nf][0];
+
     	outElem[pe] = activation.activate(nf, pe, accu[pe]);
     	// hwkim modified for padding (fan-in scaling)
 //    	if((TI::width==1) && (padding[pe])){
@@ -514,10 +562,6 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
 	     // hwkim modified for padding (fan-in scaling)
 	     //padding[pe] = 0;
 	     //fan_in_loss[pe] = 0;
-	     // hwkim modified for debug
-#ifdef ACTIVATION_LOG
-	     conv_out_log_file << setw(10) << accu[pe] << " | ";
-#endif
       }
       out.write(outElem);
       // hwkim modified for debug

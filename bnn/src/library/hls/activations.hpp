@@ -141,24 +141,16 @@ public:
   TR activate(unsigned const  nf, unsigned const  pe,  TA const &accu) const {
 #pragma HLS inline
     TR result=ActVal;
-    /* hwkim commented
-     * ActVal은 0으로 초기화
-     * TR은 thresholds 개수(NumTh)에 따라 1-bit 씩
-     * 		하지만 해당 경우 NumTH가 1이므로 단순 1-bit
-     */
-	for(unsigned int i=0; i< NumTH; i++){
-#pragma HLS unroll
-      result+=Compare()(m_thresholds[pe][nf][i], accu);
-      /* hwkim commented
-       * Threshold가 여러 개일 경우,(NumTh가 1보다 클 경우)
-       * result에 compare 결과 누적
-       * 하지만 현재 threshold는 1개라서 딱히 누적 안함
-       *
-       * compare -> std::less
-       * 	1 : thresholds < accu
-       * 	0 : thresholds >=  accu
-       */
-    }
+
+    // hwkim modified for bias
+    if(accu >= (TR)0)
+    	result = (TR)1;
+    else
+    	result = (TR)0;
+//	for(unsigned int i=0; i< NumTH; i++){
+//#pragma HLS unroll
+//      result+=Compare()(m_thresholds[pe][nf][i], accu);
+//    }
     return result;
   }
 };

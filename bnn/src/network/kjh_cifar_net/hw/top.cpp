@@ -80,9 +80,32 @@ static ThresholdsActivation<L5_TMEM, L5_PE, L5_API, ap_int<16>, ap_uint<L5_API>>
  * pass through activation
  */
 
+
+// hwkim modified for padding
+template <int IFM_DIM, int InWidth>
+void insert_pad(stream<ap_uint<InWidth>> & in_stream,
+		stream<ap_uint<InWidth>>& out_stream)
+{
+  for(int y=0; y<IFM_DIM; y++){
+	  for(int x=0; x<IFM_DIM; x++){
+		  if(x==0 || y==0 || x==(IFM_DIM-1) || y==(IFM_DIM-1)){
+			  out_stream.write(0);
+			  //inter1_pad.write((ap_uint<64>)0xFFFFFFFFFFFFFFFF);
+		  }
+		  else{
+			  out_stream.write(in_stream.read());
+		  }
+//		  cout << setw(20) << hex << inter1_pad.read() << "|";
+	  }
+//	  cout << endl;
+  }
+  cout << "padded stream size = " << out_stream.size() << endl;
+}
+
+
 // hwkim modified for debug
 #ifdef ACTIVATION_LOG
-string golden_file_dir = "/home/khw1204/work/params/guinness_params/cifar10_params/190606/Activations/";
+string golden_file_dir = "/home/khw1204/work/params/guinness_params/cifar10_params/190621/Activations/";
 template <int InWidth>
 void activation_log(
 		stream<ap_uint<InWidth>>& in_stream,
@@ -131,10 +154,12 @@ void activation_log(
 	// activation logging & compare result logging
 	ap_uint<InWidth> act_buf;
 	ap_uint<InWidth> gold_buf;
+	//unsigned long long gold_buf;
 	cout << "inter" << (layer_cnt+1) << " stream size = " << in_stream.size() << endl;
 	for(int y=0; y<out_dim_config[layer_cnt]; y++){
 		  for(int x=0; x<out_dim_config[layer_cnt]; x++){
 			  act_buf = in_stream.read();
+			  //golden_file >> hex >> gold_buf;
 			  golden_file >> hex >> gold_buf;
 			  if(act_buf!=gold_buf){
 				  compare_result_file << dec << "@(" << setw(2) << y << "," << setw(2) << x << ")" <<
@@ -162,7 +187,7 @@ void activation_log(
 				  activation_log_file << " | ";
 			  }
 			  else{
-				  activation_log_file << hex << setw(20) << (unsigned long long )act_buf << " | ";
+				  activation_log_file << hex << (unsigned long long )act_buf << " |\t";
 			  }
 		  }
 		  activation_log_file << endl;
@@ -377,19 +402,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 
   // hwkim modified for padding
   stream<ap_uint<64>> inter1_pad("DoCompute.inter1_pad");
-  for(int y=0; y<L1_IFM_DIM; y++){
-	  for(int x=0; x<L1_IFM_DIM; x++){
-		  if(x==0 || y==0 || x==(L1_IFM_DIM-1) || y==(L1_IFM_DIM-1)){
-			  inter1_pad.write(0);
-			  //inter1_pad.write((ap_uint<64>)0xFFFFFFFFFFFFFFFF);
-		  }
-		  else{
-			  inter1_pad.write(inter1.read());
-		  }
-//		  cout << setw(20) << hex << inter1_pad.read() << "|";
-	  }
-//	  cout << endl;
-  }
+  insert_pad<L1_IFM_DIM,64>(inter1, inter1_pad);
 
   // hwkim modified for padding
 //  ConvLayer_Batch<L1_K, L1_IFM_CH, L1_IFM_DIM, L1_OFM_CH, L1_OFM_DIM, L1_SIMD, L1_PE, Recast<XnorMul>>
@@ -424,20 +437,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 
   // hwkim modified for padding
   stream<ap_uint<64>> inter3_pad("DoCompute.inter3_pad");
-  for(int y=0; y<L2_IFM_DIM; y++){
-	  for(int x=0; x<L2_IFM_DIM; x++){
-		  if(x==0 || y==0 || x==(L2_IFM_DIM-1) || y==(L2_IFM_DIM-1)){
-			  inter3_pad.write(0);
-			  //inter1_pad.write((ap_uint<64>)0xFFFFFFFFFFFFFFFF);
-		  }
-		  else{
-			  inter3_pad.write(inter3.read());
-		  }
-//		  cout << setw(20) << hex << inter1_pad.read() << "|";
-	  }
-//	  cout << endl;
-  }
-  cout << "inter3_pad size = " << inter3_pad.size() << endl;
+  insert_pad<L2_IFM_DIM, 64>(inter3, inter3_pad);
 
   // hwkim modified for padding
   //ConvLayer_Batch<L2_K, L2_IFM_CH, L2_IFM_DIM, L2_OFM_CH, L2_OFM_DIM, L2_SIMD, L2_PE, Recast<XnorMul>>(inter3,inter4,weights2, threshs2, numReps, ap_resource_lut());
@@ -454,12 +454,23 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
   weighted_layer_cnt++;
 #endif
 
-  ConvLayer_Batch<L3_K, L3_IFM_CH, L3_IFM_DIM, L3_OFM_CH, L3_OFM_DIM, L3_SIMD, L3_PE, Recast<XnorMul>>(inter4, inter5,
+  // hwkim modified for padding
+  stream<ap_uint<128>> inter4_pad("DoCompute.inter3_pad");
+  insert_pad<L3_IFM_DIM, 128>(inter4, inter4_pad);
+
+  // hwkim modified for padding
+  //ConvLayer_Batch<L3_K, L3_IFM_CH, L3_IFM_DIM, L3_OFM_CH, L3_OFM_DIM, L3_SIMD, L3_PE, Recast<XnorMul>>(inter4, inter5,
+  ConvLayer_Batch<L3_K, L3_IFM_CH, L3_IFM_DIM, L3_OFM_CH, L3_OFM_DIM, L3_SIMD, L3_PE, Recast<XnorMul>>(inter4_pad, inter5,
 // hwkim modified for debug
 #ifdef ACTIVATION_LOG
 		  inter5_log,
 #endif
 		  weights3, threshs3, numReps, ap_resource_lut());
+
+#ifdef ACTIVATION_LOG
+  activation_log(inter5_log,4);
+  weighted_layer_cnt++;
+#endif
 
   StreamingMaxPool_Batch<L3_OFM_DIM, 2, L3_OFM_CH>(inter5, inter6,
 		  // hwkim modified for debug
@@ -468,19 +479,47 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 #endif
 		  numReps);
 
-  ConvLayer_Batch<L4_K, L4_IFM_CH, L4_IFM_DIM, L4_OFM_CH, L4_OFM_DIM, L4_SIMD, L4_PE, Recast<XnorMul>>(inter6, inter7,
+  // hwkim modified for debug
+#ifdef ACTIVATION_LOG
+  activation_log(inter6_log,5);
+  pooling_layer_cnt++;
+#endif
+
+  // hwkim modified for padding
+  stream<ap_uint<128>> inter6_pad("DoCompute.inter3_pad");
+  insert_pad<L4_IFM_DIM, 128>(inter6, inter6_pad);
+
+  // hwkim modified for padding
+  //ConvLayer_Batch<L4_K, L4_IFM_CH, L4_IFM_DIM, L4_OFM_CH, L4_OFM_DIM, L4_SIMD, L4_PE, Recast<XnorMul>>(inter6, inter7,
+  ConvLayer_Batch<L4_K, L4_IFM_CH, L4_IFM_DIM, L4_OFM_CH, L4_OFM_DIM, L4_SIMD, L4_PE, Recast<XnorMul>>(inter6_pad, inter7,
 // hwkim modified for debug
 #ifdef ACTIVATION_LOG
 		  inter7_log,
 #endif
 		  weights4, threshs4, numReps, ap_resource_lut());
-  ConvLayer_Batch<L5_K, L5_IFM_CH, L5_IFM_DIM, L5_OFM_CH, L5_OFM_DIM, L5_SIMD, L5_PE,
-  	  Recast<XnorMul>>(inter7, inter8,
+
+#ifdef ACTIVATION_LOG
+  activation_log(inter7_log,6);
+  weighted_layer_cnt++;
+#endif
+
+  // hwkim modified for padding
+  stream<ap_uint<256>> inter7_pad("DoCompute.inter3_pad");
+  insert_pad<L5_IFM_DIM, 256>(inter7, inter7_pad);
+
+  // hwkim modified for padding
+  //ConvLayer_Batch<L5_K, L5_IFM_CH, L5_IFM_DIM, L5_OFM_CH, L5_OFM_DIM, L5_SIMD, L5_PE,Recast<XnorMul>>(inter7, inter8,
+  ConvLayer_Batch<L5_K, L5_IFM_CH, L5_IFM_DIM, L5_OFM_CH, L5_OFM_DIM, L5_SIMD, L5_PE,Recast<XnorMul>>(inter7_pad, inter8,
 // hwkim modified for debug
 #ifdef ACTIVATION_LOG
 			  inter8_log,
 #endif
   			  weights5, threshs5, numReps, ap_resource_lut());
+
+#ifdef ACTIVATION_LOG
+  activation_log(inter8_log,7);
+  weighted_layer_cnt++;
+#endif
 
   // fully connected layers
 //  WidthAdjustedOutputStream<16 * L8_PE, 64, L8_MH / L8_PE>  wa_out(memOutStrm, numReps);
