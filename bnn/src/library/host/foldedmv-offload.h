@@ -382,6 +382,13 @@ std::vector<int>  testPrebuiltCIFAR10_from_image(std::vector<tiny_cnn::vec_t> & 
   for(unsigned int j = 0; j < numCategories; j++) {
     result.push_back(outTest[j]);
   }
+  // hwkim modified for debug
+  cout << "Output scores: ";
+  for(unsigned int j = 0; j < numCategories; j++) {
+	  cout << outTest[j] << "\t";
+  }
+  cout << endl;
+
   auto duration = chrono::duration_cast<chrono::microseconds>( t2 - t1 ).count();
   usecPerImage = (float)duration / (count);
   cout << "Inference took " << duration << " microseconds, " << usecPerImage << " usec per image" << endl;

@@ -143,7 +143,8 @@ public:
     TR result=ActVal;
 
     // hwkim modified for bias
-    if(accu >= (TR)0)
+    TA act = accu + m_thresholds[pe][nf][0];
+    if(act >= (TR)0)
     	result = (TR)1;
     else
     	result = (TR)0;
@@ -151,6 +152,29 @@ public:
 //#pragma HLS unroll
 //      result+=Compare()(m_thresholds[pe][nf][i], accu);
 //    }
+    return result;
+  }
+};
+
+// hwkim added for last fc layer
+template<unsigned NF, unsigned PE, unsigned NumTH,
+	 typename TA, typename TR, int ActVal = 0, typename Compare = std::less<TA>>
+class PassThroughAndBatchNorm {
+public:
+  TA m_thresholds[PE][NF][NumTH];
+
+public:
+  TA init(unsigned const  nf, unsigned const  pe) const {
+#pragma HLS inline
+    return  TA(0);
+  }
+
+public:
+  TR activate(unsigned const  nf, unsigned const  pe,  TA const &accu) const {
+#pragma HLS inline
+    TR result=ActVal;
+
+    result = accu + m_thresholds[pe][nf][0];
     return result;
   }
 };

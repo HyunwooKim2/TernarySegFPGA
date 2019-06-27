@@ -84,30 +84,14 @@ extern "C" void load_parameters(const char* path) {
   makeNetwork(nn);
   cout << "Setting network weights and thresholds in accelerator..." << endl;
   FoldedMVLoadLayerMem(path, 0, L0_PE, L0_WMEM, L0_TMEM, L0_API);
-  	  /* hwkim comment
-  	   * L0_PE - layer 별로 PE 갯수 설정
-  	   * L0_WMEM - weight가 64-bit 단위 몇 개인지 - 몇 pixel에 해당하는지
-  	   * 	layer 0의 경우 PE 당 4개임(output channel이 64인데 16PE라서)
-  	   * 	L0_WMEM이 36인 이유는 3x3커널이라 4*9
-  	   * 		즉, PE 당 4개의 output channel을 담당하므로, 4개의 weight kernel(3x3)만 있으면 됨
-  	   * L0_TMEM
-  	   * 	threshold의 크기를 64-bit 단위 몇 개인지
-  	   * 	PE 당 몇 개 threshold인 지
-  	   * L0_API - threshold 개수
-  	  */
   FoldedMVLoadLayerMem(path, 1, L1_PE, L1_WMEM, L1_TMEM, L1_API);
   FoldedMVLoadLayerMem(path, 2, L2_PE, L2_WMEM, L2_TMEM, L2_API);
   FoldedMVLoadLayerMem(path, 3, L3_PE, L3_WMEM, L3_TMEM, L3_API);
   FoldedMVLoadLayerMem(path, 4, L4_PE, L4_WMEM, L4_TMEM, L4_API);
   FoldedMVLoadLayerMem(path, 5, L5_PE, L5_WMEM, L5_TMEM, L5_API);
-  FoldedMVLoadLayerMem(path, 6, L6_PE, L6_WMEM, L6_TMEM, 0);
+  FoldedMVLoadLayerMem(path, 6, L6_PE, L6_WMEM, L6_TMEM, L6_API);
 //  FoldedMVLoadLayerMem(path, 7, L7_PE, L7_WMEM, L7_TMEM, L7_API);
 //  FoldedMVLoadLayerMem(path, 8, L8_PE, L8_WMEM, L8_TMEM, 0);
-  /* hwkim commented
-   * L8_API는 의미 없는 듯?
-   * 0이라는 것은 cntThresh가 0이라서
-   * 실제 threshold(activation) read를 하지 않는 듯
-   */
 }
 
 extern "C" int inference(const char* path, int results[64], int number_class, float* usecPerImage) {

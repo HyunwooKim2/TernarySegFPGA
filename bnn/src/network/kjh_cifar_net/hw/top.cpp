@@ -72,7 +72,10 @@ static ThresholdsActivation<L2_TMEM, L2_PE, L2_API, ap_int<16>, ap_uint<L2_API>>
 static ThresholdsActivation<L3_TMEM, L3_PE, L3_API, ap_int<16>, ap_uint<L3_API>>  		threshs3;
 static ThresholdsActivation<L4_TMEM, L4_PE, L4_API, ap_int<16>, ap_uint<L4_API>>  		threshs4;
 static ThresholdsActivation<L5_TMEM, L5_PE, L5_API, ap_int<16>, ap_uint<L5_API>>  		threshs5;
+// hwkim modified for last fc layer
 //static ThresholdsActivation<L6_TMEM, L6_PE, L6_API, ap_int<16>, ap_uint<L6_API>>  		threshs6;
+static PassThroughAndBatchNorm<L6_TMEM, L6_PE, L6_API, ap_int<16>, ap_int<16>>  		threshs6;
+
 //static ThresholdsActivation<L7_TMEM, L7_PE, L7_API, ap_int<16>, ap_uint<L7_API>>  		threshs7;
 /* hwkim commented
  * 8 layer는 없음
@@ -99,7 +102,7 @@ void insert_pad(stream<ap_uint<InWidth>> & in_stream,
 	  }
 //	  cout << endl;
   }
-  cout << "padded stream size = " << out_stream.size() << endl;
+//  cout << "padded stream size = " << out_stream.size() << endl;
 }
 
 
@@ -155,7 +158,7 @@ void activation_log(
 	ap_uint<InWidth> act_buf;
 	ap_uint<InWidth> gold_buf;
 	//unsigned long long gold_buf;
-	cout << "inter" << (layer_cnt+1) << " stream size = " << in_stream.size() << endl;
+//	cout << "inter" << (layer_cnt+1) << " stream size = " << in_stream.size() << endl;
 	for(int y=0; y<out_dim_config[layer_cnt]; y++){
 		  for(int x=0; x<out_dim_config[layer_cnt]; x++){
 			  act_buf = in_stream.read();
@@ -302,7 +305,7 @@ void DoMemInit(unsigned int targetLayer, unsigned int targetMem, unsigned int ta
       weights6.m_weights[targetMem][targetInd] = val;
       break;
     case 13:
-//      threshs6.m_thresholds[targetMem][targetInd][targetThresh] = val;
+      threshs6.m_thresholds[targetMem][targetInd][targetThresh] = val;
       break;
 //    case 14:
 //      weights7.m_weights[targetMem][targetInd] = val;
@@ -342,10 +345,17 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 #pragma HLS STREAM variable=inter7 depth=1
   stream<ap_uint<256>> inter8("DoCompute.inter8");
 #pragma HLS STREAM variable=inter8 depth=1
+
+  // hwkim modified for 3rd max pool
 //  stream<ap_uint<64>> inter9("DoCompute.inter9");
 //#pragma HLS STREAM variable=inter9 depth=128
 //  stream<ap_uint<64>> inter10("DoCompute.inter10");
 //#pragma HLS STREAM variable=inter10 depth=3
+  stream<ap_uint<256>> inter9("DoCompute.inter9");
+#pragma HLS STREAM variable=inter9 depth=1
+  stream<ap_uint<256>> inter10("DoCompute.inter10");
+#pragma HLS STREAM variable=inter10 depth=1
+
   stream<ap_uint<64>> memOutStrm("DoCompute.memOutStrm");
 
   // hwkim modified for debug
@@ -364,6 +374,8 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 #pragma HLS STREAM variable=inter7_log depth=1
   stream<ap_uint<256>> inter8_log("DoCompute.inter8_log");
 #pragma HLS STREAM variable=inter8_log depth=1
+  stream<ap_uint<256>> inter9_log("DoCompute.inter9_log");
+#pragma HLS STREAM variable=inter9_log depth=1
 #endif
 
   // hwkim modified for padding
@@ -521,9 +533,45 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
   weighted_layer_cnt++;
 #endif
 
-  // fully connected layers
-//  WidthAdjustedOutputStream<16 * L8_PE, 64, L8_MH / L8_PE>  wa_out(memOutStrm, numReps);
-  WidthAdjustedOutputStream<16 * L6_PE, 64, L6_MH / L6_PE>  wa_out(memOutStrm, numReps);
+  // hwkim modified for 3rd max pool layer
+  StreamingMaxPool_Batch<L5_OFM_DIM, 2, L5_OFM_CH>(inter8, inter9,
+		  // hwkim modified for debug
+#ifdef ACTIVATION_LOG
+		  inter9_log,
+#endif
+		  numReps);
+
+  // hwkim modified for debug
+#ifdef ACTIVATION_LOG
+  activation_log(inter9_log,8);
+  pooling_layer_cnt++;
+#endif
+
+  // hwkim modified for average pool
+#define AVE_IFM_CH 256
+#define AVE_OFM_CH 256
+#define AVE_IFM_DIM 4
+#define AVE_THRES (4*4/2)
+  unsigned int ave_sum[L5_OFM_CH];
+  ap_uint<AVE_IFM_CH> ave_buf;
+  for(int ch=0; ch<AVE_IFM_CH; ch++){
+#pragma HLS UNROLL
+	  ave_sum[ch] = 0;
+  }
+  for(int y=0; y<AVE_IFM_DIM; y++){
+	for(int x=0; x<AVE_IFM_DIM; x++){
+		ave_buf = inter9.read();
+		for(int ch=0; ch<AVE_IFM_CH; ch++){
+			ave_sum[ch] = ave_sum[ch] + ave_buf[ch];
+		}
+	}
+  }
+  ave_buf = 0;
+  for(int ch=0; ch<AVE_IFM_CH; ch++){
+	  if(ave_sum[ch]>=AVE_THRES)
+		  ave_buf[ch] = 1;
+  }
+  inter10.write(ave_buf);
 
 //  StreamingFCLayer_Batch<L6_MW, L6_MH, L6_SIMD, L6_PE, Recast<XnorMul>>
 //    (inter8, inter9,  weights6, threshs6, numReps, ap_resource_lut());
@@ -533,35 +581,22 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 //  	  Recast<XnorMul>, Slice<ap_uint<16> >>
 //    (inter10, static_cast<hls::stream<ap_uint<16 * L8_PE>>&>(wa_out),weights8, PassThroughActivation<ap_uint<16>>(), numReps, ap_resource_lut());
 
+  // fully connected layers
+  {
+//  WidthAdjustedOutputStream<16 * L8_PE, 64, L8_MH / L8_PE>  wa_out(memOutStrm, numReps);
+  WidthAdjustedOutputStream<16 * L6_PE, 64, L6_MH / L6_PE>  wa_out(memOutStrm, numReps);
+
+//  StreamingFCLayer_Batch<L6_MW, L6_MH, L6_SIMD, L6_PE, Recast<XnorMul>, Slice<ap_uint<16> >>(inter8,static_cast<hls::stream<ap_uint<16 * L6_PE>>&>(wa_out),weights6,PassThroughActivation<ap_uint<16>>(),numReps,ap_resource_lut());
   StreamingFCLayer_Batch<L6_MW, L6_MH, L6_SIMD, L6_PE, Recast<XnorMul>, Slice<ap_uint<16> >>
-	  (inter8,
-	  static_cast<hls::stream<ap_uint<16 * L6_PE>>&>(wa_out),
-	  weights6,
-	  PassThroughActivation<ap_uint<16>>(),
-	  numReps,
-	  ap_resource_lut());
-
-  /* hwkim commented
-   * score 값을 위해 activation function (binarize) 건너뜀
-   * ThresholdsActivation class 대신 PassThroughActivation class를 사용
-   * 	-> 차이점은 activate 멤버 함수 수행 시, pass through든 그냥 단순히
-   * 		accu 값만 return, thresholding 수행하지 않음
-   * 		threshold 저장하는 m_threshold 멤버 변수도 없음
-   *
-   * TDstI에 ap_uint<16> 사용 -> integer output
-   *
-   * L8_MH(output channel 수)가 왜 64??
-   * 	마지막 layer면, output이 score인데, CIFAR는 10개 또는 100개 아님?
-   * 	아마 정확도를 봤을 때, CIFAR-10일텐데..
-   */
-
+  	  (inter10,
+  	  static_cast<hls::stream<ap_uint<16 * L6_PE>>&>(wa_out),
+  	  weights6,
+  	  //PassThroughActivation<ap_uint<16>>(),
+	  threshs6,
+  	  numReps,
+  	  ap_resource_lut());
+  }
   Stream2Mem_Batch<64, outBits/8>(memOutStrm, out, numReps);
-  /* hwkim commented
-   * output(score)를 DRAM으로 전송
-   * <DataWidth, numBytes> -> 64-bit(16-bit score * 4)을
-   * 	-> numBytes는 output score가 byte로 몇 개인지
-   * 	-> outBits가 왜 64*16? 10*16이 아니라?
-   */
 }
 
 void BlackBoxJam(ap_uint<64> *in, ap_uint<64> *out, bool doInit,

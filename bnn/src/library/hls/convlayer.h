@@ -141,7 +141,7 @@ void ConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
             	conv_in_gen_log_file << endl;
               }
             conv_in_gen_log_file.close();
-            cout << "convInp.size = " << convInp.size() << endl;
+//            cout << "convInp.size = " << convInp.size() << endl;
 #endif
 
   // hwkim modified for padding

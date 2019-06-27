@@ -80,7 +80,10 @@ void Mem2Stream(ap_uint<DataWidth> * in, hls::stream<ap_uint<DataWidth> > & out)
 template<unsigned int DataWidth, unsigned int numBytes>
 void Stream2Mem(hls::stream<ap_uint<DataWidth> > & in, ap_uint<DataWidth> * out) {
   CASSERT_DATAFLOW(DataWidth % 8 == 0);
-  const unsigned int numWords = numBytes / (DataWidth / 8);
+  // hwkim modified for numWords with remainder
+  //const unsigned int numWords = numBytes / (DataWidth / 8);
+  const unsigned int numWords = paddedSizeHW(numBytes, (DataWidth / 8)) / (DataWidth / 8);
+
   CASSERT_DATAFLOW(numWords != 0);
   for (unsigned int i = 0; i < numWords; i++) {
 #pragma HLS PIPELINE II=1
@@ -140,7 +143,10 @@ void Mem2Stream_Batch(ap_uint<DataWidth> * in, hls::stream<ap_uint<DataWidth> > 
 }
 template<unsigned int DataWidth, unsigned int numBytes>
 void Stream2Mem_Batch(hls::stream<ap_uint<DataWidth> > & in, ap_uint<DataWidth> * out, const unsigned int numReps) {
-  const unsigned int indsPerRep = numBytes / (DataWidth / 8);
+  // hwkim modified for indsPerRep with remainder
+	//const unsigned int indsPerRep = numBytes / (DataWidth / 8);
+	const unsigned int indsPerRep = paddedSizeHW(numBytes, (DataWidth / 8)) / (DataWidth / 8);
+
   unsigned int rep = 0;
   // make sure Stream2Mem does not get inlined here
   // we lose burst inference otherwise

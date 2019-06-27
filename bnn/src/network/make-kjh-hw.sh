@@ -123,9 +123,9 @@ if [[ ("$MODE" == "h") || ("$MODE" == "a")  ]]; then
 	TEST_INPUT="$XILINX_BNN_ROOT/../../tests/Test_image/3.image-idx3-ubyte"
 	TEST_RESULT=3
   elif [[ ("$NETWORK" == "kjh_cifar_net") ]]; then
-	PARAMS="/home/khw1204/work/params/finn_params/cifar10_params/190606"
-	TEST_INPUT="/home/khw1204/work/params/finn_params/cifar10_params/190606/input.bin"
-	TEST_RESULT=4
+	PARAMS="/home/khw1204/work/params/finn_params/cifar10_params/190621"
+	TEST_INPUT="/home/khw1204/work/params/finn_params/cifar10_params/190621/input.bin"
+	TEST_RESULT=3
   fi
 
   if [[ ("$PLATFORM" == "pynqZ1-Z2") ]]; then

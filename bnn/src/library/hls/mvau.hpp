@@ -548,7 +548,7 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
 
  #endif
     	  // hwkim modified for bias
-    	accu[pe] = accu[pe] + activation.m_thresholds[pe][nf][0];
+    	//accu[pe] = accu[pe] + activation.m_thresholds[pe][nf][0];
 
     	outElem[pe] = activation.activate(nf, pe, accu[pe]);
     	// hwkim modified for padding (fan-in scaling)

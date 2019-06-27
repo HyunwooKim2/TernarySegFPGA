@@ -154,13 +154,6 @@ void StreamingFCLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
     (static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>&>(wa_in),
      static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>  (wa_out),
      weights, activation, reps, r);
-  /* hwkim commented
-   * 여기서 WidthAdjustedInputStream class wa_in의 operator&가 호출되고,
-   * 	WidthAdjustedOutputSream class wa_out의 operator&가 호출되어,
-   * 	wa_in과 wa_out의 m_target 및 m_buffer가 연결되는 듯
-   * reps가 1로, Matrix_Vector_Activate_Batch 수행 시,
-   * 	1 pixel에 대해서만 수행
-   */
 }
 
 #endif
