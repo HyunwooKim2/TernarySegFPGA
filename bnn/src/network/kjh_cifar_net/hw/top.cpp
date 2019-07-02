@@ -83,6 +83,37 @@ static PassThroughAndBatchNorm<L6_TMEM, L6_PE, L6_API, ap_int<16>, ap_int<16>>  
  * pass through activation
  */
 
+// hwkim modified for average pooling
+template <int AVE_IFM_CH, int AVE_IFM_DIM>
+void average_pooling(
+		stream<ap_uint<AVE_IFM_CH>> &in,
+		stream<ap_uint<AVE_IFM_CH>> &out,
+		int ave_thres)
+{
+	  unsigned int ave_sum[AVE_IFM_CH];
+	  ap_uint<AVE_IFM_CH> ave_buf;
+	  for(int ch=0; ch<AVE_IFM_CH; ch++){
+	#pragma HLS UNROLL
+		  ave_sum[ch] = 0;
+	  }
+	  for(int y=0; y<AVE_IFM_DIM; y++){
+		for(int x=0; x<AVE_IFM_DIM; x++){
+			ave_buf = in.read();
+			for(int ch=0; ch<AVE_IFM_CH; ch++){
+				ave_sum[ch] = ave_sum[ch] + ave_buf[ch];
+			}
+		}
+	  }
+	  ave_buf = 0;
+	  for(int ch=0; ch<AVE_IFM_CH; ch++){
+		  if(ave_sum[ch]>=ave_thres)
+			  ave_buf[ch] = 1;
+	  }
+	  out.write(ave_buf);
+
+}
+
+
 
 // hwkim modified for padding
 template <int IFM_DIM, int InWidth>
@@ -552,26 +583,28 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 #define AVE_OFM_CH 256
 #define AVE_IFM_DIM 4
 #define AVE_THRES (4*4/2)
-  unsigned int ave_sum[L5_OFM_CH];
-  ap_uint<AVE_IFM_CH> ave_buf;
-  for(int ch=0; ch<AVE_IFM_CH; ch++){
-#pragma HLS UNROLL
-	  ave_sum[ch] = 0;
-  }
-  for(int y=0; y<AVE_IFM_DIM; y++){
-	for(int x=0; x<AVE_IFM_DIM; x++){
-		ave_buf = inter9.read();
-		for(int ch=0; ch<AVE_IFM_CH; ch++){
-			ave_sum[ch] = ave_sum[ch] + ave_buf[ch];
-		}
-	}
-  }
-  ave_buf = 0;
-  for(int ch=0; ch<AVE_IFM_CH; ch++){
-	  if(ave_sum[ch]>=AVE_THRES)
-		  ave_buf[ch] = 1;
-  }
-  inter10.write(ave_buf);
+  average_pooling<AVE_IFM_CH, AVE_IFM_DIM>(inter9,inter10,AVE_THRES);
+
+//  unsigned int ave_sum[AVE_IFM_CH];
+//  ap_uint<AVE_IFM_CH> ave_buf;
+//  for(int ch=0; ch<AVE_IFM_CH; ch++){
+//#pragma HLS UNROLL
+//	  ave_sum[ch] = 0;
+//  }
+//  for(int y=0; y<AVE_IFM_DIM; y++){
+//	for(int x=0; x<AVE_IFM_DIM; x++){
+//		ave_buf = inter9.read();
+//		for(int ch=0; ch<AVE_IFM_CH; ch++){
+//			ave_sum[ch] = ave_sum[ch] + ave_buf[ch];
+//		}
+//	}
+//  }
+//  ave_buf = 0;
+//  for(int ch=0; ch<AVE_IFM_CH; ch++){
+//	  if(ave_sum[ch]>=AVE_THRES)
+//		  ave_buf[ch] = 1;
+//  }
+//  inter10.write(ave_buf);
 
 //  StreamingFCLayer_Batch<L6_MW, L6_MH, L6_SIMD, L6_PE, Recast<XnorMul>>
 //    (inter8, inter9,  weights6, threshs6, numReps, ap_resource_lut());
@@ -643,14 +676,16 @@ void BlackBoxJam(ap_uint<64> *in, ap_uint<64> *out, bool doInit,
 #pragma HLS ARRAY_PARTITION variable=weights6.m_weights complete dim=1
 #pragma HLS ARRAY_PARTITION variable=threshs6.m_thresholds complete dim=1
 #pragma HLS ARRAY_PARTITION variable=threshs6.m_thresholds complete dim=3
-#pragma HLS ARRAY_PARTITION variable=weights7.m_weights complete dim=1
-#pragma HLS ARRAY_PARTITION variable=threshs7.m_thresholds complete dim=1
-#pragma HLS ARRAY_PARTITION variable=threshs7.m_thresholds complete dim=3
-#pragma HLS ARRAY_PARTITION variable=weights8.m_weights complete dim=1
+//#pragma HLS ARRAY_PARTITION variable=weights7.m_weights complete dim=1
+//#pragma HLS ARRAY_PARTITION variable=threshs7.m_thresholds complete dim=1
+//#pragma HLS ARRAY_PARTITION variable=threshs7.m_thresholds complete dim=3
+//#pragma HLS ARRAY_PARTITION variable=weights8.m_weights complete dim=1
 
   if (doInit) {
     DoMemInit(targetLayer, targetMem, targetInd, targetThresh, val);
   } else {
-    DoCompute(in, out, numReps);
+	  // hwkim modified for analysis - undefined latency
+//    DoCompute(in, out, numReps);
+	  DoCompute(in, out, 1);
   }
 }
