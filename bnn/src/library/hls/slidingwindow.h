@@ -131,14 +131,13 @@ void ConvolutionInputGenerator(
   /* hwkim commented
    * read/write 중 긴 것에 맞춤
    */
-  const unsigned int baseIter = IFMDim * ConvKernelDim * multiplying_factor// Initial buffer
+  const unsigned int baseIter = IFMDim * ConvKernelDim * multiplying_factor		// Initial buffer
+		  	  	  	  	  	  // hwkim modified for rectangle
 			                  + OFMDim * MAX(cycles_write_block,cycles_read_block);
+		  	  	  	  	  	  //+ 360 * MAX(cycles_write_block,cycles_read_block);
   /* hwkim commented
    * 위의 것은 초기에 input 가로 한 줄(모든 채널)을 read해 오기 위한 cycle
-   * 아래의 것은 output 가로 한 줄을 계산하기 위해 필요한 input을 buffer에
-   * 	write하는 데 걸리는 cycle
-   * 즉, 초기에 일단 input 한 줄(모든 채널)을 읽어오고(한 번만 수행)
-   * 그 이후에는 output 한 줄 씩을 계산하는 데 필요한 input을 read 및 write
+   *
    */
   unsigned int counter_internal_block = 0;
   unsigned int current_block_write = 0;

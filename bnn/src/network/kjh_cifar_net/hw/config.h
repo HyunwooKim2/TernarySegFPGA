@@ -112,10 +112,11 @@
 // hwkim modified for pipeline latency
 //#define L3_PE 16
 //#define L3_WMEM 288
+//#define L3_TMEM 8
 #define L3_PE 32
 #define L3_WMEM 144
+#define L3_TMEM 4
 
-#define L3_TMEM 8
 #define L3_WPI 1
 #define L3_API 1
 #define L3_WPF 0
@@ -142,10 +143,11 @@
 // hwkim modified for pipeline latency
 //#define L4_PE 4
 //#define L4_WMEM 2304
+//#define L4_TMEM 64
 #define L4_PE 16
 #define L4_WMEM 576
+#define L4_TMEM 16
 
-#define L4_TMEM 64
 #define L4_WPI 1
 #define L4_API 1
 #define L4_WPF 0
@@ -173,10 +175,11 @@
 //#define L5_PE 1
 //#define L5_WMEM 18432
 //#define L5_WMEM 1152
+//#define L5_TMEM 256
 #define L5_PE 32
 #define L5_WMEM 576
+#define L5_TMEM 8
 
-#define L5_TMEM 256
 #define L5_WPI 1
 #define L5_API 1
 #define L5_WPF 0
