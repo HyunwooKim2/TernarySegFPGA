@@ -126,6 +126,10 @@ if [[ ("$MODE" == "h") || ("$MODE" == "a")  ]]; then
 	PARAMS="/home/khw1204/work/params/finn_params/cifar10_params/190621"
 	TEST_INPUT="/home/khw1204/work/params/finn_params/cifar10_params/190621/input.bin"
 	TEST_RESULT=3
+  elif [[ ("$NETWORK" == "bnn_seg_net") ]]; then
+	PARAMS="/home/khw1204/work/params/finn_params/camvid_params/0710"
+	TEST_INPUT="/home/khw1204/work/params/finn_params/camvid_params/0710/input.bin"
+	TEST_RESULT=3
   fi
 
   if [[ ("$PLATFORM" == "pynqZ1-Z2") ]]; then

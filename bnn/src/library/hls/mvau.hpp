@@ -60,6 +60,7 @@
 //#define ACTIVATION_LOG
 #ifdef ACTIVATION_LOG
 #include <fstream>
+#include <stdio.h>
 extern int weighted_layer_cnt;
 #endif
 
@@ -366,6 +367,8 @@ template<
   unsigned MatrixW, unsigned MatrixH, unsigned SIMD, unsigned PE,
   // hwkim modified for padding
   unsigned OFMDim,
+  // hwkim modified for segmentation
+  unsigned OFMHeight,
 
   typename TSrcI = Identity, typename TDstI = Identity, typename TWeightI = Identity,
   typename TI, typename TO, typename TW, typename TA, typename R
@@ -412,17 +415,23 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
 
   // hwkim modified for debug
 #ifdef ACTIVATION_LOG
-  string conv_out_file_name = "conv_" + to_string(weighted_layer_cnt+1) + "_out_file.txt";
+  string conv_out_file_name = "conv_" + to_string(weighted_layer_cnt+1) + "_out.txt";
   ofstream conv_out_log_file(conv_out_file_name);
   if(!conv_out_log_file.is_open()){
  	 cout << "conv_out_log_file open error" << endl;
   }
 
   extern string golden_file_dir;
-  string golden_conv_out_file_name = golden_file_dir + "binConv" + to_string(weighted_layer_cnt+1) + "_minusBias.txt";
+  string golden_conv_out_file_name = golden_file_dir + "binConv" + to_string(weighted_layer_cnt+1) + ".txt";
   ifstream golden_conv_out_file(golden_conv_out_file_name);
   if(!golden_conv_out_file.is_open()){
 	  cout << "golden_conv_out_file open error" << endl;
+  }
+
+  string conv_out_comp_file_name = "conv_" + to_string(weighted_layer_cnt+1) + "out_comp.txt";
+  ofstream conv_out_comp_file(conv_out_comp_file_name);
+  if(!conv_out_comp_file.is_open()){
+	  cout << "conv_out_comp_file open error" << endl;
   }
 
 #endif
@@ -485,6 +494,8 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
 	ky = ((tile/(SF/9))%9)/3;
 	kx = ((tile/(SF/9))%9)%3;
 	// hwkim modified for debug
+//	if(x > 178)
+//		printf("here\n");
 //	cout << "nf=" << nf << ", sf=" << sf << ", pe=" << pe << ",
 //		y=" << y << ", x=" << x << ", ky=" << ky << ", kx=" << kx << ", tile=" << tile << endl;
 //	if(y==7 && x==24){
@@ -502,7 +513,10 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
       if((x==0 && kx==0)
     	  ||(y==0 && ky==0)
 		  ||(x==(OFMDim-1) && kx==2)
-		  ||(y==(OFMDim-1) && ky==2)){
+		  // hwkim modified for segmentation
+		  //||(y==(OFMDim-1) && ky==2)){
+		  ||(y==(OFMHeight-1) && ky==2)){
+
     	  // for fan-in scaling
     	  //padding[pe] = 1;
     	  //fan_in_loss[pe] += SIMD;
@@ -530,25 +544,24 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
       auto  outElem = TDstI().template operator()<TO>();
       for (unsigned  pe = 0; pe < PE; pe++) {
 #pragma HLS UNROLL
- 	     // hwkim modified for debug
- #ifdef ACTIVATION_LOG
-   		conv_out_log_file << fixed;
- 		conv_out_log_file.setf(ios::showpoint);
- 		conv_out_log_file.precision(8);
- 		conv_out_log_file << accu[pe] << " | ";
- 		//decltype(activation.init(0,0))	golden_buf;
-// 		double golden_buf;
-// 		golden_conv_out_file >> golden_buf;
-// 		if(accu[pe]!=golden_buf){
-// 			cout << fixed;
-// 			cout.precision(7);
-// 			cout.setf(ios_base::showpoint);
-// 			cout << "differ @ (" << y << "," << x << ") gold: " << golden_buf << ", accu[" << nf << ", " << pe << "]: " << accu[pe] << endl;
-// 		}
-
- #endif
     	  // hwkim modified for bias
-    	//accu[pe] = accu[pe] + activation.m_thresholds[pe][nf][0];
+    	accu[pe] = accu[pe] + activation.m_thresholds[pe][nf][0];
+
+	     // hwkim modified for debug
+#ifdef ACTIVATION_LOG
+		conv_out_log_file << setprecision(8) << accu[pe] << endl;//" | ";
+
+   	// compare golden with computed
+		decltype(activation.init(0,0))	golden_buf;
+		//double golden_buf;
+		golden_conv_out_file >> golden_buf;
+		if(accu[pe]!=golden_buf){
+			conv_out_comp_file << fixed;
+			conv_out_comp_file.precision(8);
+			conv_out_comp_file.setf(ios_base::showpoint);
+			conv_out_comp_file << "differ @ (" << y << "," << x << ") gold: " << golden_buf << ", accu[" << nf << ", " << pe << "]: " << accu[pe] << endl;
+		}
+#endif
 
     	outElem[pe] = activation.activate(nf, pe, accu[pe]);
     	// hwkim modified for padding (fan-in scaling)
@@ -577,15 +590,16 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
     	   */
 	    nf   = 0;
 	    tile = 0;
-#ifdef ACTIVATION_LOG
-	    conv_out_log_file << endl;
-#endif
+//#ifdef ACTIVATION_LOG
+//	    conv_out_log_file << endl;
+//#endif
       }
     }
   }
 
 #ifdef ACTIVATION_LOG
   conv_out_log_file.close();
+  conv_out_comp_file.close();
 #endif
 }
 #endif

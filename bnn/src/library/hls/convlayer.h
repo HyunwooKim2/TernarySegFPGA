@@ -67,6 +67,10 @@ template<
 		unsigned int OFMChannels,		// number of output feature maps
 		unsigned int OFMDim,			// IFMDim-ConvKernelDim+1 or less
 		
+		// hwkim added for segmentation
+		unsigned int IFMHeight,
+		unsigned int OFMHeight,
+
 		unsigned int SIMD, 				// number of SIMD lanes
 		unsigned int PE,				// number of PEs
 		
@@ -74,9 +78,6 @@ template<
 		typename TDstI = Identity,		// redefine I/O interpretation as needed for output activations
 		typename TWeightI = Identity,	// redefine I/O interpretation as needed for weigths
 
-		/* hwkim commented
-		 * 여기 아래는 argument에서 알아냄
-		 */
 		int InStreamW, int OutStreamW,  // safely deducible (stream width must be int though!)
 		typename TW,   typename TA,  typename R
 >
@@ -93,18 +94,24 @@ void ConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
   unsigned const MatrixW = ConvKernelDim * ConvKernelDim * IFMChannels;
   unsigned const MatrixH = OFMChannels;
 
-  // hwkim modified for debug
-  // there may be fractal, so it cause difference
+  // hwkim modified for debug & segmentation
+  // 	there may be fractal, so it cause difference
   //unsigned const InpPerImage = IFMDim*IFMDim*IFMChannels/InStreamW * TSrcI::width;
-  unsigned const InpPerImage = (float)(IFMDim*IFMDim*IFMChannels)/InStreamW * TSrcI::width;
+  //unsigned const InpPerImage = (float)(IFMDim*IFMDim*IFMChannels)/InStreamW * TSrcI::width;
+  unsigned const InpPerImage = (float)(IFMDim*IFMHeight*IFMChannels)/InStreamW * TSrcI::width;
 
   WidthAdjustedInputStream <InStreamW, SIMD*TSrcI::width, InpPerImage>  wa_in (in,  reps);
+
+  // hwkim modified for segmentation
   WidthAdjustedOutputStream <PE*TDstI::width, OutStreamW,
-  	  OFMDim * OFMDim * (OFMChannels / PE)> mvOut (out,  reps);
+//  	  OFMDim * OFMDim * (OFMChannels / PE)> mvOut (out,  reps);
+  	  OFMDim * OFMHeight * (OFMChannels / PE)> mvOut (out,  reps);
 #ifdef ACTIVATION_LOG
   WidthAdjustedOutputStream <PE*TDstI::width, OutStreamW,
-	  OFMDim * OFMDim * (OFMChannels / PE)> mvOut_log (out_log,  reps);
+//	  OFMDim * OFMDim * (OFMChannels / PE)> mvOut_log (out_log,  reps);
+  	  OFMDim * OFMHeight * (OFMChannels / PE)> mvOut_log (out_log,  reps);
 #endif
+
   hls::stream<ap_uint<SIMD*TSrcI::width> > convInp("StreamingConvLayer_Batch.convInp");
   // hwkim modified for debug
 #ifdef ACTIVATION_LOG
@@ -112,7 +119,7 @@ void ConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
 #endif
 
   ConvolutionInputGenerator<ConvKernelDim, IFMChannels, TSrcI::width, IFMDim,
-			OFMDim, SIMD,1>(wa_in, convInp,
+			OFMDim, SIMD, 1>(wa_in, convInp,
 					// hwkim modified for debug
 #ifdef ACTIVATION_LOG
 					convInp_log,
@@ -125,7 +132,7 @@ void ConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
             if(!conv_in_gen_log_file.is_open()){
             	cout << "conv_in_gen_log_file open error!!" << endl;
               }
-            for(int y=0; y<OFMDim; y++){
+            for(int y=0; y<OFMHeight; y++){
             	for(int x=0; x<OFMDim; x++){
             		for(int ky=0; ky<3; ky++){
             			for(int kx=0; kx<3; kx++){;
@@ -149,13 +156,19 @@ void ConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
 //    (static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>&>(convInp),
 //     static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>  (mvOut),
 //     weights, activation, reps* OFMDim * OFMDim, r);
-	Matrix_Vector_Activate_Batch_Padding<MatrixW, MatrixH, SIMD, PE, OFMDim, TSrcI, TDstI, TWeightI>
+	Matrix_Vector_Activate_Batch_Padding<MatrixW, MatrixH, SIMD, PE, OFMDim,
+	// hwkim modified for segmentation
+	OFMHeight,
+
+	TSrcI, TDstI, TWeightI>
 		(static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>&>(convInp),
 		static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>  (mvOut),
 #ifdef ACTIVATION_LOG
 		static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>  (mvOut_log),
 #endif
-		weights, activation, reps* OFMDim * OFMDim, r);
+		// hwkim modified for segmentation
+//		weights, activation, reps* OFMDim * OFMDim, r);
+		weights, activation, reps* OFMDim * OFMHeight, r);
 }
 
 #endif

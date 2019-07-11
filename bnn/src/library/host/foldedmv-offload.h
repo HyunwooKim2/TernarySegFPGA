@@ -160,6 +160,12 @@ void quantiseAndPack(const tiny_cnn::vec_t & in, ExtMemWord * out, unsigned int 
 	if(!quantise_log_file.is_open()){
 		cout << "quantise_log_file open error!!" << endl;
 	}
+	ofstream quantise_realnum_log_file("quantise_realnum_log.txt");
+	if(!quantise_realnum_log_file.is_open()){
+		cout << "quantise_log_file open error!!" << endl;
+	}
+	quantise_realnum_log_file << fixed;
+	quantise_realnum_log_file.precision(8);
 //	ifstream golden_file("/home/khw1204/work/params/guinness_params/cifar10_params/190606/Activations/Scale1.txt");
 //	if(!golden_file.is_open()){
 //		cout << "golden input file open error!!" << endl;
@@ -168,10 +174,12 @@ void quantiseAndPack(const tiny_cnn::vec_t & in, ExtMemWord * out, unsigned int 
 //	if(!golden_file.is_open()){
 //		cout << "input comp file open error!!" << endl;
 //	}
+	int w = 480+2;
+	int h = 360+2;
 	for(int c=0; c<3; c++){
-		for(int y=0; y<34; y++){
-			for(int x=0; x<34; x++){
-				ap_fixed<inWidth, 1, AP_TRN, AP_SAT> fxdValue = in[y*34*3 + x*3 + c];
+		for(int y=0; y<h; y++){
+			for(int x=0; x<w; x++){
+				ap_fixed<inWidth, 1, AP_TRN, AP_SAT> fxdValue = in[y*w*3 + x*3 + c];
 				ap_uint<inWidth> uValue = *reinterpret_cast<ap_uint<inWidth> *>(&fxdValue);
 				// printing in decimal
 				//quantise_log_file << setw(10) << std::hex << (unsigned int)uValue << "|";
@@ -191,8 +199,10 @@ void quantiseAndPack(const tiny_cnn::vec_t & in, ExtMemWord * out, unsigned int 
 //				if((x!=0) && (y!=0) && (x!=33) && (y!=33))	//for \n
 //					golden_file.read(&golden_buf,1);
 				quantise_log_file << " | ";
+				quantise_realnum_log_file << fxdValue << " | ";
 			}
 			quantise_log_file << endl;
+			quantise_realnum_log_file << endl;
 		}
 		quantise_log_file << "==============================================="
 			  << "==============================================="
@@ -205,8 +215,20 @@ void quantiseAndPack(const tiny_cnn::vec_t & in, ExtMemWord * out, unsigned int 
 			  << "==============================================="
 			  << "==============================================="
 			  << endl;
+		quantise_realnum_log_file << "==============================================="
+			  << "==============================================="
+			  << "==============================================="
+			  << "==============================================="
+			  << "==============================================="
+			  << "==============================================="
+			  << "==============================================="
+			  << "==============================================="
+			  << "==============================================="
+			  << "==============================================="
+			  << endl;
 	}
 	quantise_log_file.close();
+	quantise_realnum_log_file.close();
 #endif
 }
 
@@ -329,6 +351,7 @@ std::vector<int>  testPrebuiltCIFAR10_from_image(std::vector<tiny_cnn::vec_t> & 
    * 	image 1개의 원소 개수를 의미? (이거일 듯)
    * 		-> cifar 32x32=1024개의 8-bit짜리 데이터가 있으므로
    * 		ExtMemWord로는 몇 개인지를 나타내는 듯
+   * 	-> imgs[0] is one image among multiple images
    * paddedSize()는 ExtMemWord로 나누어 떨어지지 않는 경우 +1을 해주기 위해
    */
   // number of ExtMemWords per output
@@ -347,9 +370,9 @@ std::vector<int>  testPrebuiltCIFAR10_from_image(std::vector<tiny_cnn::vec_t> & 
   ExtMemWord * packedImages = new ExtMemWord[(count * psi)];
   ExtMemWord * packedOut = new ExtMemWord[(count * pso)];
   
-  // hwkim fixed bug of padding
+  // hwkim fixed bug of padding & modified for segmentation
   //tiny_cnn::chaninterleave_layer<tiny_cnn::activation::identity> interleaver(3, 32 * 32, false);
-  tiny_cnn::chaninterleave_layer<tiny_cnn::activation::identity> interleaver(3, (32+2) * (32+2), false);
+  tiny_cnn::chaninterleave_layer<tiny_cnn::activation::identity> interleaver(3, (480+2) * (360+2), false);
 
   // interleave and pack inputs
   for(unsigned int i = 0; i < count; i++) {
@@ -357,6 +380,7 @@ std::vector<int>  testPrebuiltCIFAR10_from_image(std::vector<tiny_cnn::vec_t> & 
     /* hwkim commented
      * 기존 x->y->c로 order된 imgs(input)를 c->x->y로 reorder(interleaving)
      */
+
     quantiseAndPack<inWidth, 1>(interleaved, &packedImages[i * psi], psi);
     /* hwkim commented
      * -1~1 사이 floating point를 8-bit fixed point로 quantise 후,

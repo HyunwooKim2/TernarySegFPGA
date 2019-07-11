@@ -106,13 +106,14 @@ T mac(T const &a, TC const &c, TD const &d, R const &r) {
   T  res = a;
   for(unsigned  i = 0; i < N; i++) {
 #pragma HLS unroll
-	// hwkim modified for debug
-	//cout << "res=c[" << i << "]*d[" << i << "]" << "=";
-
     res += mul(c[i], d[i], r);
+
+	// hwkim modified for debug
+//	cout << "res=c[" << i << "]*d[" << i << "]" << "=";
+//	cout << res << "\t";
   }
   // hwkim modified for debug
-  //cout << "accum=" << res << endl;
+//  cout << "accum=" << res << endl;
 
   return  res;
 }
