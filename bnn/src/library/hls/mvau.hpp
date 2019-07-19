@@ -415,20 +415,20 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
 
   // hwkim modified for debug
 #ifdef ACTIVATION_LOG
-  string conv_out_file_name = "conv_" + to_string(weighted_layer_cnt+1) + "_out.txt";
+  string conv_out_file_name = "conv_" + to_string(weighted_layer_cnt+1) + "_out_minusBias.txt";
   ofstream conv_out_log_file(conv_out_file_name);
   if(!conv_out_log_file.is_open()){
  	 cout << "conv_out_log_file open error" << endl;
   }
 
   extern string golden_file_dir;
-  string golden_conv_out_file_name = golden_file_dir + "binConv" + to_string(weighted_layer_cnt+1) + ".txt";
+  string golden_conv_out_file_name = golden_file_dir + "binConv" + to_string(weighted_layer_cnt+1) + "_minusBias.txt";
   ifstream golden_conv_out_file(golden_conv_out_file_name);
   if(!golden_conv_out_file.is_open()){
 	  cout << "golden_conv_out_file open error" << endl;
   }
 
-  string conv_out_comp_file_name = "conv_" + to_string(weighted_layer_cnt+1) + "out_comp.txt";
+  string conv_out_comp_file_name = "conv_" + to_string(weighted_layer_cnt+1) + "_out_minusBias_comp.txt";
   ofstream conv_out_comp_file(conv_out_comp_file_name);
   if(!conv_out_comp_file.is_open()){
 	  cout << "conv_out_comp_file open error" << endl;
@@ -494,12 +494,8 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
 	ky = ((tile/(SF/9))%9)/3;
 	kx = ((tile/(SF/9))%9)%3;
 	// hwkim modified for debug
-//	if(x > 178)
-//		printf("here\n");
 //	cout << "nf=" << nf << ", sf=" << sf << ", pe=" << pe << ",
 //		y=" << y << ", x=" << x << ", ky=" << ky << ", kx=" << kx << ", tile=" << tile << endl;
-//	if(y==7 && x==24){
-//		cout << "here" << endl;
 //	}
 
 
@@ -544,8 +540,6 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
       auto  outElem = TDstI().template operator()<TO>();
       for (unsigned  pe = 0; pe < PE; pe++) {
 #pragma HLS UNROLL
-    	  // hwkim modified for bias
-    	accu[pe] = accu[pe] + activation.m_thresholds[pe][nf][0];
 
 	     // hwkim modified for debug
 #ifdef ACTIVATION_LOG
@@ -563,6 +557,8 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
 		}
 #endif
 
+  	  // hwkim modified for bias
+//    	accu[pe] = accu[pe] + activation.m_thresholds[pe][nf][0];
     	outElem[pe] = activation.activate(nf, pe, accu[pe]);
     	// hwkim modified for padding (fan-in scaling)
 //    	if((TI::width==1) && (padding[pe])){

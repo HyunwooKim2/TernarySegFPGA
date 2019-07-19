@@ -118,9 +118,12 @@ void ConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
   hls::stream<ap_uint<SIMD*TSrcI::width> > convInp_log("StreamingConvLayer_Batch.convInp_log");
 #endif
 
-  ConvolutionInputGenerator<ConvKernelDim, IFMChannels, TSrcI::width, IFMDim,
-			OFMDim, SIMD, 1>(wa_in, convInp,
-					// hwkim modified for debug
+  ConvolutionInputGenerator<ConvKernelDim, IFMChannels, TSrcI::width, IFMDim, OFMDim,
+  // hwkim modified for segmentation
+  	  OFMHeight,
+
+  	  SIMD, 1>(wa_in, convInp,
+// hwkim modified for debug
 #ifdef ACTIVATION_LOG
 					convInp_log,
 #endif

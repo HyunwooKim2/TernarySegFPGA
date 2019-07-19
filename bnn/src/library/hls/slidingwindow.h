@@ -61,17 +61,11 @@ template<unsigned int ConvKernelDim,
 		 unsigned int Input_precision,		// Number of bits for each pixel
 		 unsigned int IFMDim, 
 		 unsigned int OFMDim,
+		 // hwkim modified for segmentation
+		 unsigned int OFMHeight,
+
 		 unsigned int SIMD,
-		 unsigned int Stride = 1>  			
-/* hwkim commented
- * for layer 0
- * 		ConvKernelDim -> 3
- * 		IFMChannels -> 3
- * 		Input_precision -> TSrcI::width -> 8
- * 		IFMDim -> 32
- * 		OFMDim -> 30
- * 		SIMD -> 3
- */
+		 unsigned int Stride = 1>
 void ConvolutionInputGenerator(
 		stream<ap_uint<SIMD*Input_precision> > & in,
 		stream<ap_uint<SIMD*Input_precision> > & out,
@@ -97,9 +91,10 @@ void ConvolutionInputGenerator(
   const unsigned int cycles_read_block = Stride * IFMDim * multiplying_factor;
   const unsigned int max_cycles = MAX(cycles_write_block,cycles_read_block);
   const unsigned int baseIter = IFMDim * ConvKernelDim * multiplying_factor		// Initial buffer
-		  	  	  	  	  	  // hwkim modified for rectangle
+		  	  	  	  	  	  // hwkim modified for segmentation - support for rectangle
 			                  //+ OFMDim * MAX(cycles_write_block,cycles_read_block);
-		  	  	  	  	  	  + 360 * MAX(cycles_write_block,cycles_read_block);
+		  	  	  	  	  	  + OFMHeight * MAX(cycles_write_block,cycles_read_block);
+
   unsigned int counter_internal_block = 0;
   unsigned int current_block_write = 0;
   unsigned int next_block_write = 0;	
@@ -117,7 +112,7 @@ void ConvolutionInputGenerator(
 
     	  // hwkim modified for debug
     	  if(in.empty())
-    		  printf("here");
+    		  printf("ConvInpGen stream read empty!!\n");
 
     	  inElem = in.read();
     	  inputBuf[current_block_write][current_line] = inElem;
@@ -169,7 +164,7 @@ void ConvolutionInputGenerator(
 							  ofm_y++;
 							  // hwkim modified for segmentation
 							  //if (ofm_y == OFMDim) {
-							  if (ofm_y == 360) {
+							  if (ofm_y == OFMHeight) {	//360) {
 								  ofm_y = 0;
 								  inp = 0;
 							  }}}}}
@@ -177,14 +172,14 @@ void ConvolutionInputGenerator(
 
     	  // hwkim modified for segmentation debug
           //if ((counter_internal_block < cycles_read_block-1) && (read_block<IFMDim/Stride)) {
-    	  if ((counter_internal_block < cycles_read_block-1) && (read_block<(360+2)/Stride)) {
+    	  if ((counter_internal_block < cycles_read_block-1) && (read_block<(OFMHeight+2)/Stride)) {	//(360+2)/Stride)) {
 
         	  // In parallel we write in the buffer, in the current block write if we still need to
         	  ap_uint<SIMD*Input_precision> inElem;
 
         	  // hwkim modified for debug
 			  if(in.empty())
-				  printf("here");
+				  printf("ConvInpGen stream read empty!!\n");
 
         	  inElem = in.read();
         	  inputBuf[current_block_write][current_line] = inElem;

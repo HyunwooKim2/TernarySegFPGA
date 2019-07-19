@@ -49,7 +49,11 @@
  
 #include <limits>
  
-template<unsigned int ImgDim, unsigned int PoolDim, unsigned int NumChannels>
+template<unsigned int ImgDim,
+// hwkim modified for segmentation
+unsigned int ImgHeight,
+
+unsigned int PoolDim, unsigned int NumChannels>
 void StreamingMaxPool(stream<ap_uint<NumChannels> > & in,
 		stream<ap_uint<NumChannels> > & out
 		// hwkim modified for debug
@@ -68,7 +72,10 @@ void StreamingMaxPool(stream<ap_uint<NumChannels> > & in,
     buf[i] = 0;
   }
 
-  for (unsigned int yp = 0; yp < ImgDim / PoolDim; yp++) {
+  // hwkim modified for segmentation
+  //for (unsigned int yp = 0; yp < ImgDim / PoolDim; yp++) {
+  for (unsigned int yp = 0; yp < ImgHeight / PoolDim; yp++) {
+
     for (unsigned int ky = 0; ky < PoolDim; ky++) {
       for (unsigned int xp = 0; xp < ImgDim / PoolDim; xp++) {
 #pragma HLS PIPELINE II=1
@@ -104,7 +111,11 @@ void StreamingMaxPool(stream<ap_uint<NumChannels> > & in,
 }
 
 // calling 1-image maxpool in a loop works well enough for now
-template<unsigned int ImgDim, unsigned int PoolDim, unsigned int NumChannels>
+template<unsigned int ImgDim,
+// hwkim modified for segmentation
+unsigned int ImgHeight,
+
+unsigned int PoolDim, unsigned int NumChannels>
 void StreamingMaxPool_Batch(stream<ap_uint<NumChannels> > & in,
 		stream<ap_uint<NumChannels> > & out,
 		// hwkim modified for debug
@@ -113,7 +124,11 @@ void StreamingMaxPool_Batch(stream<ap_uint<NumChannels> > & in,
 #endif
 		unsigned int numReps) {
   for (unsigned int rep = 0; rep < numReps; rep++) {
-    StreamingMaxPool<ImgDim, PoolDim, NumChannels>(in, out
+    StreamingMaxPool<ImgDim,
+	// hwkim modified for segmentation
+	ImgHeight,
+
+	PoolDim, NumChannels>(in, out
     		// hwkim modified for debug
 #ifdef ACTIVATION_LOG
     		,out_log

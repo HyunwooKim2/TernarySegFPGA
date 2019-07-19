@@ -49,6 +49,9 @@
  *
  *******************************************************************************/
 
+// hwkim added for debug
+#include <cstdio>
+
 #ifndef ACTIVATIONS_HPP
 #define ACTIVATIONS_HPP
 
@@ -144,6 +147,7 @@ public:
 
     // hwkim modified for bias
     TA act = accu + m_thresholds[pe][nf][0];
+//    cout << setprecision(9) << "accu" << pe << "=" << act << endl;
     if(act >= (TR)0)
     	result = (TR)1;
     else
