@@ -205,4 +205,53 @@ void StreamingMaxPool_Precision_Batch(stream<ap_uint<InStreamW> > & in,
   }
 }
 
+
+// hwkim added for segmentation
+template <unsigned int ImgDim,
+			unsigned int ImgHeight,
+			unsigned int PoolDim,
+			unsigned int NumChannels>
+void StreamingMaxPoolUnPool
+(
+	stream<ap_uint<NumChannels> > & in,
+	stream<ap_uint<NumChannels> > & out
+	#ifdef ACTIVATION_LOG
+	,stream<ap_uint<NumChannels> > & out_log
+	#endif
+)
+{
+  CASSERT_DATAFLOW(ImgDim % PoolDim == 0);
+  // need buffer space for a single maxpooled row of the image
+  ap_uint<NumChannels> buf[ImgDim / PoolDim];
+  for(unsigned int i = 0; i < ImgDim / PoolDim; i++) {
+#pragma HLS UNROLL
+    buf[i] = 0;
+  }
+
+  for (unsigned int yp = 0; yp < ImgHeight / PoolDim; yp++) {
+    for (unsigned int ky = 0; ky < PoolDim; ky++) {
+      for (unsigned int xp = 0; xp < ImgDim / PoolDim; xp++) {
+#pragma HLS PIPELINE II=1
+        ap_uint<NumChannels> acc = 0;
+        for (unsigned int kx = 0; kx < PoolDim; kx++) {
+          acc = acc | in.read();
+        }
+        // pool with old value in row buffer
+        buf[xp] |= acc;
+      }
+    }
+
+	for (unsigned int outpix = 0; outpix < ImgDim / PoolDim; outpix++) {
+#pragma HLS PIPELINE II=1
+      out.write(buf[outpix]);
+	#ifdef ACTIVATION_LOG
+      out_log.write(buf[outpix]);
+	#endif
+      // get buffer ready for next use
+      buf[outpix] = 0;
+    }
+  }
+}
+
+
 #endif
