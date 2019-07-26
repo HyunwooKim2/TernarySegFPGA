@@ -123,12 +123,12 @@ if [[ ("$MODE" == "h") || ("$MODE" == "a")  ]]; then
 	TEST_INPUT="$XILINX_BNN_ROOT/../../tests/Test_image/3.image-idx3-ubyte"
 	TEST_RESULT=3
   elif [[ ("$NETWORK" == "kjh_cifar_net") ]]; then
-	PARAMS="/home/khw1204/work/params/finn_params/cifar10_params/190621"
-	TEST_INPUT="/home/khw1204/work/params/finn_params/cifar10_params/190621/input.bin"
+	PARAMS="$XILINX_BNN_ROOT/../params/cifar10/$NETWORK/0621"
+	TEST_INPUT="$XILINX_BNN_ROOT/../params/cifar10/$NETWORK/0621/input.bin"
 	TEST_RESULT=3
   elif [[ ("$NETWORK" == "bnn_seg_net") ]]; then
-	PARAMS="/home/khw1204/work/params/finn_params/camvid_params/0710"
-	TEST_INPUT="/home/khw1204/work/params/finn_params/camvid_params/0710/input.bin"
+	PARAMS="$XILINX_BNN_ROOT/../params/camvid_params/$NETWORK/0710"
+	TEST_INPUT="$XILINX_BNN_ROOT/../params/camvid_params/$NETWORK/0710/input.bin"
 	TEST_RESULT=3
   fi
 

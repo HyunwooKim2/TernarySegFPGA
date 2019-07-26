@@ -177,8 +177,8 @@ void insert_pad(stream<ap_uint<InWidth>> & in_stream,
 
 // hwkim modified for debug
 #ifdef ACTIVATION_LOG
-string golden_file_dir = "/home/khw1204/work/params/guinness_params/camvid_params/0710/Activations/";
-string snapshot_dir = "/home/khw1204/work/params/finn_params/camvid_params/0710/snapshots/";
+string golden_file_dir = "/home/hwkim/work/params/guinness_params/camvid_params/0710/Activations/";
+string snapshot_dir = "/home/hwkim/work/params/finn_params/camvid_params/0710/snapshots/";
 
 template <unsigned int OFMDim,
 		unsigned int OFMHeight,
@@ -431,7 +431,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
   const unsigned int outBits = L13_OFM_CH*16;
 
   // hwkim modified for separated simulation
-  int start_layer = 8;
+  int start_layer = 0;
   string snapshot_file_name;
 
   if(start_layer < 1){

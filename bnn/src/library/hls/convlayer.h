@@ -118,7 +118,10 @@ void ConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
   hls::stream<ap_uint<SIMD*TSrcI::width> > convInp_log("StreamingConvLayer_Batch.convInp_log");
 #endif
 
+  // hwkim modified for integer max pool
   ConvolutionInputGenerator<ConvKernelDim, IFMChannels, TSrcI::width, IFMDim, OFMDim,
+  //ZigZagConvolutionInputGenerator<ConvKernelDim, IFMChannels, TSrcI::width, IFMDim, OFMDim,
+
   // hwkim modified for segmentation
   	  OFMHeight,
 

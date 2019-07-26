@@ -53,7 +53,11 @@ set config_proj_part [lindex $argv 7]
 
 set config_bnnlibdir "$::env(XILINX_BNN_ROOT)/library/hls"
 set config_bnnhostlibdir "$::env(XILINX_BNN_ROOT)/library/host"
-set config_tinycnn "$::env(XILINX_BNN_ROOT)/xilinx-tiny-cnn"
+
+# hwkim modified for segmentation
+#set config_tinycnn "$::env(XILINX_BNN_ROOT)/xilinx-tiny-cnn"
+set config_tinycnn "$::env(XILINX_BNN_ROOT)/xilinx-tiny-cnn-seg"
+
 puts "BNN HLS library: $config_bnnlibdir"
 
 set config_toplevelfxn "BlackBoxJam"
@@ -61,12 +65,16 @@ set config_clkperiod [lindex $argv 8]
 
 # set up project
 open_project $config_proj_name
+
+# hwkim modified for activation log for csim
 add_files $config_hwsrcdir/top.cpp -cflags "-std=c++0x -I$config_bnnlibdir -DACTIVATION_LOG"
 #add_files $config_hwsrcdir/top.cpp -cflags "-std=c++0x -I$config_bnnlibdir"
 
+# hwkim modified for activation log for csim
 add_files -tb $config_hwsrcdir/../sw/main_python.cpp -cflags "-DOFFLOAD -DRAWHLS -DACTIVATION_LOG -std=c++0x -I$config_bnnhostlibdir -I$config_bnnlibdir -I$config_tinycnn -I$config_hwsrcdir"
 add_files -tb $config_bnnhostlibdir/foldedmv-offload.cpp -cflags "-DOFFLOAD -DRAWHLS -DACTIVATION_LOG -std=c++0x -I$config_bnnhostlibdir -I$config_bnnlibdir -I$config_tinycnn"
 add_files -tb $config_bnnhostlibdir/rawhls-offload.cpp -cflags "-DOFFLOAD -DRAWHLS -DACTIVATION_LOG -std=c++0x -I$config_bnnhostlibdir -I$config_bnnlibdir -I$config_tinycnn"
+# for synthesis
 #add_files -tb $config_hwsrcdir/../sw/main_python.cpp -cflags "-DOFFLOAD -DRAWHLS -std=c++0x -I$config_bnnhostlibdir -I$config_bnnlibdir -I$config_tinycnn -I$config_hwsrcdir"
 #add_files -tb $config_bnnhostlibdir/foldedmv-offload.cpp -cflags "-DOFFLOAD -DRAWHLS -std=c++0x -I$config_bnnhostlibdir -I$config_bnnlibdir -I$config_tinycnn"
 #add_files -tb $config_bnnhostlibdir/rawhls-offload.cpp -cflags "-DOFFLOAD -DRAWHLS -std=c++0x -I$config_bnnhostlibdir -I$config_bnnlibdir -I$config_tinycnn"
