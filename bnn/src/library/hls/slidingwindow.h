@@ -82,22 +82,34 @@ void ConvolutionInputGenerator(
     cout << "Error: Kernel size has to be multiple of Stride" << endl;
   }
   const unsigned int multiplying_factor = IFMChannels/SIMD;
-  const unsigned int number_blocks = ConvKernelDim/Stride + 1 ;
+  // hwkim modified for stride
+  //const unsigned int number_blocks = ConvKernelDim/Stride + 1 ;
+  const unsigned int number_blocks = ConvKernelDim + Stride;
+  //ap_uint<SIMD*Input_precision> inputBuf[number_blocks][Stride * IFMDim * multiplying_factor];
+  ap_uint<SIMD*Input_precision> inputBuf[number_blocks][IFMDim * multiplying_factor];
 
-  ap_uint<SIMD*Input_precision> inputBuf[number_blocks][Stride * IFMDim * multiplying_factor];
 #pragma HLS ARRAY_PARTITION variable=inputBuf complete dim=1
 #pragma HLS RESOURCE variable inputBuf core=RAM_2P
 
-  const unsigned int cycles_write_block = (OFMDim * ConvKernelDim * ConvKernelDim * multiplying_factor);
-  const unsigned int cycles_read_block = Stride * IFMDim * multiplying_factor;
+  // hwkim modified for stride
+  //const unsigned int cycles_write_block = (OFMDim * ConvKernelDim * ConvKernelDim * multiplying_factor);
+  const unsigned int cycles_write_block = ((OFMDim / Stride) * ConvKernelDim * ConvKernelDim * multiplying_factor);
+  //const unsigned int cycles_read_block = Stride * IFMDim * multiplying_factor;
+  const unsigned int cycles_read_block = Stride * IFMDim * multiplying_factor;	//결과적으론 똑같음..
+
   const unsigned int max_cycles = MAX(cycles_write_block,cycles_read_block);
   const unsigned int baseIter = IFMDim * ConvKernelDim * multiplying_factor		// Initial buffer
 		  	  	  	  	  	  // hwkim modified for segmentation - support for rectangle
 			                  //+ OFMDim * MAX(cycles_write_block,cycles_read_block);
-		  	  	  	  	  	  + OFMHeight * MAX(cycles_write_block,cycles_read_block);
+		  	  	  	  	  	  // hwkim modified for stride
+		  	  	  	  	  	    //+ OFMHeight * MAX(cycles_write_block,cycles_read_block);
+		  	  	  	  	  	    + (OFMHeight / Stride) * MAX(cycles_write_block,cycles_read_block);
 
   unsigned int counter_internal_block = 0;
   unsigned int current_block_write = 0;
+  // hwkim modified for stride
+  unsigned int current_block_read = 0;
+
   unsigned int next_block_write = 0;	
   unsigned int current_line = 0;
   unsigned int read_block = 0; 
@@ -121,7 +133,10 @@ void ConvolutionInputGenerator(
     	  current_line++;
     	  inp++;
 
-    	  if (current_line == Stride * IFMDim * multiplying_factor ) {
+    	  // hwkim modified for stride
+    	  //if (current_line == Stride * IFMDim * multiplying_factor ) {
+		  if (current_line == IFMDim * multiplying_factor ) {
+
     		  current_line = 0;
     		  current_block_write++;
 
@@ -137,13 +152,30 @@ void ConvolutionInputGenerator(
     		  /*
     		   * (OFMDim * ConvKernelDim * ConvKernelDim * multiplying_factor);
     		   */
-    		  unsigned int current_block_read = (current_block_write + 1 + k_y / Stride);
-    		  if (current_block_read >= number_blocks) {
-    			  current_block_read-= number_blocks;
-    		  }
+    		  // hwkim modified for stride
+    		  //unsigned int current_block_read = (current_block_write + 1 + k_y / Stride);
+    		  //unsigned int current_block_read = (current_block_write + Stride + k_y);
+//    		  cout << "current_block_write=" << current_block_write;
+//    		  cout << " | current_block_read=" << current_block_read;
+//    		  cout << " | ofm_y=" << ofm_y;
+//    		  cout << ", ofm_x=" << ofm_x << endl;
+
+//    		  if (current_block_read >= number_blocks) {
+//    			  current_block_read-= number_blocks;
+//    		  }
 			  unsigned int current_line_in_block
-			  	  = ((k_y%Stride) * IFMDim + ofm_x*Stride + k_x)*multiplying_factor + count_simd;
-			  ap_uint<SIMD*Input_precision> outElem = inputBuf[current_block_read][(current_line_in_block)];
+			  	  // hwkim modified for stride
+			  	  //= ((k_y%Stride) * IFMDim + ofm_x*Stride + k_x)*multiplying_factor + count_simd;
+			  	  = (ofm_x*Stride + k_x)*multiplying_factor + count_simd;
+
+			  // hwkim modified for stride
+			  //ap_uint<SIMD*Input_precision> outElem = inputBuf[current_block_read][(current_line_in_block)];
+			  unsigned int current_block_read_kernel = current_block_read + k_y;
+			  if (current_block_read_kernel >= number_blocks) {
+				  current_block_read_kernel-= number_blocks;
+			  }
+			  ap_uint<SIMD*Input_precision> outElem = inputBuf[current_block_read_kernel][(current_line_in_block)];
+
 			  out.write(outElem);
 			  // hwkim modified for debug
 #ifdef ACTIVATION_LOG
@@ -160,12 +192,24 @@ void ConvolutionInputGenerator(
 					  if (k_y == ConvKernelDim) {
 						  k_y = 0;
 						  ofm_x ++;
-						  if (ofm_x == OFMDim) {
+						  // hwkim modified for stride
+						  //if (ofm_x == OFMDim) {
+						  if (ofm_x == OFMDim/Stride) {
+
 							  ofm_x = 0;
 							  ofm_y++;
+							  // hwkim added for stride
+							  current_block_read++;
+							  if (current_block_read >= number_blocks) {
+								  current_block_read-= number_blocks;
+							  }
+
 							  // hwkim modified for segmentation
 							  //if (ofm_y == OFMDim) {
-							  if (ofm_y == OFMHeight) {	//360) {
+							  // hwkim modified for stride
+							  //if (ofm_y == OFMHeight) {
+							  if (ofm_y == OFMHeight/Stride) {
+
 								  ofm_y = 0;
 								  inp = 0;
 							  }}}}}
@@ -187,7 +231,10 @@ void ConvolutionInputGenerator(
 #pragma AP dependence variable=inputBuf intra false
 #pragma AP dependence variable=inputBuf inter false
         	  current_line++;
-        	  if (current_line == Stride * IFMDim * multiplying_factor) {// We read the whole block, we change the next block in which we want to we
+        	  // hwkim modified for stride
+        	  //if (current_line == Stride * IFMDim * multiplying_factor) {// We read the whole block, we change the next block in which we want to we
+			  if (current_line == IFMDim * multiplying_factor) {
+
 				// We filled up a block, let's not read until
         		  current_line = 0;
         		  read_block++;

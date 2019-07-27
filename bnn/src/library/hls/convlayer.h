@@ -70,6 +70,7 @@ template<
 		// hwkim added for segmentation
 		unsigned int IFMHeight,
 		unsigned int OFMHeight,
+		unsigned int Stride,
 
 		unsigned int SIMD, 				// number of SIMD lanes
 		unsigned int PE,				// number of PEs
@@ -118,14 +119,16 @@ void ConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
   hls::stream<ap_uint<SIMD*TSrcI::width> > convInp_log("StreamingConvLayer_Batch.convInp_log");
 #endif
 
-  // hwkim modified for integer max pool
-  ConvolutionInputGenerator<ConvKernelDim, IFMChannels, TSrcI::width, IFMDim, OFMDim,
-  //ZigZagConvolutionInputGenerator<ConvKernelDim, IFMChannels, TSrcI::width, IFMDim, OFMDim,
-
-  // hwkim modified for segmentation
-  	  OFMHeight,
-
-  	  SIMD, 1>(wa_in, convInp,
+  ConvolutionInputGenerator
+  	  <ConvKernelDim,
+	  IFMChannels,
+	  TSrcI::width,
+	  IFMDim,
+	  OFMDim,
+  	  OFMHeight,	// hwkim added for segmentation
+  	  SIMD,
+	  Stride>	//1>	// hwkim modified for segmentation
+  (wa_in, convInp,
 // hwkim modified for debug
 #ifdef ACTIVATION_LOG
 					convInp_log,

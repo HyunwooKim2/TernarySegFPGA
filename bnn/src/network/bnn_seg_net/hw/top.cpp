@@ -448,7 +448,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 	  // convolutional layers
 	  ConvLayer_Batch<L0_K, L0_IFM_CH, L0_IFM_DIM, L0_OFM_CH, L0_OFM_DIM,
 	  // hwkim modified for segmentation
-		  L0_IFM_HEIGHT, L0_OFM_HEIGHT,
+		  L0_IFM_HEIGHT, L0_OFM_HEIGHT, 1,
 
 		  L0_SIMD, L0_PE,Slice<ap_fixed<8, 1, AP_TRN, AP_SAT>>, Identity, Recast<Binary>>(inter0_2, inter1,
 	// hwkim modified for debug
@@ -481,7 +481,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 	//  	  (inter1, inter2, weights1, threshs1, numReps, ap_resource_lut());
 	  ConvLayer_Batch<L1_K, L1_IFM_CH, L1_IFM_DIM, L1_OFM_CH, L1_OFM_DIM,
 	  // hwkim modified for segmentation
-		  L1_IFM_HEIGHT, L1_OFM_HEIGHT,
+		  L1_IFM_HEIGHT, L1_OFM_HEIGHT, 2,
 
 		  L1_SIMD, L1_PE, Recast<XnorMul>>
 		  (inter1_pad, inter2,
@@ -534,7 +534,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 	  //ConvLayer_Batch<L2_K, L2_IFM_CH, L2_IFM_DIM, L2_OFM_CH, L2_OFM_DIM, L2_SIMD, L2_PE, Recast<XnorMul>>(inter3,inter4,weights2, threshs2, numReps, ap_resource_lut());
 	  ConvLayer_Batch<L2_K, L2_IFM_CH, L2_IFM_DIM, L2_OFM_CH, L2_OFM_DIM,
 	  // hwkim modified for segmentation
-		  L2_IFM_HEIGHT, L2_OFM_HEIGHT,
+		  L2_IFM_HEIGHT, L2_OFM_HEIGHT, 1,
 
 		  L2_SIMD, L2_PE, Recast<XnorMul>>(inter3_pad, inter4,
 			  // hwkim modified for debug
@@ -564,7 +564,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 	  //ConvLayer_Batch<L3_K, L3_IFM_CH, L3_IFM_DIM, L3_OFM_CH, L3_OFM_DIM, L3_SIMD, L3_PE, Recast<XnorMul>>(inter4, inter5,
 	  ConvLayer_Batch<L3_K, L3_IFM_CH, L3_IFM_DIM, L3_OFM_CH, L3_OFM_DIM,
 	  // hwkim modified for segmentation
-		  L3_IFM_HEIGHT, L3_OFM_HEIGHT,
+		  L3_IFM_HEIGHT, L3_OFM_HEIGHT, 2,
 
 		  L3_SIMD, L3_PE, Recast<XnorMul>>(inter4_pad, inter5,
 	// hwkim modified for debug
@@ -615,7 +615,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 	  //ConvLayer_Batch<L4_K, L4_IFM_CH, L4_IFM_DIM, L4_OFM_CH, L4_OFM_DIM, L4_SIMD, L4_PE, Recast<XnorMul>>(inter6, inter7,
 	  ConvLayer_Batch<L4_K, L4_IFM_CH, L4_IFM_DIM, L4_OFM_CH, L4_OFM_DIM,
 	  // hwkim modified for segmentation
-		  L4_IFM_HEIGHT, L4_OFM_HEIGHT,
+		  L4_IFM_HEIGHT, L4_OFM_HEIGHT, 1,
 
 		  L4_SIMD, L4_PE, Recast<XnorMul>>(inter6_pad, inter7,
 	// hwkim modified for debug
@@ -645,7 +645,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 	  //ConvLayer_Batch<L5_K, L5_IFM_CH, L5_IFM_DIM, L5_OFM_CH, L5_OFM_DIM, L5_SIMD, L5_PE,Recast<XnorMul>>(inter7, inter8,
 	  ConvLayer_Batch<L5_K, L5_IFM_CH, L5_IFM_DIM, L5_OFM_CH, L5_OFM_DIM,
 	  // hwkim modified for segmentation
-		  L5_IFM_HEIGHT, L5_OFM_HEIGHT,
+		  L5_IFM_HEIGHT, L5_OFM_HEIGHT, 2,
 
 		  L5_SIMD, L5_PE,Recast<XnorMul>>(inter7_pad, inter8,
 	// hwkim modified for debug
