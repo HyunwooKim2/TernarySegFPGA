@@ -95,21 +95,23 @@ void ConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
   unsigned const MatrixW = ConvKernelDim * ConvKernelDim * IFMChannels;
   unsigned const MatrixH = OFMChannels;
 
-  // hwkim modified for debug & segmentation
-  // 	there may be fractal, so it cause difference
+  // hwkim modified for debug - consider fractal
   //unsigned const InpPerImage = IFMDim*IFMDim*IFMChannels/InStreamW * TSrcI::width;
   //unsigned const InpPerImage = (float)(IFMDim*IFMDim*IFMChannels)/InStreamW * TSrcI::width;
+  // hwkim modified for segmentation
   unsigned const InpPerImage = (float)(IFMDim*IFMHeight*IFMChannels)/InStreamW * TSrcI::width;
 
   WidthAdjustedInputStream <InStreamW, SIMD*TSrcI::width, InpPerImage>  wa_in (in,  reps);
 
-  // hwkim modified for segmentation
+
   WidthAdjustedOutputStream <PE*TDstI::width, OutStreamW,
-//  	  OFMDim * OFMDim * (OFMChannels / PE)> mvOut (out,  reps);
+  // hwkim modified for segmentation
+  	  //OFMDim * OFMDim * (OFMChannels / PE)> mvOut (out,  reps);
   	  OFMDim * OFMHeight * (OFMChannels / PE)> mvOut (out,  reps);
 #ifdef ACTIVATION_LOG
   WidthAdjustedOutputStream <PE*TDstI::width, OutStreamW,
-//	  OFMDim * OFMDim * (OFMChannels / PE)> mvOut_log (out_log,  reps);
+  // hwkim modified for segmentation
+	  //OFMDim * OFMDim * (OFMChannels / PE)> mvOut_log (out_log,  reps);
   	  OFMDim * OFMHeight * (OFMChannels / PE)> mvOut_log (out_log,  reps);
 #endif
 

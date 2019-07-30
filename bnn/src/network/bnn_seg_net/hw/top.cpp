@@ -182,7 +182,10 @@ string snapshot_dir = "/home/hwkim/work/params/finn_params/camvid_params/0710/sn
 
 template <unsigned int OFMDim,
 		unsigned int OFMHeight,
-		int InWidth>
+		unsigned int InWidth,
+		// hwkim added for stride
+		unsigned int Stride>
+
 void activation_log(
 		stream<ap_uint<InWidth>>& in_stream,
 		int layer_cnt){
@@ -231,14 +234,18 @@ void activation_log(
 	// activation logging & compare result logging
 	ap_uint<InWidth> act_buf;
 	ap_uint<InWidth> gold_buf;
-	char gold_buf_ch[InWidth/4];
+	char gold_buf_ch[InWidth/4+1];
 	char gold_buf_ch64[17];
 	gold_buf_ch64[16] = 0;
 	unsigned long gold_buf_long;
 	//unsigned long long gold_buf;
 //	cout << "inter" << (layer_cnt+1) << " stream size = " << in_stream.size() << endl;
-	for(int y=0; y<OFMHeight; y++){
-		  for(int x=0; x<OFMDim; x++){
+	// hwkim modified for stride
+//	for(int y=0; y<OFMHeight; y++){
+//		  for(int x=0; x<OFMDim; x++){
+	for(int y=0; y<OFMHeight/Stride; y++){
+		  for(int x=0; x<OFMDim/Stride; x++){
+
 			  gold_buf = 0;
 			  act_buf = in_stream.read();
 			  fscanf(golden_file, "%s", gold_buf_ch);
@@ -249,6 +256,11 @@ void activation_log(
 				  gold_buf_long = strtoul(gold_buf_ch64, NULL, 16);
 				  gold_buf = gold_buf << 64;
 				  gold_buf = gold_buf | (*reinterpret_cast<ap_uint<64> *>(&gold_buf_long));
+			  }
+
+			  // hwkim added for stride
+			  for(int stride_cnt=0; stride_cnt<(Stride-1); stride_cnt++){
+				  fscanf(golden_file, "%s", gold_buf_ch);	//skip one activation read
 			  }
 
 			  if(act_buf!=gold_buf){
@@ -431,7 +443,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
   const unsigned int outBits = L13_OFM_CH*16;
 
   // hwkim modified for separated simulation
-  int start_layer = 0;
+  int start_layer = 1;
   string snapshot_file_name;
 
   if(start_layer < 1){
@@ -446,9 +458,9 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 	  StreamingDataWidthConverter_Batch<192, 24, (L0_IFM_DIM*L0_IFM_HEIGHT*3*8)/192+1>(inter0_1, inter0_2, numReps);
 
 	  // convolutional layers
-	  ConvLayer_Batch<L0_K, L0_IFM_CH, L0_IFM_DIM, L0_OFM_CH, L0_OFM_DIM,
+	  ConvLayer_Batch<L0_K, L0_IFM_CH, L0_IFM_DIM, L0_OFM_CH,
 	  // hwkim modified for segmentation
-		  L0_IFM_HEIGHT, L0_OFM_HEIGHT, 1,
+	  	  L0_OFM_DIM, L0_IFM_HEIGHT, L0_OFM_HEIGHT, 1,
 
 		  L0_SIMD, L0_PE,Slice<ap_fixed<8, 1, AP_TRN, AP_SAT>>, Identity, Recast<Binary>>(inter0_2, inter1,
 	// hwkim modified for debug
@@ -459,7 +471,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 
 	  // hwkim modified for debug
 	#ifdef ACTIVATION_LOG
-	  activation_log<L0_OFM_DIM, L0_OFM_HEIGHT>(inter1_log, 0);
+	  activation_log<L0_OFM_DIM, L0_OFM_HEIGHT, 64, 1>(inter1_log, 0);
   }
 	  weighted_layer_cnt++;
 	#endif
@@ -479,9 +491,9 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 	  // hwkim modified for padding
 	//  ConvLayer_Batch<L1_K, L1_IFM_CH, L1_IFM_DIM, L1_OFM_CH, L1_OFM_DIM, L1_SIMD, L1_PE, Recast<XnorMul>>
 	//  	  (inter1, inter2, weights1, threshs1, numReps, ap_resource_lut());
-	  ConvLayer_Batch<L1_K, L1_IFM_CH, L1_IFM_DIM, L1_OFM_CH, L1_OFM_DIM,
-	  // hwkim modified for segmentation
-		  L1_IFM_HEIGHT, L1_OFM_HEIGHT, 2,
+	  ConvLayer_Batch<L1_K, L1_IFM_CH, L1_IFM_DIM, L1_OFM_CH,
+	  // hwkim modified for segmentation & stride
+	  	  L1_OFM_DIM/2, L1_IFM_HEIGHT, L1_OFM_HEIGHT/2, 2,
 
 		  L1_SIMD, L1_PE, Recast<XnorMul>>
 		  (inter1_pad, inter2,
@@ -493,7 +505,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 
 	  // hwkim modified for debug
 	#ifdef ACTIVATION_LOG
-	  activation_log<L1_OFM_DIM, L1_OFM_HEIGHT>(inter2_log,1);
+	  activation_log<L1_OFM_DIM, L1_OFM_HEIGHT, 64, 2>(inter2_log,1);
     }
 	  weighted_layer_cnt++;
 	#endif
@@ -514,7 +526,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 
 	  // hwkim modified for debug
 	#ifdef ACTIVATION_LOG
-	  activation_log<L2_OFM_DIM, L2_OFM_HEIGHT>(inter3_log,2);
+	  activation_log<L2_OFM_DIM, L2_OFM_HEIGHT, 64, 1>(inter3_log,2);
   }
 	  pooling_layer_cnt++;
 	#endif
@@ -544,7 +556,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 				  weights2, threshs2, numReps, ap_resource_lut());
 
 	#ifdef ACTIVATION_LOG
-	  activation_log<L2_OFM_DIM, L2_OFM_HEIGHT>(inter4_log,3);
+	  activation_log<L2_OFM_DIM, L2_OFM_HEIGHT, 128, 1>(inter4_log,3);
   }
 	  weighted_layer_cnt++;
 	#endif
@@ -574,7 +586,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 			  weights3, threshs3, numReps, ap_resource_lut());
 
 	#ifdef ACTIVATION_LOG
-	  activation_log<L3_OFM_DIM, L3_OFM_HEIGHT>(inter5_log,4);
+	  activation_log<L3_OFM_DIM, L3_OFM_HEIGHT, 128, 2>(inter5_log,4);
 	}
 	weighted_layer_cnt++;
 	#endif
@@ -595,7 +607,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 
 	  // hwkim modified for debug
 	#ifdef ACTIVATION_LOG
-	  activation_log<L4_OFM_DIM, L4_OFM_HEIGHT>(inter6_log,5);
+	  activation_log<L4_OFM_DIM, L4_OFM_HEIGHT, 128, 1>(inter6_log,5);
 	}
 	pooling_layer_cnt++;
 	#endif
@@ -625,7 +637,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 			  weights4, threshs4, numReps, ap_resource_lut());
 
 	#ifdef ACTIVATION_LOG
-	  activation_log<L4_OFM_DIM, L4_OFM_HEIGHT>(inter7_log,6);
+	  activation_log<L4_OFM_DIM, L4_OFM_HEIGHT, 256, 1>(inter7_log,6);
 	}
 	  weighted_layer_cnt++;
 	#endif
@@ -655,7 +667,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 				  weights5, threshs5, numReps, ap_resource_lut());
 
 	#ifdef ACTIVATION_LOG
-	  activation_log<L5_OFM_DIM, L5_OFM_HEIGHT>(inter8_log,7);
+	  activation_log<L5_OFM_DIM, L5_OFM_HEIGHT, 256, 2>(inter8_log,7);
 	}
 	  weighted_layer_cnt++;
 	#endif
@@ -676,7 +688,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 
   // hwkim modified for debug
 #ifdef ACTIVATION_LOG
-  activation_log<L5_OFM_DIM/2, L5_OFM_HEIGHT/2>(inter9_log,8);
+  activation_log<L5_OFM_DIM/2, L5_OFM_HEIGHT/2, 256, 1>(inter9_log,8);
   pooling_layer_cnt++;
 #endif
 

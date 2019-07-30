@@ -91,19 +91,17 @@ void ConvolutionInputGenerator(
 #pragma HLS ARRAY_PARTITION variable=inputBuf complete dim=1
 #pragma HLS RESOURCE variable inputBuf core=RAM_2P
 
+  const unsigned int cycles_write_block = (OFMDim * ConvKernelDim * ConvKernelDim * multiplying_factor);
   // hwkim modified for stride
-  //const unsigned int cycles_write_block = (OFMDim * ConvKernelDim * ConvKernelDim * multiplying_factor);
-  const unsigned int cycles_write_block = ((OFMDim / Stride) * ConvKernelDim * ConvKernelDim * multiplying_factor);
   //const unsigned int cycles_read_block = Stride * IFMDim * multiplying_factor;
-  const unsigned int cycles_read_block = Stride * IFMDim * multiplying_factor;	//결과적으론 똑같음..
+  const unsigned int cycles_read_block = IFMDim * multiplying_factor;	//결과적으론 똑같음..
 
   const unsigned int max_cycles = MAX(cycles_write_block,cycles_read_block);
   const unsigned int baseIter = IFMDim * ConvKernelDim * multiplying_factor		// Initial buffer
 		  	  	  	  	  	  // hwkim modified for segmentation - support for rectangle
 			                  //+ OFMDim * MAX(cycles_write_block,cycles_read_block);
 		  	  	  	  	  	  // hwkim modified for stride
-		  	  	  	  	  	    //+ OFMHeight * MAX(cycles_write_block,cycles_read_block);
-		  	  	  	  	  	    + (OFMHeight / Stride) * MAX(cycles_write_block,cycles_read_block);
+		  	  	  	  	  	    + OFMHeight * MAX(cycles_write_block,cycles_read_block);
 
   unsigned int counter_internal_block = 0;
   unsigned int current_block_write = 0;
@@ -192,10 +190,7 @@ void ConvolutionInputGenerator(
 					  if (k_y == ConvKernelDim) {
 						  k_y = 0;
 						  ofm_x ++;
-						  // hwkim modified for stride
-						  //if (ofm_x == OFMDim) {
-						  if (ofm_x == OFMDim/Stride) {
-
+						  if (ofm_x == OFMDim) {
 							  ofm_x = 0;
 							  ofm_y++;
 							  // hwkim added for stride
@@ -206,10 +201,7 @@ void ConvolutionInputGenerator(
 
 							  // hwkim modified for segmentation
 							  //if (ofm_y == OFMDim) {
-							  // hwkim modified for stride
-							  //if (ofm_y == OFMHeight) {
-							  if (ofm_y == OFMHeight/Stride) {
-
+							  if (ofm_y == OFMHeight) {
 								  ofm_y = 0;
 								  inp = 0;
 							  }}}}}
