@@ -71,6 +71,10 @@ template<
 		unsigned int IFMHeight,
 		unsigned int OFMHeight,
 		unsigned int Stride,
+		unsigned int Top,
+		unsigned int Bottom,
+		unsigned int Left,
+		unsigned int Right,
 
 		unsigned int SIMD, 				// number of SIMD lanes
 		unsigned int PE,				// number of PEs
@@ -127,6 +131,7 @@ void ConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
 	  TSrcI::width,
 	  IFMDim,
 	  OFMDim,
+	  IFMHeight,	// hwkim added for segmentation
   	  OFMHeight,	// hwkim added for segmentation
   	  SIMD,
 	  Stride>	//1>	// hwkim modified for segmentation
@@ -169,7 +174,7 @@ void ConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
 //     weights, activation, reps* OFMDim * OFMDim, r);
 	Matrix_Vector_Activate_Batch_Padding<MatrixW, MatrixH, SIMD, PE, OFMDim,
 	// hwkim modified for segmentation
-	OFMHeight,
+	OFMHeight, Top, Bottom, Left, Right,
 
 	TSrcI, TDstI, TWeightI>
 		(static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>&>(convInp),

@@ -361,38 +361,19 @@ void Matrix_Vector_Activate_Batch(hls::stream<TI> & in,
 }
 
 
-
-
 template<
-  unsigned MatrixW, unsigned MatrixH, unsigned SIMD, unsigned PE,
-  // hwkim modified for padding
-  unsigned OFMDim,
+  unsigned MatrixW, unsigned MatrixH, unsigned SIMD, unsigned PE, unsigned OFMDim,
   // hwkim modified for segmentation
   unsigned OFMHeight,
+  // hwkim modified for padding
+  unsigned Top,
+  unsigned Bottom,
+  unsigned Left,
+  unsigned Right,
 
   typename TSrcI = Identity, typename TDstI = Identity, typename TWeightI = Identity,
   typename TI, typename TO, typename TW, typename TA, typename R
 >
-/* hwkim commented
- * 	MatrixW -> 3x3x3
- * 		ConvKernelDim * ConvKernelDim * IFMChannels
- *	MatrixH -> 64
- *		OFMChannels -> output neuron channels
- *	SIMD -> 3
- *	PE -> 16
- *	TSrcI -> 8-bit
- *	TDstI -> 1-bit
- *	TWeightI -> 1-bit
- *	TI -> 24-bit
- *		static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>&>(convInp)
- *	TO -> 16-bit
- *		static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>  (mvOut)
- *	TW -> BinaryWeights<L0_SIMD, L0_PE, L0_WMEM>
- *		해당 class type 임
- *	TA -> ThresholdsActivation<L0_TMEM, L0_PE, L0_API, ap_fixed<24, 16>, ap_uint<L0_API> >
- *		해당 class type 임
- *	R -> LUT
-*/
 void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
 				  hls::stream<TO> &out,
 				  // hwkim modified for debug
@@ -451,7 +432,7 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
   unsigned const TOTAL_FOLD = NF * SF;
 
   // hwkim modified for padding
-  int xy, x, y, kx, ky;
+  unsigned int xy, x, y, kx, ky;
 
   for(unsigned  i = 0; i < reps * TOTAL_FOLD; i++) {
 #pragma HLS PIPELINE II=1
@@ -490,6 +471,7 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
 	xy = i/TOTAL_FOLD;
 	y = xy/OFMDim;
 	x = xy%OFMDim;
+
 	//tile: sf -> kx -> ky -> nf
 	ky = ((tile/(SF/9))%9)/3;
 	kx = ((tile/(SF/9))%9)%3;
@@ -506,30 +488,23 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
 
       // hwkim modified for padding
       //accu[pe] = mac<SIMD>(accu[pe], wgt, act, r);
-      if((x==0 && kx==0)
-    	  ||(y==0 && ky==0)
-		  ||(x==(OFMDim-1) && kx==2)
-		  // hwkim modified for segmentation
-		  //||(y==(OFMDim-1) && ky==2)){
-		  ||(y==(OFMHeight-1) && ky==2)){
+      // hwkim modified for selective padding
+//      if((x==0 && kx==0)
+//    	  ||(y==0 && ky==0)
+//		  ||(x==(OFMDim-1) && kx==2)
+//		  ||(y==(OFMHeight-1) && ky==2)){
+      if((x<Left && kx<Left)
+		  ||(y<Top && ky<Top)
+		  ||(x>(OFMDim-1-Right) && kx>(3-1-Right))
+		  ||(y>(OFMHeight-1-Bottom) && ky>(3-1-Bottom))){
 
     	  // for fan-in scaling
     	  //padding[pe] = 1;
     	  //fan_in_loss[pe] += SIMD;
-    	  ;
+    	  ;	//skip pad from accumulation
        }
       else{
-    	  // hwkim modified for debug
-//    	  if(pe==0){
-//    		  cout << "start =====================" << endl;
-//    	  }
-
     	  accu[pe] = mac<SIMD>(accu[pe], wgt, act, r);
-
-    	  // hwkim modified for debug
-//    	  if(pe==0){
-//    		  cout << "end =====================" << endl;
-//    	  }
        }
     }
 
