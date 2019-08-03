@@ -67,16 +67,6 @@ static BinaryWeights< L7_SIMD,  L7_PE,  L7_WMEM>  weights7;
 static BinaryWeights< L8_SIMD,  L8_PE,  L8_WMEM>  weights8;
 static BinaryWeights< L9_SIMD,  L9_PE,  L9_WMEM>  weights9;
 static BinaryWeights<L10_SIMD, L10_PE, L10_WMEM>  weights10;
-static BinaryWeights<L11_SIMD, L11_PE, L11_WMEM>  weights11;
-static BinaryWeights<L12_SIMD, L12_PE, L12_WMEM>  weights12;
-static BinaryWeights<L13_SIMD, L13_PE, L13_WMEM>  weights13;
-static BinaryWeights<L14_SIMD, L14_PE, L14_WMEM>  weights14;
-static BinaryWeights<L15_SIMD, L15_PE, L15_WMEM>  weights15;
-static BinaryWeights<L16_SIMD, L16_PE, L16_WMEM>  weights16;
-static BinaryWeights<L17_SIMD, L17_PE, L17_WMEM>  weights17;
-static BinaryWeights<L18_SIMD, L18_PE, L18_WMEM>  weights18;
-static BinaryWeights<L19_SIMD, L19_PE, L19_WMEM>  weights19;
-static BinaryWeights<L20_SIMD, L20_PE, L20_WMEM>  weights20;
 
 static ThresholdsActivation< L0_TMEM,  L0_PE,  L0_API, ap_fixed<24, 16>, ap_uint<L0_API> > threshs0;
 static ThresholdsActivation< L1_TMEM,  L1_PE,  L1_API, ap_int<16>, ap_uint<L1_API>>  		threshs1;
@@ -88,20 +78,10 @@ static ThresholdsActivation< L6_TMEM,  L6_PE,  L6_API, ap_int<16>, ap_uint<L6_AP
 static ThresholdsActivation< L7_TMEM,  L7_PE,  L7_API, ap_int<16>, ap_uint<L7_API>>  		threshs7;
 static ThresholdsActivation< L8_TMEM,  L8_PE,  L8_API, ap_int<16>, ap_uint<L8_API>>  		threshs8;
 static ThresholdsActivation< L9_TMEM,  L9_PE,  L9_API, ap_int<16>, ap_uint<L9_API>>  		threshs9;
-static ThresholdsActivation<L10_TMEM, L10_PE, L10_API, ap_int<16>, ap_uint<L10_API>>  		threshs10;
-static ThresholdsActivation<L11_TMEM, L11_PE, L11_API, ap_int<16>, ap_uint<L11_API>>  		threshs11;
-static ThresholdsActivation<L12_TMEM, L12_PE, L12_API, ap_int<16>, ap_uint<L12_API>>  		threshs12;
-static ThresholdsActivation<L13_TMEM, L13_PE, L13_API, ap_int<16>, ap_uint<L13_API>>  		threshs13;
-static ThresholdsActivation<L14_TMEM, L14_PE, L14_API, ap_int<16>, ap_uint<L14_API>>  		threshs14;
-static ThresholdsActivation<L15_TMEM, L15_PE, L15_API, ap_int<16>, ap_uint<L15_API>>  		threshs15;
-static ThresholdsActivation<L16_TMEM, L16_PE, L16_API, ap_int<16>, ap_uint<L16_API>>  		threshs16;
-static ThresholdsActivation<L17_TMEM, L17_PE, L17_API, ap_int<16>, ap_uint<L17_API>>  		threshs17;
-static ThresholdsActivation<L18_TMEM, L18_PE, L18_API, ap_int<16>, ap_uint<L18_API>>  		threshs18;
-static ThresholdsActivation<L19_TMEM, L19_PE, L19_API, ap_int<16>, ap_uint<L19_API>>  		threshs19;
 // hwkim modified for last fc layer
 //static ThresholdsActivation<L6_TMEM, L6_PE, L6_API, ap_int<16>, ap_uint<L6_API>>  		threshs6;
 //static ThresholdsActivation<L7_TMEM, L7_PE, L7_API, ap_int<16>, ap_uint<L7_API>>  		threshs7;
-static PassThroughAndBatchNorm<L20_TMEM, L20_PE, L20_API, ap_int<16>, ap_int<16>>  			threshs20;
+static PassThroughAndBatchNorm<L10_TMEM, L10_PE, L10_API, ap_int<16>, ap_int<16>>  			threshs10;
 /* hwkim commented
  * 마지막 layer라 thresholding(activation) 안 하고,
  * pass through activation
@@ -204,8 +184,8 @@ void insert_pad(stream<ap_uint<InWidth>> & in_stream,
 
 // hwkim modified for debug
 #ifdef ACTIVATION_LOG
-string golden_file_dir = "/home/hwkim/work/params/guinness_params/camvid_params/0729/Activations/";
-string snapshot_dir = "/home/hwkim/work/params/finn_params/camvid_params/0729/snapshots/";
+string golden_file_dir = "/home/hwkim/work/params/guinness_params/camvid_params/0801/Activations/";
+string snapshot_dir = "/home/hwkim/work/params/finn_params/camvid_params/0801/snapshots/";
 
 template <unsigned int OFMDim,
 		unsigned int OFMHeight,
@@ -217,7 +197,7 @@ void activation_log(
 		stream<ap_uint<InWidth>>& in_stream,
 		int layer_cnt){
 
-	unsigned char layer_type[21] = {1,2,2,2, 2,2,2,2, 2,2,2,2, 2,2,2,2, 2,2,2,2, 2};
+	unsigned char layer_type[11] = {1,2,2,2,2,2,2,2,2,2,2};
 
 	// file open
 	string act_file_name;
@@ -395,26 +375,26 @@ void DoMemInit(unsigned int targetLayer, unsigned int targetMem, unsigned int ta
     case 19: threshs9.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
     case 20: weights10.m_weights[targetMem][targetInd] = val; break;
     case 21: threshs10.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
-    case 22: weights11.m_weights[targetMem][targetInd] = val; break;
-    case 23: threshs11.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
-    case 24: weights12.m_weights[targetMem][targetInd] = val; break;
-    case 25: threshs12.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
-    case 26: weights13.m_weights[targetMem][targetInd] = val; break;
-    case 27: threshs13.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
-    case 28: weights14.m_weights[targetMem][targetInd] = val; break;
-    case 29: threshs14.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
-    case 30: weights15.m_weights[targetMem][targetInd] = val; break;
-    case 31: threshs15.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
-    case 32: weights16.m_weights[targetMem][targetInd] = val; break;
-    case 33: threshs16.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
-    case 34: weights17.m_weights[targetMem][targetInd] = val; break;
-    case 35: threshs17.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
-    case 36: weights18.m_weights[targetMem][targetInd] = val; break;
-    case 37: threshs18.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
-    case 38: weights19.m_weights[targetMem][targetInd] = val; break;
-    case 39: threshs19.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
-    case 40: weights20.m_weights[targetMem][targetInd] = val; break;
-    case 41: threshs20.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
+//    case 22: weights11.m_weights[targetMem][targetInd] = val; break;
+//    case 23: threshs11.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
+//    case 24: weights12.m_weights[targetMem][targetInd] = val; break;
+//    case 25: threshs12.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
+//    case 26: weights13.m_weights[targetMem][targetInd] = val; break;
+//    case 27: threshs13.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
+//    case 28: weights14.m_weights[targetMem][targetInd] = val; break;
+//    case 29: threshs14.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
+//    case 30: weights15.m_weights[targetMem][targetInd] = val; break;
+//    case 31: threshs15.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
+//    case 32: weights16.m_weights[targetMem][targetInd] = val; break;
+//    case 33: threshs16.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
+//    case 34: weights17.m_weights[targetMem][targetInd] = val; break;
+//    case 35: threshs17.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
+//    case 36: weights18.m_weights[targetMem][targetInd] = val; break;
+//    case 37: threshs18.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
+//    case 38: weights19.m_weights[targetMem][targetInd] = val; break;
+//    case 39: threshs19.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
+//    case 40: weights20.m_weights[targetMem][targetInd] = val; break;
+//    case 41: threshs20.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
 //    case 16:
 //      weights8.m_weights[targetMem][targetInd] = val;
 //      break;
@@ -429,55 +409,51 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
   stream<ap_uint<64>> inter0("DoCompute.inter0");
   stream<ap_uint<192>> inter0_1("DoCompute.inter0_1");
   stream<ap_uint<24>> inter0_2("DoCompute.inter0_2");
-#pragma HLS STREAM variable=inter0_2 depth=128
+//#pragma HLS STREAM variable=inter0_2 depth=128
   /* hwkim commented
    *  단순 FIFO size 지정
    */
   stream<ap_uint<64>> inter1("DoCompute.inter1");
-#pragma HLS STREAM variable=inter1 depth=128
+//#pragma HLS STREAM variable=inter1 depth=128
   stream<ap_uint<64>> inter2("DoCompute.inter2");
-  stream<ap_uint<64>> inter3("DoCompute.inter3");
-#pragma HLS STREAM variable=inter3 depth=128
+  stream<ap_uint<128>> inter3("DoCompute.inter3");
+//#pragma HLS STREAM variable=inter3 depth=128
   stream<ap_uint<128>> inter4("DoCompute.inter4");
-#pragma HLS STREAM variable=inter4 depth=128
-  stream<ap_uint<128>> inter5("DoCompute.inter5");
-  stream<ap_uint<128>> inter6("DoCompute.inter6");
-#pragma HLS STREAM variable=inter6 depth=81
-  stream<ap_uint<256>> inter7("DoCompute.inter7");
-#pragma HLS STREAM variable=inter7 depth=1
-  stream<ap_uint<256>> inter8("DoCompute.inter8");
-#pragma HLS STREAM variable=inter8 depth=1
-
-  // hwkim modified for 3rd max pool
-//  stream<ap_uint<64>> inter9("DoCompute.inter9");
-//#pragma HLS STREAM variable=inter9 depth=128
-//  stream<ap_uint<64>> inter10("DoCompute.inter10");
-//#pragma HLS STREAM variable=inter10 depth=3
-  stream<ap_uint<256>> inter9("DoCompute.inter9");
-#pragma HLS STREAM variable=inter9 depth=1
-  stream<ap_uint<256>> inter10("DoCompute.inter10");
-#pragma HLS STREAM variable=inter10 depth=1
+//#pragma HLS STREAM variable=inter4 depth=128
+  stream<ap_uint<256>> inter5("DoCompute.inter5");
+  stream<ap_uint<256>> inter6("DoCompute.inter6");
+//#pragma HLS STREAM variable=inter6 depth=81
+  stream<ap_uint<128>> inter7("DoCompute.inter7");
+//#pragma HLS STREAM variable=inter7 depth=1
+  stream<ap_uint<128>> inter8("DoCompute.inter8");
+//#pragma HLS STREAM variable=inter8 depth=1
+  stream<ap_uint<64>> inter9("DoCompute.inter9");
+//#pragma HLS STREAM variable=inter9 depth=1
+  stream<ap_uint<64>> inter10("DoCompute.inter9");
+//#pragma HLS STREAM variable=inter10 depth=1
 
   stream<ap_uint<64>> memOutStrm("DoCompute.memOutStrm");
 
   // hwkim modified for debug
 #ifdef ACTIVATION_LOG
   stream<ap_uint<64>> inter1_log("DoCompute.inter1_log");
-#pragma HLS STREAM variable=inter1_log depth=128
+//#pragma HLS STREAM variable=inter1_log depth=128
   stream<ap_uint<64>> inter2_log("DoCompute.inter2_log");
-  stream<ap_uint<64>> inter3_log("DoCompute.inter3_log");
-#pragma HLS STREAM variable=inter3_log depth=128
+  stream<ap_uint<128>> inter3_log("DoCompute.inter3_log");
+//#pragma HLS STREAM variable=inter3_log depth=128
   stream<ap_uint<128>> inter4_log("DoCompute.inter4_log");
-#pragma HLS STREAM variable=inter4_log depth=128
-  stream<ap_uint<128>> inter5_log("DoCompute.inter5_log");
-  stream<ap_uint<128>> inter6_log("DoCompute.inter6_log");
-#pragma HLS STREAM variable=inter6_log depth=81
-  stream<ap_uint<256>> inter7_log("DoCompute.inter7_log");
-#pragma HLS STREAM variable=inter7_log depth=1
-  stream<ap_uint<256>> inter8_log("DoCompute.inter8_log");
-#pragma HLS STREAM variable=inter8_log depth=1
-  stream<ap_uint<256>> inter9_log("DoCompute.inter9_log");
-#pragma HLS STREAM variable=inter9_log depth=1
+//#pragma HLS STREAM variable=inter4_log depth=128
+  stream<ap_uint<256>> inter5_log("DoCompute.inter5_log");
+  stream<ap_uint<256>> inter6_log("DoCompute.inter6_log");
+//#pragma HLS STREAM variable=inter6_log depth=81
+  stream<ap_uint<128>> inter7_log("DoCompute.inter7_log");
+//#pragma HLS STREAM variable=inter7_log depth=1
+  stream<ap_uint<128>> inter8_log("DoCompute.inter8_log");
+//#pragma HLS STREAM variable=inter8_log depth=1
+  stream<ap_uint<64>> inter9_log("DoCompute.inter9_log");
+//#pragma HLS STREAM variable=inter9_log depth=1
+  stream<ap_uint<64>> inter10_log("DoCompute.inter10_log");
+//#pragma HLS STREAM variable=inter10 depth=1
 #endif
 
   // hwkim added for debug
@@ -494,10 +470,10 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 
   // hwkim modified for segmentation
   //const unsigned int outBits = L8_MH*16;
-  const unsigned int outBits = L13_OFM_CH*16;
+  const unsigned int outBits = L10_OFM_CH*16;
 
   // hwkim modified for separated simulation
-  int start_layer = 2;
+  int start_layer = 6;
   string snapshot_file_name;
 
   if(start_layer < 1){
@@ -565,7 +541,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
   }
 
   //////////////////////////////////////////////////////////////////
-  // Layer 2 - binary convolution - stride 2
+  // Layer 2 - binary convolution - stride 2, channel x2
   //////////////////////////////////////////////////////////////////
 //  if(start_layer < 3){
 //	  StreamingMaxPool_Batch<L1_OFM_DIM, L1_OFM_HEIGHT, 2, L1_OFM_CH>(inter2, inter3,
@@ -596,7 +572,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 			weights2, threshs2, numReps, ap_resource_lut());
 
 	  #ifdef ACTIVATION_LOG
-	  	  activation_log<L2_OFM_DIM, L2_OFM_HEIGHT, 64, 2>(inter3_log, 2);
+	  	  activation_log<L2_OFM_DIM, L2_OFM_HEIGHT, 128, 2>(inter3_log, 2);
   }
 	  weighted_layer_cnt++;
 	#endif
@@ -604,14 +580,14 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
   // hwkim modified for separated simulation
   if(start_layer >= 3){
 	  snapshot_file_name = snapshot_dir + "activation_3_log.txt";
-	  read_activation_file<64>(snapshot_file_name, inter3);
+	  read_activation_file<128>(snapshot_file_name, inter3);
   }
   //////////////////////////////////////////////////////////////////
-  // Layer 3 - binary convolution - channel expansion
+  // Layer 3 - binary convolution
   //////////////////////////////////////////////////////////////////
   if(start_layer < 4){
-	  stream<ap_uint<64>> inter3_pad("DoCompute.inter3_pad");
-	  insert_pad<L3_IFM_DIM, L3_IFM_HEIGHT, 64, 1, 1, 1, 1>(inter3, inter3_pad);
+	  stream<ap_uint<128>> inter3_pad("DoCompute.inter3_pad");
+	  insert_pad<L3_IFM_DIM, L3_IFM_HEIGHT, 128, 1, 1, 1, 1>(inter3, inter3_pad);
 
 	  ConvLayer_Batch<L3_K, L3_IFM_CH, L3_IFM_DIM, L3_OFM_CH, L3_OFM_DIM, L3_IFM_HEIGHT, L3_OFM_HEIGHT,
 	  	  1, 1, 1, 1, 1,
@@ -634,14 +610,14 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 	}
 
 	//////////////////////////////////////////////////////////////////
-	// Layer 4 - binary convolution
+	// Layer 4 - binary convolution - stride 2, channel x2
 	//////////////////////////////////////////////////////////////////
 	if(start_layer < 5){
 	  stream<ap_uint<128>> inter4_pad("DoCompute.inter4_pad");
-	  insert_pad<L3_IFM_DIM, L3_IFM_HEIGHT, 128, 1, 1, 1, 1>(inter4, inter4_pad);
+	  insert_pad<L4_IFM_DIM, L4_IFM_HEIGHT, 128, 0, 1, 0, 1>(inter4, inter4_pad);
 
 	  ConvLayer_Batch<L4_K, L4_IFM_CH, L4_IFM_DIM, L4_OFM_CH, L4_OFM_DIM,
-		  L4_IFM_HEIGHT, L4_OFM_HEIGHT, 1, 1, 1, 1, 1,
+		  L4_IFM_HEIGHT, L4_OFM_HEIGHT, 2, 0, 1, 0, 1,
 		  L4_SIMD, L4_PE, Recast<XnorMul>>
 		  (inter4_pad, inter5,
 		#ifdef ACTIVATION_LOG
@@ -650,19 +626,19 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 		  weights4, threshs4, numReps, ap_resource_lut());
 
 	#ifdef ACTIVATION_LOG
-	  activation_log<L4_OFM_DIM, L4_OFM_HEIGHT, 128, 1>(inter5_log, 4);
+	  activation_log<L4_OFM_DIM, L4_OFM_HEIGHT, 256, 1>(inter5_log, 4);
 	}
-	weighted_layer_cnt++;
+ 	weighted_layer_cnt++;
 	#endif
 
 	// hwkim modified for separated simulation
 	if(start_layer >= 5){
 	  snapshot_file_name = snapshot_dir + "activation_5_log.txt";
-	  read_activation_file<128>(snapshot_file_name, inter5);
+	  read_activation_file<256>(snapshot_file_name, inter5);
 	}
 
 	//////////////////////////////////////////////////////////////////
-	// Layer 5 - binary convolution - stride 2
+	// Layer 5 - binary convolution
 	//////////////////////////////////////////////////////////////////
 //	if(start_layer < 6){
 //	  StreamingMaxPool_Batch<L3_OFM_DIM, L3_OFM_HEIGHT, 2, L3_OFM_CH>(inter5, inter6,
@@ -679,11 +655,11 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 //	pooling_layer_cnt++;
 //	#endif
 	if(start_layer < 6){
-	  stream<ap_uint<128>> inter5_pad("DoCompute.inter5_pad");
-	  insert_pad<L5_IFM_DIM, L5_IFM_HEIGHT, 128, 0, 1, 0, 1>(inter5, inter5_pad);
+	  stream<ap_uint<256>> inter5_pad("DoCompute.inter5_pad");
+	  insert_pad<L5_IFM_DIM, L5_IFM_HEIGHT, 256, 1, 1, 1, 1>(inter5, inter5_pad);
 
 	  ConvLayer_Batch<L5_K, L5_IFM_CH, L5_IFM_DIM, L5_OFM_CH, L5_OFM_DIM,
-		  L5_IFM_HEIGHT, L5_OFM_HEIGHT, 2, 0, 1, 0, 1,
+		  L5_IFM_HEIGHT, L5_OFM_HEIGHT, 1, 1, 1, 1, 1,
 		  L5_SIMD, L5_PE, Recast<XnorMul>>
 		  (inter5_pad, inter6,
 		#ifdef ACTIVATION_LOG
@@ -692,7 +668,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 		  weights5, threshs5, numReps, ap_resource_lut());
 
 	#ifdef ACTIVATION_LOG
-	  activation_log<L5_OFM_DIM, L5_OFM_HEIGHT, 128, 2>(inter6_log, 5);
+	  activation_log<L5_OFM_DIM, L5_OFM_HEIGHT, 256, 2>(inter6_log, 5);
 	}
 	weighted_layer_cnt++;
 	#endif
@@ -701,15 +677,15 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 	// hwkim modified for separated simulation
 	if(start_layer >= 6){
 	  snapshot_file_name = snapshot_dir + "activation_6_log.txt";
-	  read_activation_file<128>(snapshot_file_name, inter6);
+	  read_activation_file<256>(snapshot_file_name, inter6);
 	}
 
 	//////////////////////////////////////////////////////////////////
-	// Layer 6 - binary convolution - channel expansion
+	// Layer 6 - binary up convolution
 	//////////////////////////////////////////////////////////////////
 	if(start_layer < 7){
-	  stream<ap_uint<128>> inter6_pad("DoCompute.inter6_pad");
-	  insert_pad<L6_IFM_DIM, L6_IFM_HEIGHT, 128, 1, 1, 1, 1>(inter6, inter6_pad);
+	  stream<ap_uint<256>> inter6_pad("DoCompute.inter6_pad");
+	  insert_pad<L6_IFM_DIM, L6_IFM_HEIGHT, 256, 1, 1, 1, 1>(inter6, inter6_pad);
 
 	  ConvLayer_Batch<L6_K, L6_IFM_CH, L6_IFM_DIM, L6_OFM_CH, L6_OFM_DIM,
 		  L6_IFM_HEIGHT, L6_OFM_HEIGHT, 1, 1, 1, 1, 1,
@@ -721,7 +697,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 		  weights6, threshs6, numReps, ap_resource_lut());
 
 	#ifdef ACTIVATION_LOG
-	  activation_log<L6_OFM_DIM, L6_OFM_HEIGHT, 256, 1>(inter7_log, 6);
+	  activation_log<L6_OFM_DIM, L6_OFM_HEIGHT, 128, 1>(inter7_log, 6);
 	}
 	  weighted_layer_cnt++;
 	#endif
@@ -729,15 +705,15 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 	// hwkim modified for separated simulation
 	if(start_layer >= 7){
 	  snapshot_file_name = snapshot_dir + "activation_7_log.txt";
-	  read_activation_file<256>(snapshot_file_name, inter7);
+	  read_activation_file<128>(snapshot_file_name, inter7);
 	}
 
 	//////////////////////////////////////////////////////////////////
 	// Layer 7 - binary convolution
 	//////////////////////////////////////////////////////////////////
 	if(start_layer < 8){
-	  stream<ap_uint<256>> inter7_pad("DoCompute.inter3_pad");
-	  insert_pad<L7_IFM_DIM, L7_IFM_HEIGHT, 256, 1, 1, 1, 1>(inter7, inter7_pad);
+	  stream<ap_uint<128>> inter7_pad("DoCompute.inter3_pad");
+	  insert_pad<L7_IFM_DIM, L7_IFM_HEIGHT, 128, 1, 1, 1, 1>(inter7, inter7_pad);
 
 	  ConvLayer_Batch<L7_K, L7_IFM_CH, L7_IFM_DIM, L7_OFM_CH, L7_OFM_DIM,
 		  L7_IFM_HEIGHT, L7_OFM_HEIGHT, 1, 1, 1, 1, 1,
@@ -749,7 +725,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 		  weights7, threshs7, numReps, ap_resource_lut());
 
 	#ifdef ACTIVATION_LOG
-	  activation_log<L7_OFM_DIM, L7_OFM_HEIGHT, 256, 1>(inter8_log, 7);
+	  activation_log<L7_OFM_DIM, L7_OFM_HEIGHT, 128, 1>(inter8_log, 7);
 	}
 	  weighted_layer_cnt++;
 	#endif
@@ -757,7 +733,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 	// hwkim modified for separated simulation
 	if(start_layer >= 8){
 	  snapshot_file_name = snapshot_dir + "activation_8_log.txt";
-	  read_activation_file<256>(snapshot_file_name, inter8);
+	  read_activation_file<128>(snapshot_file_name, inter8);
 	}
 
 	//////////////////////////////////////////////////////////////////
@@ -776,8 +752,8 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 //  pooling_layer_cnt++;
 //#endif
 	if(start_layer < 9){
-	  stream<ap_uint<256>> inter8_pad("DoCompute.inter8_pad");
-	  insert_pad<L8_IFM_DIM, L8_IFM_HEIGHT, 256, 0, 1, 0, 1>(inter8, inter8_pad);
+	  stream<ap_uint<128>> inter8_pad("DoCompute.inter8_pad");
+	  insert_pad<L8_IFM_DIM, L8_IFM_HEIGHT, 128, 0, 1, 0, 1>(inter8, inter8_pad);
 
 	  ConvLayer_Batch<L8_K, L8_IFM_CH, L8_IFM_DIM, L8_OFM_CH, L8_OFM_DIM,
 		  L8_IFM_HEIGHT, L8_OFM_HEIGHT, 2, 0, 1, 0, 1,
@@ -789,17 +765,17 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 		  weights8, threshs8, numReps, ap_resource_lut());
 
 	#ifdef ACTIVATION_LOG
-	  activation_log<L8_OFM_DIM, L8_OFM_HEIGHT, 256, 2>(inter9_log, 8);
+	  activation_log<L8_OFM_DIM, L8_OFM_HEIGHT, 64, 2>(inter9_log, 8);
 	}
 	  weighted_layer_cnt++;
 	#endif
 
   // hwkim modified for average pool
-#define AVE_IFM_CH 256
-#define AVE_OFM_CH 256
-#define AVE_IFM_DIM 4
-#define AVE_THRES (4*4/2)
-  average_pooling<AVE_IFM_CH, AVE_IFM_DIM>(inter9, inter10, AVE_THRES);
+//#define AVE_IFM_CH 256
+//#define AVE_OFM_CH 256
+//#define AVE_IFM_DIM 4
+//#define AVE_THRES (4*4/2)
+//  average_pooling<AVE_IFM_CH, AVE_IFM_DIM>(inter9, inter10, AVE_THRES);
 
 //  StreamingFCLayer_Batch<L6_MW, L6_MH, L6_SIMD, L6_PE, Recast<XnorMul>>
 //    (inter8, inter9,  weights6, threshs6, numReps, ap_resource_lut());

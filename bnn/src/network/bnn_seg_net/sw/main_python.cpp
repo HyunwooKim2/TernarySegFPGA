@@ -93,17 +93,8 @@ extern "C" void load_parameters(const char* path) {
   FoldedMVLoadLayerMem(path,  7,  L7_PE,  L7_WMEM,  L7_TMEM, L7_API);
   FoldedMVLoadLayerMem(path,  8,  L8_PE,  L8_WMEM,  L8_TMEM, L8_API);
   FoldedMVLoadLayerMem(path,  9,  L9_PE,  L9_WMEM,  L9_TMEM, L9_API);
-  FoldedMVLoadLayerMem(path, 10, L10_PE, L10_WMEM, L10_TMEM, L10_API);
-  FoldedMVLoadLayerMem(path, 11, L11_PE, L11_WMEM, L11_TMEM, L11_API);
-  FoldedMVLoadLayerMem(path, 12, L12_PE, L12_WMEM, L12_TMEM, L12_API);
-  FoldedMVLoadLayerMem(path, 13, L13_PE, L13_WMEM, L13_TMEM, L13_API);
-  FoldedMVLoadLayerMem(path, 14, L14_PE, L14_WMEM, L14_TMEM, L14_API);
-  FoldedMVLoadLayerMem(path, 15, L15_PE, L15_WMEM, L15_TMEM, L15_API);
-  FoldedMVLoadLayerMem(path, 16, L16_PE, L16_WMEM, L16_TMEM, L16_API);
-  FoldedMVLoadLayerMem(path, 17, L17_PE, L17_WMEM, L17_TMEM, L17_API);
-  FoldedMVLoadLayerMem(path, 18, L18_PE, L18_WMEM, L18_TMEM, L18_API);
-  FoldedMVLoadLayerMem(path, 19, L19_PE, L19_WMEM, L19_TMEM, L19_API);
-  FoldedMVLoadLayerMem(path, 20, L20_PE, L20_WMEM, L20_TMEM, L20_API);
+  FoldedMVLoadLayerMem(path, 10, L10_PE, L10_WMEM, L10_TMEM, 0);
+
 //  FoldedMVLoadLayerMem(path, 7, L7_PE, L7_WMEM, L7_TMEM, L7_API);
 //  FoldedMVLoadLayerMem(path, 8, L8_PE, L8_WMEM, L8_TMEM, 0);
 }
