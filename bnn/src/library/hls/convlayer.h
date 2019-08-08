@@ -125,14 +125,8 @@ void ConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
   hls::stream<ap_uint<SIMD*TSrcI::width> > convInp_log("StreamingConvLayer_Batch.convInp_log");
 #endif
 
-  ConvolutionInputGenerator
-  	  <ConvKernelDim,
-	  IFMChannels,
-	  TSrcI::width,
-	  IFMDim,
-	  OFMDim,
-	  IFMHeight,	// hwkim added for segmentation
-  	  OFMHeight,	// hwkim added for segmentation
+  ConvolutionInputGenerator<ConvKernelDim, IFMChannels, TSrcI::width, IFMDim, OFMDim,
+	  IFMHeight, OFMHeight, Top, Bottom, Left, Right,	// hwkim added for segmentation
   	  SIMD,
 	  Stride>	//1>	// hwkim modified for segmentation
   (wa_in, convInp,
@@ -151,10 +145,18 @@ void ConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
             for(int y=0; y<OFMHeight; y++){
             	for(int x=0; x<OFMDim; x++){
             		for(int ky=0; ky<3; ky++){
-            			for(int kx=0; kx<3; kx++){;
-            				for(int in_ch=0; in_ch<IFMChannels/SIMD; in_ch++){
-            					conv_in_gen_log_file << setw(20) << hex << (unsigned int)convInp_log.read() << " ";
-            				}
+            			for(int kx=0; kx<3; kx++){
+							if((x==0 && kx==0) ||
+								(y==0 && ky==0) ||
+								(x==OFMDim-1 && kx==2) ||
+								(y==OFMHeight-1 && ky==2)){
+								;
+							}
+							else{
+									for(int in_ch=0; in_ch<IFMChannels/SIMD; in_ch++){
+										conv_in_gen_log_file << setw(20) << hex << (unsigned int)convInp_log.read() << " ";
+									}
+							}
             				conv_in_gen_log_file << " | ";
             			}
             			conv_in_gen_log_file << endl;
@@ -186,5 +188,114 @@ void ConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
 //		weights, activation, reps* OFMDim * OFMDim, r);
 		weights, activation, reps* OFMDim * OFMHeight, r);
 }
+
+
+
+template<
+		unsigned int ConvKernelDim,		// e.g 3 for a 3x3 conv kernel (assumed square)
+		unsigned int IFMChannels,		// number of input feature maps
+		unsigned int IFMDim,			// width of input feature map (assumed square)
+		unsigned int OFMChannels,		// number of output feature maps
+		unsigned int OFMDim,			// IFMDim-ConvKernelDim+1 or less
+
+		// hwkim added for segmentation
+		unsigned int IFMHeight,
+		unsigned int OFMHeight,
+		unsigned int Stride,
+		unsigned int Top,
+		unsigned int Bottom,
+		unsigned int Left,
+		unsigned int Right,
+
+		unsigned int SIMD, 				// number of SIMD lanes
+		unsigned int PE,				// number of PEs
+
+		typename TSrcI = Identity,      // redefine I/O interpretation as needed for input activations
+		typename TDstI = Identity,		// redefine I/O interpretation as needed for output activations
+		typename TWeightI = Identity,	// redefine I/O interpretation as needed for weigths
+
+		int InStreamW, int OutStreamW,  // safely deducible (stream width must be int though!)
+		typename TW,   typename TA,  typename R
+>
+void UpConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
+			    hls::stream<ap_uint<OutStreamW>> &out,
+#ifdef ACTIVATION_LOG
+				hls::stream<ap_uint<OutStreamW>> &out_log,
+#endif
+			    TW const        &weights,
+			    TA const        &activation,
+			    unsigned const   reps,
+				R const &r) {
+#pragma HLS INLINE
+  unsigned const MatrixW = ConvKernelDim * ConvKernelDim * IFMChannels;
+  unsigned const MatrixH = OFMChannels;
+  unsigned const InpPerImage = (float)(IFMDim*IFMHeight*IFMChannels)/InStreamW * TSrcI::width;
+
+  WidthAdjustedInputStream <InStreamW, SIMD*TSrcI::width, InpPerImage>  wa_in (in,  reps);
+  WidthAdjustedOutputStream <PE*TDstI::width, OutStreamW, OFMDim * OFMHeight * (OFMChannels / PE)> mvOut (out,  reps);
+#ifdef ACTIVATION_LOG
+  WidthAdjustedOutputStream <PE*TDstI::width, OutStreamW, OFMDim * OFMHeight * (OFMChannels / PE)> mvOut_log (out_log,  reps);
+#endif
+
+  hls::stream<ap_uint<SIMD*TSrcI::width> > convInp("StreamingConvLayer_Batch.convInp");
+#ifdef ACTIVATION_LOG
+  hls::stream<ap_uint<SIMD*TSrcI::width> > convInp_log("StreamingConvLayer_Batch.convInp_log");
+#endif
+
+  UpConvolutionInputGenerator<ConvKernelDim, IFMChannels, TSrcI::width, IFMDim, OFMDim, IFMHeight, OFMHeight,
+  	  Top, Bottom, Left, Right, SIMD>
+  	  (wa_in, convInp,
+#ifdef ACTIVATION_LOG
+		convInp_log,
+#endif
+		reps);
+
+  // hwkim modified for debug
+#ifdef ACTIVATION_LOG
+            ofstream conv_in_gen_log_file("conv_in_gen_log.txt");
+            if(!conv_in_gen_log_file.is_open()){
+            	cout << "conv_in_gen_log_file open error!!" << endl;
+              }
+            for(int y=0; y<OFMHeight; y++){
+            	for(int x=0; x<OFMDim; x++){
+            		for(int ky=0; ky<(y%2+1); ky++){
+            			for(int kx=0; kx<(x%2+1); kx++){
+            				if((x<Left && kx<Left)
+							  ||(y<Top && ky<Top)
+							  ||(x>(OFMDim-1-Right) && kx>(2-1-Right))
+							  ||(y>(OFMHeight-1-Bottom) && ky>(2-1-Bottom))){
+								;
+							}
+            				else{
+								for(int in_ch=0; in_ch<IFMChannels/SIMD; in_ch++){
+									conv_in_gen_log_file << hex << (unsigned int)convInp_log.read() << " ";
+								}
+            				}
+            				conv_in_gen_log_file << " | ";
+            			}
+            			conv_in_gen_log_file << endl;
+            		}
+            		conv_in_gen_log_file << "x,y=" << dec << x << "," << y << endl;
+            	}
+            	conv_in_gen_log_file << endl;
+              }
+            conv_in_gen_log_file.close();
+            cout << "convInp.size = " << convInp_log.size() << endl;
+#endif
+
+	Matrix_Vector_Activate_Batch_Padding<MatrixW, MatrixH, SIMD, PE, OFMDim,
+		OFMHeight, Top, Bottom, Left, Right,	// hwkim modified for segmentation
+		TSrcI, TDstI, TWeightI>
+		(static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>&>(convInp),
+		static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>  (mvOut),
+#ifdef ACTIVATION_LOG
+		static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>  (mvOut_log),
+#endif
+		weights, activation, reps* OFMDim * OFMHeight, r);
+}
+
+
+
+
 
 #endif

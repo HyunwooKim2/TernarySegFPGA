@@ -390,6 +390,10 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
   // how many synapse groups each row is split into
   // alternatively: number of horizontal matrix chunks
   unsigned const  SF = MatrixW / SIMD;
+  /*
+   * conv kernel dim * conv kernel dim * IFMChannels
+   * -> SF = 3 * 3 * (IFMChannels / SIMD)
+   */
 
   // hwkim modified for padding (fan-in scaling)
   //unsigned const FAN_IN = MatrixW;
@@ -436,12 +440,34 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
 
   for(unsigned  i = 0; i < reps * TOTAL_FOLD; i++) {
 #pragma HLS PIPELINE II=1
+	// hwkim modified for padding
+	xy = i/TOTAL_FOLD;
+	y = xy/OFMDim;
+	x = xy%OFMDim;
+	//tile: sf -> kx -> ky -> nf
+	ky = ((tile/(SF/9))%9)/3;
+	kx = ((tile/(SF/9))%9)%3;
+
     TI  inElem;
     if(nf == 0) {
-      // read input from stream
-      inElem = in.read();
-      // store in appropriate buffer for reuse
-      inputBuf[sf] = inElem;
+//      // read input from stream
+//      inElem = in.read();
+//      // store in appropriate buffer for reuse
+//      inputBuf[sf] = inElem;
+      // hwkim modified for padding
+      if((x<Left && kx<Left)
+		  ||(y<Top && ky<Top)
+		  ||(x>(OFMDim-1-Right) && kx>(3-1-Right))
+		  ||(y>(OFMHeight-1-Bottom) && ky>(3-1-Bottom))){
+    	  ;	// skip
+       }
+      else{
+    	    // read input from stream
+			inElem = in.read();
+			// store in appropriate buffer for reuse
+			inputBuf[sf] = inElem;
+       }
+
     }
     else {
       // reuse buffered input
@@ -467,17 +493,6 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
 //    	padding[pe] = 0;
 //    	fan_in_loss[pe] = 0;
 //    }
-	// hwkim modified for padding
-	xy = i/TOTAL_FOLD;
-	y = xy/OFMDim;
-	x = xy%OFMDim;
-
-	//tile: sf -> kx -> ky -> nf
-	ky = ((tile/(SF/9))%9)/3;
-	kx = ((tile/(SF/9))%9)%3;
-	// hwkim modified for debug
-//	cout << "nf=" << nf << ", sf=" << sf << ", pe=" << pe << ",
-//		y=" << y << ", x=" << x << ", ky=" << ky << ", kx=" << kx << ", tile=" << tile << endl;
 //	}
 
 
@@ -497,7 +512,6 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
 		  ||(y<Top && ky<Top)
 		  ||(x>(OFMDim-1-Right) && kx>(3-1-Right))
 		  ||(y>(OFMHeight-1-Bottom) && ky>(3-1-Bottom))){
-
     	  // for fan-in scaling
     	  //padding[pe] = 1;
     	  //fan_in_loss[pe] += SIMD;

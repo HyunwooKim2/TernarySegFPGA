@@ -684,13 +684,13 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 	// Layer 6 - binary up convolution
 	//////////////////////////////////////////////////////////////////
 	if(start_layer < 7){
-	  stream<ap_uint<256>> inter6_pad("DoCompute.inter6_pad");
-	  insert_pad<L6_IFM_DIM, L6_IFM_HEIGHT, 256, 1, 1, 1, 1>(inter6, inter6_pad);
+//	  stream<ap_uint<256>> inter6_pad("DoCompute.inter6_pad");
+//	  insert_pad<L6_IFM_DIM, L6_IFM_HEIGHT, 256, 1, 1, 1, 1>(inter6, inter6_pad);
 
-	  ConvLayer_Batch<L6_K, L6_IFM_CH, L6_IFM_DIM, L6_OFM_CH, L6_OFM_DIM,
-		  L6_IFM_HEIGHT, L6_OFM_HEIGHT, 1, 1, 1, 1, 1,
+	  UpConvLayer_Batch<L6_K, L6_IFM_CH, L6_IFM_DIM, L6_OFM_CH, L6_OFM_DIM,
+		  L6_IFM_HEIGHT, L6_OFM_HEIGHT, 1, 0, 1, 0, 1,
 		  L6_SIMD, L6_PE, Recast<XnorMul>>
-		  (inter6_pad, inter7,
+		  (inter6, inter7,
 		#ifdef ACTIVATION_LOG
 		  inter7_log,
 		#endif
