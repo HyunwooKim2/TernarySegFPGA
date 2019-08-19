@@ -283,7 +283,7 @@ void UpConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
             cout << "convInp.size = " << convInp_log.size() << endl;
 #endif
 
-	Matrix_Vector_Activate_Batch_Padding<MatrixW, MatrixH, SIMD, PE, OFMDim,
+	Matrix_Vector_Activate_Batch_Skipping<IFMChannels, MatrixH, SIMD, PE, OFMDim,
 		OFMHeight, Top, Bottom, Left, Right,	// hwkim modified for segmentation
 		TSrcI, TDstI, TWeightI>
 		(static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>&>(convInp),

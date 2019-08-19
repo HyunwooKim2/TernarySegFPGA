@@ -587,4 +587,243 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
   conv_out_comp_file.close();
 #endif
 }
+
+
+template<
+  unsigned IFMChannels, unsigned MatrixH, unsigned SIMD, unsigned PE, unsigned OFMDim,
+  // hwkim modified for segmentation
+  unsigned OFMHeight,
+  // hwkim modified for padding
+  unsigned Top,
+  unsigned Bottom,
+  unsigned Left,
+  unsigned Right,
+
+  typename TSrcI = Identity, typename TDstI = Identity, typename TWeightI = Identity,
+  typename TI, typename TO, typename TW, typename TA, typename R
+>
+void Matrix_Vector_Activate_Batch_Skipping(hls::stream<TI> & in,
+				  hls::stream<TO> &out,
+				  // hwkim modified for debug
+#ifdef ACTIVATION_LOG
+				  hls::stream<TO> &out_log,
+#endif
+				  TW  const &weights,
+				  TA  const &activation,
+				  int const  reps,
+				  R const &r) {
+  // how many different rows each neuron will compute
+  // alternatively: number of vertical matrix chunks
+  unsigned const  NF = MatrixH / PE;
+  // how many synapse groups each row is split into
+  // alternatively: number of horizontal matrix chunks
+  //unsigned const  SF = MatrixW / SIMD;
+
+  // hwkim modified for debug
+#ifdef ACTIVATION_LOG
+  string conv_out_file_name = "conv_" + to_string(weighted_layer_cnt+1) + "_out_minusBias.txt";
+  ofstream conv_out_log_file(conv_out_file_name);
+  if(!conv_out_log_file.is_open()){
+ 	 cout << "conv_out_log_file open error" << endl;
+  }
+
+  extern string golden_file_dir;
+  string golden_conv_out_file_name = golden_file_dir + "binConv" + to_string(weighted_layer_cnt+1) + "_minusBias.txt";
+  ifstream golden_conv_out_file(golden_conv_out_file_name);
+  if(!golden_conv_out_file.is_open()){
+	  cout << "golden_conv_out_file open error" << endl;
+  }
+
+  string conv_out_comp_file_name = "conv_" + to_string(weighted_layer_cnt+1) + "_out_minusBias_comp.txt";
+  ofstream conv_out_comp_file(conv_out_comp_file_name);
+  if(!conv_out_comp_file.is_open()){
+	  cout << "conv_out_comp_file open error" << endl;
+  }
+
+#endif
+
+  // input vector buffers
+  //TI  inputBuf[SF];
+  TI  inputBuf[4*IFMChannels/SIMD];
+#pragma HLS ARRAY_PARTITION variable=inputBuf complete dim=1
+
+  decltype(activation.init(0,0))  accu[PE];
+#pragma HLS ARRAY_PARTITION variable=accu complete dim=0
+
+  unsigned  nf   = 0;
+  unsigned  sf   = 0;
+  unsigned  tile = 0; // invariant: tile = nf*SF + sf
+  // everything merged into a common iteration space (one "big" loop instead
+  // of smaller nested loops) to get the pipelinening the way we want
+  unsigned const TOTAL_FOLD = (reps/4 + reps + reps) * NF * (IFMChannels/SIMD);	// for padding of 0, 1, 0, 1 only
+  	  	  	  	  	  	  	  //(reps/4 + reps/4*2*2 + reps/4*4) * NF * (IFMChannels/SIMD);
+
+  // hwkim modified for padding
+  unsigned int x=0, y=0, kx=0, ky=0;
+  unsigned int simd_cnt=0;
+  unsigned int w_addr=0;
+  unsigned int sf_max=0;
+
+  //for(unsigned  i = 0; i < reps * TOTAL_FOLD; i++) {
+  for(unsigned  i = 0; i < TOTAL_FOLD; i++) {
+#pragma HLS PIPELINE II=1
+
+	//tile: sf -> kx -> ky -> nf
+	  unsigned int kx_max, ky_max;
+	  unsigned char tile_idx = 0;
+	  if((!(x&0x1))&&(!(y&0x1))){	// even x, even y
+		tile_idx = 1;
+		kx_max = 1;
+		ky_max = 1;
+		sf_max = 1*(IFMChannels/SIMD);
+	  }
+	  else if((x&0x1)&&(!(y&0x1))){	// odd x, even y
+		tile_idx = 2;
+		kx_max = 2;
+		ky_max = 1;
+		sf_max = 2*(IFMChannels/SIMD);
+	  }
+	  else if((!(x&0x1))&&(y&0x1)){	// even x, odd y
+		tile_idx = 3;
+		kx_max = 1;
+		ky_max = 2;
+		sf_max = 2*(IFMChannels/SIMD);
+	  }
+	  else if((x&0x1)&&(y&0x1)){	// odd x, odd y
+		tile_idx = 4;
+		kx_max = 2;
+		ky_max = 2;
+		sf_max = 4*(IFMChannels/SIMD);
+	  }
+	  else
+		cout << "tile index error" << endl;
+
+    TI  inElem;
+    if(nf == 0) {
+		inElem = in.read();
+		// store in appropriate buffer for reuse
+		inputBuf[sf] = inElem;
+    }
+    else {
+      // reuse buffered input
+      inElem = inputBuf[sf];
+    }
+
+    // Threshold Initialisation
+    if(sf == 0) {
+      for(unsigned  pe = 0; pe < PE; pe++) {
+#pragma HLS UNROLL
+	    accu[pe] = activation.init(nf, pe);
+      }
+    }
+
+    // compute matrix-vector product for each processing element
+//    auto const &w = weights.weights(tile);
+    switch(tile_idx){
+    case 1: w_addr = 4*(IFMChannels/SIMD) + simd_cnt;
+    	break;
+    case 2: w_addr = (ky+1)*3*(IFMChannels/SIMD) + (kx*2)*(IFMChannels/SIMD) + simd_cnt;
+    	break;
+    case 3: w_addr = (ky*2)*3*(IFMChannels/SIMD) + (kx+1)*(IFMChannels/SIMD) + simd_cnt;
+    	break;
+    case 4: w_addr = (ky*2)*3*(IFMChannels/SIMD) + (kx*2)*(IFMChannels/SIMD) + simd_cnt;
+    	break;
+    default: cout << "tile index error" << endl;
+    	break;
+    }
+    auto const &w = weights.weights(w_addr);
+
+    for(unsigned  pe = 0; pe < PE; pe++) {
+#pragma HLS UNROLL
+      auto const  wgt = TWeightI()(w[pe]);
+      auto const  act = TSrcI()(inElem);
+
+//      if((x<Left && kx<Left)
+//		  ||(y<Top && ky<Top)
+//		  ||(x>(OFMDim-1-Right) && kx>(3-1-Right))
+//		  ||(y>(OFMHeight-1-Bottom) && ky>(3-1-Bottom))){
+//    	  ;	//skip pad from accumulation
+//       }
+//      else{
+    	  accu[pe] = mac<SIMD>(accu[pe], wgt, act, r);
+//       }
+    }
+
+
+    cout << "y: " << y;
+    cout << ", x: " << x;
+    cout << ", nf: " << nf;
+    cout << ", ky: " << ky;
+    cout << ", kx: " << kx;
+    cout << ", simd_cnt: " << simd_cnt;
+    cout << ", w_addr: " << w_addr << endl;
+
+    if(++simd_cnt==IFMChannels/SIMD){
+    	simd_cnt=0;
+    	if(++kx==kx_max){
+    		kx=0;
+    		if(++ky==ky_max){
+    			ky=0;
+    			if(++nf==NF){
+    				nf=0;
+    				cout << "==================================" << endl;
+    				if(++x==OFMDim){
+    					x=0;
+    					if(++y==OFMHeight){
+    						y=0;
+    					}
+    				}
+    			}
+    		}
+    	}
+    }
+
+
+
+    // keep track of which folded synapse/neuron we are processing
+    //++tile;
+    //if(++sf == SF) {
+    if(++sf==sf_max){
+      // produce output and clear accumulators
+      auto  outElem = TDstI().template operator()<TO>();
+      for (unsigned  pe = 0; pe < PE; pe++) {
+#pragma HLS UNROLL
+#ifdef ACTIVATION_LOG
+			conv_out_log_file << setprecision(8) << accu[pe] << endl;//" | ";
+			decltype(activation.init(0,0))	golden_buf;
+			golden_conv_out_file >> golden_buf;
+			if(accu[pe]!=golden_buf){
+				conv_out_comp_file << fixed;
+				conv_out_comp_file.precision(8);
+				conv_out_comp_file.setf(ios_base::showpoint);
+				conv_out_comp_file << "differ @ (" << y << "," << x << ") gold: " << golden_buf << ", accu[" << nf << ", " << pe << "]: " << accu[pe] << endl;
+			}
+#endif
+			outElem[pe] = activation.activate(nf, pe, accu[pe]);
+      }
+     out.write(outElem);
+      // hwkim modified for debug
+#ifdef ACTIVATION_LOG
+      out_log.write(outElem);
+#endif
+
+      // next folded neuron or image
+      sf = 0;
+//      if(++nf == NF) {
+//	    nf   = 0;
+//	    tile = 0;
+//      }
+    }
+  }
+
+#ifdef ACTIVATION_LOG
+  conv_out_log_file.close();
+  conv_out_comp_file.close();
+#endif
+}
+
+
+
+
+
 #endif
