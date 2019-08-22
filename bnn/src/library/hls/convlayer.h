@@ -242,8 +242,9 @@ void UpConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
   hls::stream<ap_uint<SIMD*TSrcI::width> > convInp_log("StreamingConvLayer_Batch.convInp_log");
 #endif
 
-  UpConvolutionInputGenerator<ConvKernelDim, IFMChannels, TSrcI::width, IFMDim, OFMDim, IFMHeight, OFMHeight,
-  	  Top, Bottom, Left, Right, SIMD>
+  TConvolutionInputGenerator<ConvKernelDim, IFMChannels, TSrcI::width, IFMDim, OFMDim, IFMHeight, OFMHeight,
+  	  //Top, Bottom, Left, Right,
+	  SIMD>
   	  (wa_in, convInp,
 #ifdef ACTIVATION_LOG
 		convInp_log,
