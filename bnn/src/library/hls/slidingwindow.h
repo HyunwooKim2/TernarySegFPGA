@@ -308,7 +308,9 @@ void TConvolutionInputGenerator(
 #pragma HLS ARRAY_PARTITION variable=inputBuf complete dim=1
 #pragma HLS RESOURCE variable inputBuf core=RAM_2P
 
-  const unsigned int cycles_write_block = 2 * (((OFMDim/2*2) + (OFMDim/2*4)) * multiplying_factor);
+  const unsigned int cycles_write_block = (((OFMDim/2*2) + (OFMDim/2*4)	// hwkim's comment - first line
+		  + (OFMDim/2*1) + (OFMDim/2*2))	// hwkim's comment - second line
+		  * multiplying_factor);
   	  // hwkim's comment - output row 중 가장 많은 write가 발생하는 cycle. 이것보다 적은 경우는 skip
   const unsigned int cycles_read_block = IFMDim * multiplying_factor;	// hwkim's comment - input 1줄 읽어오는 cycle
   const unsigned int max_cycles = MAX(cycles_write_block,cycles_read_block);
@@ -329,7 +331,7 @@ void TConvolutionInputGenerator(
     for (unsigned int i = 0; i < baseIter; i++) {
 #pragma HLS PIPELINE II=1
 
-      if (inp < IFMDim * multiplying_factor) {// Initial buffer of ConvKernelDim lines
+      if (inp < IFMDim * multiplying_factor) {	// Initial buffer of ConvKernelDim lines
     	  ap_uint<SIMD*Input_precision> inElem;
     	  inElem = in.read();
     	  inputBuf[current_block_write][current_line] = inElem;
@@ -348,7 +350,10 @@ void TConvolutionInputGenerator(
     	  }
       }
       else {
-    	  if (counter_internal_block < cycles_write_block-1) { // We are writing output, MMV IFMChan per cycle
+    	  // hwkim modified for Tconv
+    	  //if (counter_internal_block < cycles_write_block-1) { // We are writing output, MMV IFMChan per cycle
+    	  if (counter_internal_block <= cycles_write_block-1) { // We are writing output, MMV IFMChan per cycle
+
     		  unsigned int current_line_in_block;
     		  unsigned int current_block_read_kernel;
 			  // hwkim added for Tconv - (:,0) 예외 처리
@@ -365,28 +370,25 @@ void TConvolutionInputGenerator(
     		  else{
     			  current_block_read_kernel = current_block_read + k_y;
     		  }
-    		  if(current_block_read_kernel < 0){
-    			  current_block_read_kernel+= number_blocks;
-    		  }
 			  if (current_block_read_kernel >= number_blocks) {
 				  current_block_read_kernel-= number_blocks;
 			  }
 			  ap_uint<SIMD*Input_precision> outElem = inputBuf[current_block_read_kernel][(current_line_in_block)];
 
-			  // hwkim modified for upconv
-//		     if((ofm_x<Left && k_x<Left)
-//				  ||(ofm_y<Top && k_y<Top)
-//				  ||(ofm_x>(OFMDim-1-Right) && k_x>(2-1-Right))
-//				  ||(ofm_y>(OFMHeight-1-Bottom) && k_y>(2-1-Bottom))){
+			  // hwkim modified for Tconv
 			  if((ofm_y==0 && k_y==1)
-					  || (ofm_x==0 & k_x==1)){
+				  || (ofm_x==0 & k_x==1)){
+				  // hwkim added for debug
 				  if (count_simd == multiplying_factor-1)
 					  cout << "skipped" << endl;	//skip
 		      }
 		     else{
+		    	 // hwkim added for debug
 		    	 if (count_simd == multiplying_factor-1) {
 					  cout << "OFM: (" << ofm_y << "+" << k_y << ", " << ofm_x << "+" << k_x << "), ";
-					  cout << "IFM: (" << current_block_read_kernel << ", " << (int)current_line_in_block/multiplying_factor << ")" << endl;
+					  cout << "IFM: (" << current_block_read_kernel << ", " << (int)current_line_in_block/multiplying_factor << "), ";
+					  cout << "written block: " << current_block_write << ", ";
+					  cout << "counter_internal_block: " << counter_internal_block << endl;
 				  }
 
 			  	  out.write(outElem);
@@ -421,7 +423,10 @@ void TConvolutionInputGenerator(
 							  }}}}}
     	  }
 
-    	  if ((counter_internal_block < cycles_read_block-1) && (read_block<(IFMHeight))) {
+    	  // hwkim modified for Tconv
+    	  //if ((counter_internal_block < cycles_read_block-1) && (read_block<(IFMHeight))) {
+    	  if ((counter_internal_block <= cycles_read_block-1) && (read_block<(IFMHeight))) {
+
         	  // In parallel we write in the buffer, in the current block write if we still need to
         	  ap_uint<SIMD*Input_precision> inElem;
 
@@ -445,7 +450,10 @@ void TConvolutionInputGenerator(
 
          counter_internal_block++; // = (counter_internal_block +1) % max_cycles;
 
-         if (counter_internal_block == (max_cycles-1)) {
+          // hwkim modified for Tconv
+         //if (counter_internal_block == (max_cycles-1)) {
+         if (counter_internal_block == max_cycles) {
+
         	  counter_internal_block = 0;
           }
       }
@@ -455,8 +463,6 @@ void TConvolutionInputGenerator(
   } // End count_image
 
 } // End generator
-
-
 
 
 

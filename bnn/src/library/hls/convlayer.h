@@ -257,26 +257,27 @@ void UpConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
             if(!conv_in_gen_log_file.is_open()){
             	cout << "conv_in_gen_log_file open error!!" << endl;
               }
-            for(int y=0; y<OFMHeight; y++){
-            	for(int x=0; x<OFMDim; x++){
-            		for(int ky=0; ky<(y%2+1); ky++){
-            			for(int kx=0; kx<(x%2+1); kx++){
-            				if((x<Left && kx<Left)
-							  ||(y<Top && ky<Top)
-							  ||(x>(OFMDim-1-Right) && kx>(2-1-Right))
-							  ||(y>(OFMHeight-1-Bottom) && ky>(2-1-Bottom))){
-								;
-							}
+            for(unsigned int y=0; y<OFMHeight; y++){
+            	for(unsigned int x=0; x<OFMDim; x++){
+            		conv_in_gen_log_file << "y,x: " << dec << "(" << y << "," << x << ")" << endl;
+            		for(int ky=0; ky<((y-1)%2 + 1); ky++){
+            			for(int kx=0; kx<((x-1)%2 + 1); kx++){
+            				if((y==0 && ky==1) || (x==0 & kx==1)){
+            					;
+            				}
             				else{
+            					unsigned int convInp_log_buf[IFMChannels/SIMD];
 								for(int in_ch=0; in_ch<IFMChannels/SIMD; in_ch++){
-									conv_in_gen_log_file << hex << (unsigned int)convInp_log.read() << " ";
+									convInp_log_buf[in_ch] = convInp_log.read();
+//									conv_in_gen_log_file << hex << (unsigned int)convInp_log.read() << " ";
+								}
+								for(int in_ch=IFMChannels/SIMD-1; in_ch>=0; in_ch--){
+									conv_in_gen_log_file << hex << setw(8) << setfill('0') << convInp_log_buf[in_ch];
 								}
             				}
-            				conv_in_gen_log_file << " | ";
+            				conv_in_gen_log_file << endl;
             			}
-            			conv_in_gen_log_file << endl;
             		}
-            		conv_in_gen_log_file << "x,y=" << dec << x << "," << y << endl;
             	}
             	conv_in_gen_log_file << endl;
               }
