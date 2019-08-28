@@ -379,17 +379,17 @@ void TConvolutionInputGenerator(
 			  if((ofm_y==0 && k_y==1)
 				  || (ofm_x==0 & k_x==1)){
 				  // hwkim added for debug
-				  if (count_simd == multiplying_factor-1)
-					  cout << "skipped" << endl;	//skip
+//				  if (count_simd == multiplying_factor-1)
+//					  cout << "skipped" << endl;	//skip
 		      }
 		     else{
 		    	 // hwkim added for debug
-		    	 if (count_simd == multiplying_factor-1) {
-					  cout << "OFM: (" << ofm_y << "+" << k_y << ", " << ofm_x << "+" << k_x << "), ";
-					  cout << "IFM: (" << current_block_read_kernel << ", " << (int)current_line_in_block/multiplying_factor << "), ";
-					  cout << "written block: " << current_block_write << ", ";
-					  cout << "counter_internal_block: " << counter_internal_block << endl;
-				  }
+//		    	 if (count_simd == multiplying_factor-1) {
+//					  cout << "OFM: (" << ofm_y << "+" << k_y << ", " << ofm_x << "+" << k_x << "), ";
+//					  cout << "IFM: (" << current_block_read_kernel << ", " << (int)current_line_in_block/multiplying_factor << "), ";
+//					  cout << "written block: " << current_block_write << ", ";
+//					  cout << "counter_internal_block: " << counter_internal_block << endl;
+//				  }
 
 			  	  out.write(outElem);
 #ifdef ACTIVATION_LOG
@@ -401,17 +401,23 @@ void TConvolutionInputGenerator(
 			  if (count_simd == multiplying_factor) {
 				  count_simd=0;
 				  k_x++;
-				  if (k_x == ((ofm_x-1)%2 + 1)) {
+				  //if (k_x == ((ofm_x-1)%2 + 1)) {
+				  if (k_x == (!(ofm_x&0x1) + 1)) {
+
 					  k_x = 0;
 					  k_y++;
-					  if (k_y == ((ofm_y-1)%2 + 1)) {
+					  //if (k_y == ((ofm_y-1)%2 + 1)) {
+					  if (k_y == (!(ofm_y&0x1) + 1)) {
+
 						  k_y = 0;
 						  ofm_x ++;
 						  if (ofm_x == OFMDim) {
 							  ofm_x = 0;
 							  ofm_y++;
 							  // hwkim added for stride
-							  if((ofm_y%2==1) && (ofm_y!=1))
+							  //if((ofm_y%2==1) && (ofm_y!=1))
+							  if((ofm_y&0x1==1) && (ofm_y!=1))
+
 								  current_block_read++;
 							  if (current_block_read >= number_blocks) {
 								  current_block_read-= number_blocks;

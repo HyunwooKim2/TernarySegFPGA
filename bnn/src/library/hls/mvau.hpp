@@ -644,7 +644,7 @@ void Matrix_Vector_Activate_Batch_Skipping(hls::stream<TI> & in,
 
   // input vector buffers
   //TI  inputBuf[SF];
-  TI  inputBuf[4*IFMChannels/SIMD];
+  TI  inputBuf[4*IFMChannels/SIMD];	// hwkim: ky < 2, kx < 2
 #pragma HLS ARRAY_PARTITION variable=inputBuf complete dim=1
 
   decltype(activation.init(0,0))  accu[PE];
@@ -669,40 +669,46 @@ void Matrix_Vector_Activate_Batch_Skipping(hls::stream<TI> & in,
 #pragma HLS PIPELINE II=1
 
 	//tile: sf -> kx -> ky -> nf
-	  unsigned int kx_max, ky_max;
-	  unsigned char tile_idx = 0;
-	  if((!(x&0x1))&&(!(y&0x1))){	// even x, even y
-		tile_idx = 1;
-		kx_max = 1;
-		ky_max = 1;
-		sf_max = 1*(IFMChannels/SIMD);
-	  }
-	  else if((x&0x1)&&(!(y&0x1))){	// odd x, even y
-		tile_idx = 2;
-		kx_max = 2;
-		ky_max = 1;
-		sf_max = 2*(IFMChannels/SIMD);
-	  }
-	  else if((!(x&0x1))&&(y&0x1)){	// even x, odd y
-		tile_idx = 3;
-		kx_max = 1;
-		ky_max = 2;
-		sf_max = 2*(IFMChannels/SIMD);
-	  }
-	  else if((x&0x1)&&(y&0x1)){	// odd x, odd y
-		tile_idx = 4;
-		kx_max = 2;
-		ky_max = 2;
-		sf_max = 4*(IFMChannels/SIMD);
-	  }
-	  else
-		cout << "tile index error" << endl;
+//	  unsigned int kx_max, ky_max;
+//	  unsigned char tile_idx = 0;
+//	  if((!(x&0x1))&&(!(y&0x1))){	// even x, even y
+//		tile_idx = 1;
+//		kx_max = 1;
+//		ky_max = 1;
+//		sf_max = 1*(IFMChannels/SIMD);
+//	  }
+//	  else if((x&0x1)&&(!(y&0x1))){	// odd x, even y
+//		tile_idx = 2;
+//		kx_max = 2;
+//		ky_max = 1;
+//		sf_max = 2*(IFMChannels/SIMD);
+//	  }
+//	  else if((!(x&0x1))&&(y&0x1)){	// even x, odd y
+//		tile_idx = 3;
+//		kx_max = 1;
+//		ky_max = 2;
+//		sf_max = 2*(IFMChannels/SIMD);
+//	  }
+//	  else if((x&0x1)&&(y&0x1)){	// odd x, odd y
+//		tile_idx = 4;
+//		kx_max = 2;
+//		ky_max = 2;
+//		sf_max = 4*(IFMChannels/SIMD);
+//	  }
+//	  else
+//		cout << "tile index error" << endl;
 
     TI  inElem;
     if(nf == 0) {
-		inElem = in.read();
-		// store in appropriate buffer for reuse
-		inputBuf[sf] = inElem;
+    	if(((y==0)&&((1-ky)==1))
+			|| ((x==0)&&((1-kx)==1))){
+    		;	// skip
+    	}
+    	else{
+			inElem = in.read();
+			// store in appropriate buffer for reuse
+			inputBuf[sf] = inElem;
+    	}
     }
     else {
       // reuse buffered input
@@ -719,18 +725,9 @@ void Matrix_Vector_Activate_Batch_Skipping(hls::stream<TI> & in,
 
     // compute matrix-vector product for each processing element
 //    auto const &w = weights.weights(tile);
-    switch(tile_idx){
-    case 1: w_addr = 4*(IFMChannels/SIMD) + simd_cnt;
-    	break;
-    case 2: w_addr = (ky+1)*3*(IFMChannels/SIMD) + (kx*2)*(IFMChannels/SIMD) + simd_cnt;
-    	break;
-    case 3: w_addr = (ky*2)*3*(IFMChannels/SIMD) + (kx+1)*(IFMChannels/SIMD) + simd_cnt;
-    	break;
-    case 4: w_addr = (ky*2)*3*(IFMChannels/SIMD) + (kx*2)*(IFMChannels/SIMD) + simd_cnt;
-    	break;
-    default: cout << "tile index error" << endl;
-    	break;
-    }
+    w_addr = nf*3*3*(IFMChannels/SIMD)
+    		+ (((y&0x1) + ((!(y&0x1)-ky)<<1))*3 + (x&0x1) + ((!(x&0x1)-kx)<<1))*(IFMChannels/SIMD)
+			+ simd_cnt;
     auto const &w = weights.weights(w_addr);
 
     for(unsigned  pe = 0; pe < PE; pe++) {
@@ -738,52 +735,36 @@ void Matrix_Vector_Activate_Batch_Skipping(hls::stream<TI> & in,
       auto const  wgt = TWeightI()(w[pe]);
       auto const  act = TSrcI()(inElem);
 
-//      if((x<Left && kx<Left)
-//		  ||(y<Top && ky<Top)
-//		  ||(x>(OFMDim-1-Right) && kx>(3-1-Right))
-//		  ||(y>(OFMHeight-1-Bottom) && ky>(3-1-Bottom))){
-//    	  ;	//skip pad from accumulation
-//       }
-//      else{
+      if(((y==0)&&((1-ky)==1))
+    		  || ((x==0)&&((1-kx)==1))){
+    	  ;	// skip
+      }
+      else{
     	  accu[pe] = mac<SIMD>(accu[pe], wgt, act, r);
-//       }
+      }
     }
 
-
-    cout << "y: " << y;
-    cout << ", x: " << x;
-    cout << ", nf: " << nf;
-    cout << ", ky: " << ky;
-    cout << ", kx: " << kx;
-    cout << ", simd_cnt: " << simd_cnt;
-    cout << ", w_addr: " << w_addr << endl;
-
-    if(++simd_cnt==IFMChannels/SIMD){
-    	simd_cnt=0;
-    	if(++kx==kx_max){
-    		kx=0;
-    		if(++ky==ky_max){
-    			ky=0;
-    			if(++nf==NF){
-    				nf=0;
-    				cout << "==================================" << endl;
-    				if(++x==OFMDim){
-    					x=0;
-    					if(++y==OFMHeight){
-    						y=0;
-    					}
-    				}
-    			}
-    		}
-    	}
-    }
-
-
+    // hwkim added for debug
+    if(((y==0)&&((1-ky)==1))
+		|| ((x==0)&&((1-kx)==1))){
+		cout << "(skipped) ";	// skip
+	}
+	cout << "y: " << y;
+	cout << ", x: " << x;
+	cout << ", ky: " << (!(y&0x1)-ky);
+	cout << ", kx: " << (!(x&0x1)-kx);
+	cout << ", simd_cnt: " << simd_cnt;
+	cout << ", w_addr: " << w_addr;
+	cout << ", sf: " << sf;
+	cout << ", nf: " << nf << endl;
 
     // keep track of which folded synapse/neuron we are processing
     //++tile;
     //if(++sf == SF) {
-    if(++sf==sf_max){
+    if(++sf==((1<<(!(y&0x1)+!(x&0x1)))*(IFMChannels/SIMD))){
+    	// hwkim added for debug
+    	cout << "sf_max = 1<<(!(y&0x1)+!(x&0x1)): " << dec << (1<<(!(y&0x1)+!(x&0x1))) << endl;
+
       // produce output and clear accumulators
       auto  outElem = TDstI().template operator()<TO>();
       for (unsigned  pe = 0; pe < PE; pe++) {
@@ -814,6 +795,33 @@ void Matrix_Vector_Activate_Batch_Skipping(hls::stream<TI> & in,
 //	    tile = 0;
 //      }
     }
+
+
+    if(++simd_cnt==IFMChannels/SIMD){
+    	simd_cnt=0;
+//    	if(--kx<0){
+//    		kx=(!(x&0x1));
+    	if(++kx==(!(x&0x1)+1)){
+    		kx=0;
+//    		if(--ky<0){
+//    			ky=(!(y&0x1));
+    		if(++ky==(!(y&0x1)+1)){
+    			ky=0;
+    			if(++nf==NF){
+    				nf=0;
+    				cout << "==================================" << endl;
+    				if(++x==OFMDim){
+    					x=0;
+    					if(++y==OFMHeight){
+    						y=0;
+    					}
+    				}
+    			}
+    		}
+    	}
+    }
+
+
   }
 
 #ifdef ACTIVATION_LOG

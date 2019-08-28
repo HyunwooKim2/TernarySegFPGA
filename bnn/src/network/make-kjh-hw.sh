@@ -127,8 +127,8 @@ if [[ ("$MODE" == "h") || ("$MODE" == "a")  ]]; then
 	TEST_INPUT="$XILINX_BNN_ROOT/../params/cifar10/$NETWORK/0621/input.bin"
 	TEST_RESULT=3
   elif [[ ("$NETWORK" == "bnn_seg_net") ]]; then
-	PARAMS="$XILINX_BNN_ROOT/../params/camvid_params/$NETWORK/0801"
-	TEST_INPUT="$XILINX_BNN_ROOT/../params/camvid_params/$NETWORK/0801/input.bin"
+	PARAMS="$XILINX_BNN_ROOT/../params/camvid_params/$NETWORK/0827"
+	TEST_INPUT="$XILINX_BNN_ROOT/../params/camvid_params/$NETWORK/0827/input.bin"
 	TEST_RESULT=3
   fi
 

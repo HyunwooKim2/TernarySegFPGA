@@ -184,8 +184,8 @@ void insert_pad(stream<ap_uint<InWidth>> & in_stream,
 
 // hwkim modified for debug
 #ifdef ACTIVATION_LOG
-string golden_file_dir = "/home/hwkim/work/params/guinness_params/camvid_params/0801/Activations/";
-string snapshot_dir = "/home/hwkim/work/params/finn_params/camvid_params/0801/snapshots/";
+string golden_file_dir = "/home/hwkim/work/params/guinness_params/camvid_params/0827/Activations/";
+string snapshot_dir = "/home/hwkim/work/params/finn_params/camvid_params/0827/snapshots/";
 
 template <unsigned int OFMDim,
 		unsigned int OFMHeight,
