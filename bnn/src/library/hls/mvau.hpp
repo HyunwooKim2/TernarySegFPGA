@@ -700,8 +700,10 @@ void Matrix_Vector_Activate_Batch_Skipping(hls::stream<TI> & in,
 
     TI  inElem;
     if(nf == 0) {
-    	if(((y==0)&&((1-ky)==1))
-			|| ((x==0)&&((1-kx)==1))){
+    	// hwkim modified for weight flip
+    	if(((y==0)&&(ky==0))
+			|| ((x==0)&&(kx==0))){
+
     		;	// skip
     	}
     	else{
@@ -726,7 +728,10 @@ void Matrix_Vector_Activate_Batch_Skipping(hls::stream<TI> & in,
     // compute matrix-vector product for each processing element
 //    auto const &w = weights.weights(tile);
     w_addr = nf*3*3*(IFMChannels/SIMD)
-    		+ (((y&0x1) + ((!(y&0x1)-ky)<<1))*3 + (x&0x1) + ((!(x&0x1)-kx)<<1))*(IFMChannels/SIMD)
+    		// hwkim modified for weight flip
+    		//+ (((y&0x1) + ((!(y&0x1)-ky)<<1))*3 + (x&0x1) + ((!(x&0x1)-kx)<<1))*(IFMChannels/SIMD)
+			+ (((y&0x1) + (ky<<1))*3 + (x&0x1) + (kx<<1))*(IFMChannels/SIMD)
+
 			+ simd_cnt;
     auto const &w = weights.weights(w_addr);
 
@@ -745,25 +750,25 @@ void Matrix_Vector_Activate_Batch_Skipping(hls::stream<TI> & in,
     }
 
     // hwkim added for debug
-    if(((y==0)&&((1-ky)==1))
-		|| ((x==0)&&((1-kx)==1))){
-		cout << "(skipped) ";	// skip
-	}
-	cout << "y: " << y;
-	cout << ", x: " << x;
-	cout << ", ky: " << (!(y&0x1)-ky);
-	cout << ", kx: " << (!(x&0x1)-kx);
-	cout << ", simd_cnt: " << simd_cnt;
-	cout << ", w_addr: " << w_addr;
-	cout << ", sf: " << sf;
-	cout << ", nf: " << nf << endl;
+//    if(((y==0)&&((1-ky)==1))
+//		|| ((x==0)&&((1-kx)==1))){
+//		cout << "(skipped) ";	// skip
+//	}
+//	cout << "y: " << y;
+//	cout << ", x: " << x;
+//	cout << ", ky: " << (!(y&0x1)-ky);
+//	cout << ", kx: " << (!(x&0x1)-kx);
+//	cout << ", simd_cnt: " << simd_cnt;
+//	cout << ", w_addr: " << w_addr;
+//	cout << ", sf: " << sf;
+//	cout << ", nf: " << nf << endl;
 
     // keep track of which folded synapse/neuron we are processing
     //++tile;
     //if(++sf == SF) {
     if(++sf==((1<<(!(y&0x1)+!(x&0x1)))*(IFMChannels/SIMD))){
     	// hwkim added for debug
-    	cout << "sf_max = 1<<(!(y&0x1)+!(x&0x1)): " << dec << (1<<(!(y&0x1)+!(x&0x1))) << endl;
+//    	cout << "sf_max = 1<<(!(y&0x1)+!(x&0x1)): " << dec << (1<<(!(y&0x1)+!(x&0x1))) << endl;
 
       // produce output and clear accumulators
       auto  outElem = TDstI().template operator()<TO>();
@@ -799,19 +804,16 @@ void Matrix_Vector_Activate_Batch_Skipping(hls::stream<TI> & in,
 
     if(++simd_cnt==IFMChannels/SIMD){
     	simd_cnt=0;
-//    	if(--kx<0){
-//    		kx=(!(x&0x1));
     	if(++kx==(!(x&0x1)+1)){
     		kx=0;
-//    		if(--ky<0){
-//    			ky=(!(y&0x1));
     		if(++ky==(!(y&0x1)+1)){
     			ky=0;
     			if(++nf==NF){
     				nf=0;
-    				cout << "==================================" << endl;
+//    				cout << "==================================" << endl;
     				if(++x==OFMDim){
     					x=0;
+        				cout << y << "/" << OFMHeight << endl;
     					if(++y==OFMHeight){
     						y=0;
     					}
