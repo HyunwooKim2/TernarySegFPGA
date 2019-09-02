@@ -174,8 +174,12 @@ void quantiseAndPack(const tiny_cnn::vec_t & in, ExtMemWord * out, unsigned int 
 //	if(!golden_file.is_open()){
 //		cout << "input comp file open error!!" << endl;
 //	}
-	int w = 480+2;
-	int h = 360+2;
+	// hwkim modified for padding
+//	int w = 480+2;
+//	int h = 360+2;
+	int w = 480;
+	int h = 360;
+
 	for(int c=0; c<3; c++){
 		for(int y=0; y<h; y++){
 			for(int x=0; x<w; x++){
@@ -372,7 +376,9 @@ std::vector<int>  testPrebuiltCIFAR10_from_image(std::vector<tiny_cnn::vec_t> & 
   
   // hwkim fixed bug of padding & modified for segmentation
   //tiny_cnn::chaninterleave_layer<tiny_cnn::activation::identity> interleaver(3, 32 * 32, false);
-  tiny_cnn::chaninterleave_layer<tiny_cnn::activation::identity> interleaver(3, (480+2) * (360+2), false);
+  // hwkim modified for padding
+  //tiny_cnn::chaninterleave_layer<tiny_cnn::activation::identity> interleaver(3, (480+2) * (360+2), false);
+  tiny_cnn::chaninterleave_layer<tiny_cnn::activation::identity> interleaver(3, (480*360), false);
 
   // interleave and pack inputs
   for(unsigned int i = 0; i < count; i++) {

@@ -30,7 +30,10 @@
 #define L9_IFM_CH 	64
 #define L10_IFM_CH 	64
 
-#define L0_IFM_DIM 	(480+2)
+// hwkim modified for padding
+//#define L0_IFM_DIM 	(480+2)
+#define L0_IFM_DIM 	(480)
+
 #define L1_IFM_DIM 	(480+2)
 #define L2_IFM_DIM 	(480+1)
 #define L3_IFM_DIM 	(240+2)
@@ -133,7 +136,10 @@
 //#define L0_APF 0
 
 // hwkim added for segmentation
-#define L0_IFM_HEIGHT 	(360+2)
+// hwkim modified for padding
+//#define L0_IFM_HEIGHT 	(360+2)
+#define L0_IFM_HEIGHT 	(360)
+
 #define L1_IFM_HEIGHT 	(360+2)
 #define L2_IFM_HEIGHT 	(360+1)
 #define L3_IFM_HEIGHT 	(180+2)

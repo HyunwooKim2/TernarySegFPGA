@@ -118,7 +118,7 @@ extern "C" int inference(const char* path, int results[64], int number_class, fl
 
   // hwkim modified for padding
   int padding;
-  padding = 1;
+  padding = 0;
   //parse_cifar10(path, &test_images, &test_labels, -1.0, 1.0, 0, 0);
   parse_cifar10(path, &test_images, &test_labels, -1.0, 1.0, padding, padding);
 

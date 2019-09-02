@@ -89,8 +89,12 @@ public:
           }
 // hwkim modified for debug
 #ifdef ACTIVAITON_LOG
-		int w = 480+2;
-		int h = 360+2;
+        // hwkim modified for padding
+//		int w = 480+2;
+//		int h = 360+2;
+		int w = 480;
+		int h = 360;
+
 		std::ofstream chaninterleave_log_file("chaninterleave_log.txt");
 		if(!chaninterleave_log_file.is_open()){
 			std::cout << "chaninterleave_log_file open error!!" << std::endl;

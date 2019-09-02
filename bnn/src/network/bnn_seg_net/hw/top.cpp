@@ -473,7 +473,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
   const unsigned int outBits = L10_OFM_CH*16;
 
   // hwkim modified for separated simulation
-  int start_layer = 6;
+  int start_layer = 0;
   string snapshot_file_name;
 
   if(start_layer < 1){
@@ -482,13 +482,15 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 
 	  // hwkim modified for padding & segmentation
 	  //StreamingDataWidthConverter_Batch<64, 192, (32 * 32 * 3 * 8) / 64>(inter0, inter0_1, numReps);
-	  StreamingDataWidthConverter_Batch<64, 192, (L0_IFM_DIM*L0_IFM_HEIGHT*3*8)/64+1>(inter0, inter0_1, numReps);
-
 	  //StreamingDataWidthConverter_Batch<192, 24, (32 * 32 * 3 * 8) / 192>(inter0_1, inter0_2, numReps);
-	  StreamingDataWidthConverter_Batch<192, 24, (L0_IFM_DIM*L0_IFM_HEIGHT*3*8)/192+1>(inter0_1, inter0_2, numReps);
+	  // hwkim modified for padding
+	  //StreamingDataWidthConverter_Batch<64, 192, (L0_IFM_DIM*L0_IFM_HEIGHT*3*8)/64+1>(inter0, inter0_1, numReps);
+	  //StreamingDataWidthConverter_Batch<192, 24, (L0_IFM_DIM*L0_IFM_HEIGHT*3*8)/192+1>(inter0_1, inter0_2, numReps);
+	  StreamingDataWidthConverter_Batch<64, 192, (L0_IFM_DIM*L0_IFM_HEIGHT*3*8)/64>(inter0, inter0_1, numReps);
+	  StreamingDataWidthConverter_Batch<192, 24, (L0_IFM_DIM*L0_IFM_HEIGHT*3*8)/192>(inter0_1, inter0_2, numReps);
 
 	  //////////////////////////////////////////////////////////////////
-	  // Layer 0 - fixed point input, binary weight
+	  // Layer 1 - fixed point input, binary weight
 	  //////////////////////////////////////////////////////////////////
 	  ConvLayer_Batch<L0_K, L0_IFM_CH, L0_IFM_DIM, L0_OFM_CH, L0_OFM_DIM,
 	  	  L0_IFM_HEIGHT, L0_OFM_HEIGHT, 1, 1, 1, 1, 1,
@@ -513,7 +515,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
   }
 
   //////////////////////////////////////////////////////////////////
-  // Layer 1 - binary convolution
+  // Layer 2 - binary convolution
   //////////////////////////////////////////////////////////////////
     if(start_layer < 2){
 	  stream<ap_uint<64>> inter1_pad("DoCompute.inter1_pad");
@@ -541,23 +543,8 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
   }
 
   //////////////////////////////////////////////////////////////////
-  // Layer 2 - binary convolution - stride 2, channel x2
+  // Layer 3 - binary convolution - stride 2, channel x2
   //////////////////////////////////////////////////////////////////
-//  if(start_layer < 3){
-//	  StreamingMaxPool_Batch<L1_OFM_DIM, L1_OFM_HEIGHT, 2, L1_OFM_CH>(inter2, inter3,
-//			  // hwkim modified for debug
-//	#ifdef ACTIVATION_LOG
-//			  inter3_log,
-//	#endif
-//			  numReps);
-//
-//	  // hwkim modified for debug
-//	#ifdef ACTIVATION_LOG
-//	  activation_log<L2_OFM_DIM, L2_OFM_HEIGHT, 64, 1>(inter3_log,2);
-//  }
-//	  pooling_layer_cnt++;
-//  	  weighted_layer_cnt++;
-//	#endif
   if(start_layer < 3){
 	  stream<ap_uint<64>> inter2_pad("DoCompute.inter2_pad");
 	  insert_pad<L2_IFM_DIM, L2_IFM_HEIGHT, 64, 0, 1, 0, 1>(inter2, inter2_pad);
@@ -583,7 +570,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 	  read_activation_file<128>(snapshot_file_name, inter3);
   }
   //////////////////////////////////////////////////////////////////
-  // Layer 3 - binary convolution
+  // Layer 4 - binary convolution
   //////////////////////////////////////////////////////////////////
   if(start_layer < 4){
 	  stream<ap_uint<128>> inter3_pad("DoCompute.inter3_pad");
@@ -610,7 +597,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 	}
 
 	//////////////////////////////////////////////////////////////////
-	// Layer 4 - binary convolution - stride 2, channel x2
+	// Layer 5 - binary convolution - stride 2, channel x2
 	//////////////////////////////////////////////////////////////////
 	if(start_layer < 5){
 	  stream<ap_uint<128>> inter4_pad("DoCompute.inter4_pad");
@@ -638,22 +625,8 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 	}
 
 	//////////////////////////////////////////////////////////////////
-	// Layer 5 - binary convolution
+	// Layer 6 - binary convolution
 	//////////////////////////////////////////////////////////////////
-//	if(start_layer < 6){
-//	  StreamingMaxPool_Batch<L3_OFM_DIM, L3_OFM_HEIGHT, 2, L3_OFM_CH>(inter5, inter6,
-//			  // hwkim modified for debug
-//	#ifdef ACTIVATION_LOG
-//			  inter6_log,
-//	#endif
-//			  numReps);
-//
-//	  // hwkim modified for debug
-//	#ifdef ACTIVATION_LOG
-//	  activation_log<L4_OFM_DIM, L4_OFM_HEIGHT, 128, 1>(inter6_log,5);
-//	}
-//	pooling_layer_cnt++;
-//	#endif
 	if(start_layer < 6){
 	  stream<ap_uint<256>> inter5_pad("DoCompute.inter5_pad");
 	  insert_pad<L5_IFM_DIM, L5_IFM_HEIGHT, 256, 1, 1, 1, 1>(inter5, inter5_pad);
@@ -681,7 +654,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 	}
 
 	//////////////////////////////////////////////////////////////////
-	// Layer 6 - binary up convolution
+	// Layer 7 - binary up convolution
 	//////////////////////////////////////////////////////////////////
 	if(start_layer < 7){
 //	  stream<ap_uint<256>> inter6_pad("DoCompute.inter6_pad");
@@ -712,13 +685,13 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 	// Layer 7 - binary convolution
 	//////////////////////////////////////////////////////////////////
 	if(start_layer < 8){
-	  stream<ap_uint<128>> inter7_pad("DoCompute.inter3_pad");
-	  insert_pad<L7_IFM_DIM, L7_IFM_HEIGHT, 128, 1, 1, 1, 1>(inter7, inter7_pad);
+//	  stream<ap_uint<128>> inter7_pad("DoCompute.inter3_pad");
+//	  insert_pad<L7_IFM_DIM, L7_IFM_HEIGHT, 128, 1, 1, 1, 1>(inter7, inter7_pad);
 
 	  ConvLayer_Batch<L7_K, L7_IFM_CH, L7_IFM_DIM, L7_OFM_CH, L7_OFM_DIM,
-		  L7_IFM_HEIGHT, L7_OFM_HEIGHT, 1, 1, 1, 1, 1,
+		  L7_IFM_HEIGHT, L7_OFM_HEIGHT, 1, 2, 0, 2, 0,
 		  L7_SIMD, L7_PE, Recast<XnorMul>>
-		  (inter7_pad, inter8,
+		  (inter7, inter8,
 		#ifdef ACTIVATION_LOG
 		  inter8_log,
 		#endif
