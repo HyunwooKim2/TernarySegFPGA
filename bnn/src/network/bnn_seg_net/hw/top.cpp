@@ -473,7 +473,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
   const unsigned int outBits = L10_OFM_CH*16;
 
   // hwkim modified for separated simulation
-  int start_layer = 0;
+  int start_layer = 8;
   string snapshot_file_name;
 
   if(start_layer < 1){
@@ -518,13 +518,14 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
   // Layer 2 - binary convolution
   //////////////////////////////////////////////////////////////////
     if(start_layer < 2){
-	  stream<ap_uint<64>> inter1_pad("DoCompute.inter1_pad");
-	  insert_pad<L1_IFM_DIM, L1_IFM_HEIGHT, 64, 1, 1, 1, 1>(inter1, inter1_pad);
+    	// hwkim modified for padding
+//	  stream<ap_uint<64>> inter1_pad("DoCompute.inter1_pad");
+//	  insert_pad<L1_IFM_DIM, L1_IFM_HEIGHT, 64, 1, 1, 1, 1>(inter1, inter1_pad);
 
 	  ConvLayer_Batch<L1_K, L1_IFM_CH, L1_IFM_DIM, L1_OFM_CH, L1_OFM_DIM,
 	  	  L1_IFM_HEIGHT, L1_OFM_HEIGHT, 1, 1, 1, 1, 1,
 		  L1_SIMD, L1_PE, Recast<XnorMul>>
-		  (inter1_pad, inter2,
+		  (inter1, inter2,
 		#ifdef ACTIVATION_LOG
 			inter2_log,
 		#endif
@@ -546,13 +547,14 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
   // Layer 3 - binary convolution - stride 2, channel x2
   //////////////////////////////////////////////////////////////////
   if(start_layer < 3){
-	  stream<ap_uint<64>> inter2_pad("DoCompute.inter2_pad");
-	  insert_pad<L2_IFM_DIM, L2_IFM_HEIGHT, 64, 0, 1, 0, 1>(inter2, inter2_pad);
+	  // hwkim modified for padding
+//	  stream<ap_uint<64>> inter2_pad("DoCompute.inter2_pad");
+//	  insert_pad<L2_IFM_DIM, L2_IFM_HEIGHT, 64, 0, 1, 0, 1>(inter2, inter2_pad);
 
 	  ConvLayer_Batch<L2_K, L2_IFM_CH, L2_IFM_DIM, L2_OFM_CH, L2_OFM_DIM,
 	  	  L2_IFM_HEIGHT, L2_OFM_HEIGHT, 2, 0, 1, 0, 1,
 		  L2_SIMD, L2_PE, Recast<XnorMul>>
-		  (inter2_pad, inter3,
+		  (inter2, inter3,
 		#ifdef ACTIVATION_LOG
 			inter3_log,
 		#endif
@@ -573,12 +575,13 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
   // Layer 4 - binary convolution
   //////////////////////////////////////////////////////////////////
   if(start_layer < 4){
-	  stream<ap_uint<128>> inter3_pad("DoCompute.inter3_pad");
-	  insert_pad<L3_IFM_DIM, L3_IFM_HEIGHT, 128, 1, 1, 1, 1>(inter3, inter3_pad);
+	  // hwkim modified for padding
+//	  stream<ap_uint<128>> inter3_pad("DoCompute.inter3_pad");
+//	  insert_pad<L3_IFM_DIM, L3_IFM_HEIGHT, 128, 1, 1, 1, 1>(inter3, inter3_pad);
 
 	  ConvLayer_Batch<L3_K, L3_IFM_CH, L3_IFM_DIM, L3_OFM_CH, L3_OFM_DIM, L3_IFM_HEIGHT, L3_OFM_HEIGHT,
 	  	  1, 1, 1, 1, 1,
-	  	  L3_SIMD, L3_PE, Recast<XnorMul>>(inter3_pad, inter4,
+	  	  L3_SIMD, L3_PE, Recast<XnorMul>>(inter3, inter4,
 		#ifdef ACTIVATION_LOG
 	  	  inter4_log,
 		#endif
@@ -600,13 +603,14 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 	// Layer 5 - binary convolution - stride 2, channel x2
 	//////////////////////////////////////////////////////////////////
 	if(start_layer < 5){
-	  stream<ap_uint<128>> inter4_pad("DoCompute.inter4_pad");
-	  insert_pad<L4_IFM_DIM, L4_IFM_HEIGHT, 128, 0, 1, 0, 1>(inter4, inter4_pad);
+		// hwkim modified for padding
+//	  stream<ap_uint<128>> inter4_pad("DoCompute.inter4_pad");
+//	  insert_pad<L4_IFM_DIM, L4_IFM_HEIGHT, 128, 0, 1, 0, 1>(inter4, inter4_pad);
 
 	  ConvLayer_Batch<L4_K, L4_IFM_CH, L4_IFM_DIM, L4_OFM_CH, L4_OFM_DIM,
 		  L4_IFM_HEIGHT, L4_OFM_HEIGHT, 2, 0, 1, 0, 1,
 		  L4_SIMD, L4_PE, Recast<XnorMul>>
-		  (inter4_pad, inter5,
+		  (inter4, inter5,
 		#ifdef ACTIVATION_LOG
 		  inter5_log,
 		#endif
@@ -628,13 +632,14 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 	// Layer 6 - binary convolution
 	//////////////////////////////////////////////////////////////////
 	if(start_layer < 6){
-	  stream<ap_uint<256>> inter5_pad("DoCompute.inter5_pad");
-	  insert_pad<L5_IFM_DIM, L5_IFM_HEIGHT, 256, 1, 1, 1, 1>(inter5, inter5_pad);
+		// hwkim modified for padding
+//	  stream<ap_uint<256>> inter5_pad("DoCompute.inter5_pad");
+//	  insert_pad<L5_IFM_DIM, L5_IFM_HEIGHT, 256, 1, 1, 1, 1>(inter5, inter5_pad);
 
 	  ConvLayer_Batch<L5_K, L5_IFM_CH, L5_IFM_DIM, L5_OFM_CH, L5_OFM_DIM,
 		  L5_IFM_HEIGHT, L5_OFM_HEIGHT, 1, 1, 1, 1, 1,
 		  L5_SIMD, L5_PE, Recast<XnorMul>>
-		  (inter5_pad, inter6,
+		  (inter5, inter6,
 		#ifdef ACTIVATION_LOG
 		  inter6_log,
 		#endif
@@ -682,14 +687,14 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 	}
 
 	//////////////////////////////////////////////////////////////////
-	// Layer 7 - binary convolution
+	// Layer 7 - binary transposed convolution
 	//////////////////////////////////////////////////////////////////
 	if(start_layer < 8){
 //	  stream<ap_uint<128>> inter7_pad("DoCompute.inter3_pad");
 //	  insert_pad<L7_IFM_DIM, L7_IFM_HEIGHT, 128, 1, 1, 1, 1>(inter7, inter7_pad);
 
 	  ConvLayer_Batch<L7_K, L7_IFM_CH, L7_IFM_DIM, L7_OFM_CH, L7_OFM_DIM,
-		  L7_IFM_HEIGHT, L7_OFM_HEIGHT, 1, 2, 0, 2, 0,
+		  L7_IFM_HEIGHT, L7_OFM_HEIGHT, 1, 1, 1, 1, 1,
 		  L7_SIMD, L7_PE, Recast<XnorMul>>
 		  (inter7, inter8,
 		#ifdef ACTIVATION_LOG

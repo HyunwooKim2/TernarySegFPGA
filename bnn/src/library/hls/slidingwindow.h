@@ -119,7 +119,9 @@ void ConvolutionInputGenerator(
   unsigned int counter_internal_block = 0;
   unsigned int current_block_write = 0;
   // hwkim modified for stride
-  unsigned int current_block_read = 0;
+  //unsigned int current_block_read = 0;
+  // hwkim modified for padding
+  int current_block_read = -Top;
 
   unsigned int next_block_write = 0;	
   unsigned int current_line = 0;
@@ -128,6 +130,14 @@ void ConvolutionInputGenerator(
   //unsigned int inp = 0, ofm_y = 0, ofm_x = 0, k_y = 0, k_x = 0, count_simd =0;
   unsigned int inp = 0, k_y = 0, k_x = 0, count_simd =0;
   int ofm_y = -Top, ofm_x = -Left;
+
+  // hwkim added for debug
+#ifdef ACTIVATION_LOG
+	ofstream conv_in_gen_log_file("conv_in_gen_log.txt");
+	if(!conv_in_gen_log_file.is_open()){
+		cout << "conv_in_gen_log_file open error!!" << endl;
+	}
+#endif
 
 #pragma HLS reset variable=inp
   for (unsigned int count_image = 0; count_image < numReps; count_image++) {
@@ -172,7 +182,9 @@ void ConvolutionInputGenerator(
 
 			  // hwkim modified for stride
 			  //ap_uint<SIMD*Input_precision> outElem = inputBuf[current_block_read][(current_line_in_block)];
-			  unsigned int current_block_read_kernel = current_block_read + k_y;
+			  // hwkim modified for padding
+			  //unsigned int current_block_read_kernel = current_block_read + k_y;
+			  int current_block_read_kernel = current_block_read + k_y;
 			  if (current_block_read_kernel >= number_blocks) {
 				  current_block_read_kernel-= number_blocks;
 			  }
@@ -181,23 +193,25 @@ void ConvolutionInputGenerator(
 			  ap_uint<SIMD*Input_precision> outElem;
 			  if(((ofm_y < 0) && (k_y < -ofm_y)) ||
 				  ((ofm_x < 0) && (k_x < -ofm_x)) ||
-				  ((ofm_y >= (OFMHeight-1-Bottom-1)) && (k_y > OFMHeight-Bottom-Bottom+1-ofm_y)) ||
-				  ((ofm_x >= (OFMDim-1-Right-1)) && (k_x > OFMDim-Right-Right+1-ofm_x))){
-				  cout << setw(10) << "(Skipped) ";	//skip
+				  ((ofm_y >= (OFMHeight-1-Bottom-1)) && (k_y > OFMHeight-Bottom-Bottom+1-ofm_y+(Bottom-Top))) ||
+				  ((ofm_x >= (OFMDim-1-Right-1)) && (k_x > OFMDim-Right-Right+1-ofm_x+(Right-Left)))){
+//				  cout << setw(10) << "(Skipped) ";	//skip
+				  ;
 			  }
 			  else{
 				  outElem = inputBuf[current_block_read_kernel][(current_line_in_block)];
 		    	  out.write(outElem);
-				#ifdef ACTIVATION_LOG
+#ifdef ACTIVATION_LOG
 		    	  out_log.write(outElem);
-				#endif
+		    	  conv_in_gen_log_file << hex << (unsigned int)outElem << " ";
+#endif
 			  }
     		  // hwkim added for debug
-    		  cout << "ofm (" << ofm_y << "," << ofm_x << "), ";
-    		  cout << "ky kx (" << k_y << "," << k_x << "), ";
-    		  cout << "simd_cnt: " << count_simd;
-    		  cout << ", current_block_write: " << current_block_write;
-    		  cout << ", current_block_read: " << current_block_read << endl;
+//    		  cout << "ofm (" << ofm_y << "," << ofm_x << "), ";
+//    		  cout << "ky kx (" << k_y << "," << k_x << "), ";
+//    		  cout << "simd_cnt: " << count_simd;
+//    		  cout << ", current_block_write: " << current_block_write;
+//    		  cout << ", current_block_read: " << current_block_read << endl;
 
 			  // hwkim modified for removing pad from conv in
 //			  out.write(outElem);	  // hwkim modified for debug
@@ -208,35 +222,33 @@ void ConvolutionInputGenerator(
 			  if (count_simd == multiplying_factor) {
 				  count_simd=0;
 				  k_x++;
+#ifdef ACTIVATION_LOG
+				  conv_in_gen_log_file << " | ";
+#endif
 				  if (k_x == ConvKernelDim) {
 					  k_x = 0;
 					  k_y++;
+#ifdef ACTIVATION_LOG
+					  conv_in_gen_log_file << endl;
+#endif
 					  if (k_y == ConvKernelDim) {
-						  k_y = 0;
 						  // hwkim added for debug
-						  cout << "=================================================" << endl;
+//						  cout << "=================================================" << endl;
+#ifdef ACTIVATION_LOG
+						  conv_in_gen_log_file << "x,y=" << dec << (ofm_x+Left) << "," << (ofm_y+Top) << endl;
+#endif
+						  k_y = 0;
 						  ofm_x ++;
-						  // hwkim modified for padding
-						  //if (ofm_x == OFMDim) {
-							  //ofm_x = 0;
 						  if (ofm_x == OFMDim-Left) {
 							  ofm_x = -Left;
-
 							  ofm_y++;
 							  // hwkim added for stride
 							  current_block_read = current_block_read + Stride;
 							  if (current_block_read >= number_blocks) {
 								  current_block_read-= number_blocks;
 							  }
-
-							  // hwkim modified for segmentation
-							  //if (ofm_y == OFMDim) {
-							  // hwkim modified for padding
-							  //if (ofm_y == OFMHeight) {
-								  //ofm_y = 0;
 							  if (ofm_y == OFMHeight-Top) {
 								  ofm_y = -Top;
-
 								  inp = 0;
 							  }}}}}
     	  }
@@ -286,7 +298,9 @@ void ConvolutionInputGenerator(
     } // End base_iter
 	read_block = 0;
   } // End count_image
-
+#ifdef ACTIVATION_LOG
+  conv_in_gen_log_file.close();
+#endif
 } // End generator
 
 
@@ -340,6 +354,14 @@ void TConvolutionInputGenerator(
   unsigned int current_line = 0;
   unsigned int read_block = 0;
   unsigned int inp = 0, ofm_y = 0, ofm_x = 0, k_y = 0, k_x = 0, count_simd =0;
+
+  // hwkim added for debug
+#ifdef ACTIVATION_LOG
+            ofstream conv_in_gen_log_file("tconv_in_gen_log.txt");
+            if(!conv_in_gen_log_file.is_open()){
+            	cout << "conv_in_gen_log_file open error!!" << endl;
+              }
+#endif
 
 #pragma HLS reset variable=inp
   for (unsigned int count_image = 0; count_image < numReps; count_image++) {
@@ -409,6 +431,7 @@ void TConvolutionInputGenerator(
 			  	  out.write(outElem);
 #ifdef ACTIVATION_LOG
 		    	  out_log.write(outElem);
+		    	  conv_in_gen_log_file << hex << outElem << " ";
 #endif
 		      }
 			  count_simd++;
@@ -416,24 +439,27 @@ void TConvolutionInputGenerator(
 			  if (count_simd == multiplying_factor) {
 				  count_simd=0;
 				  k_x++;
-				  //if (k_x == ((ofm_x-1)%2 + 1)) {
+#ifdef ACTIVATION_LOG
+				  conv_in_gen_log_file << " | ";
+#endif
 				  if (k_x == (!(ofm_x&0x1) + 1)) {
-
 					  k_x = 0;
 					  k_y++;
-					  //if (k_y == ((ofm_y-1)%2 + 1)) {
+#ifdef ACTIVATION_LOG
+					  conv_in_gen_log_file << endl;
+#endif
 					  if (k_y == (!(ofm_y&0x1) + 1)) {
-
+#ifdef ACTIVATION_LOG
+						  conv_in_gen_log_file << "x,y=" << (ofm_x) << "," << (ofm_y) << endl;
+#endif
 						  k_y = 0;
 						  ofm_x ++;
 						  if (ofm_x == OFMDim) {
 							  ofm_x = 0;
 							  ofm_y++;
-							  // hwkim added for stride
-							  //if((ofm_y%2==1) && (ofm_y!=1))
-							  if((ofm_y&0x1==1) && (ofm_y!=1))
-
+							  if((ofm_y&0x1==1) && (ofm_y!=1)){
 								  current_block_read++;
+							  }
 							  if (current_block_read >= number_blocks) {
 								  current_block_read-= number_blocks;
 							  }
@@ -482,6 +508,10 @@ void TConvolutionInputGenerator(
     } // End base_iter
 	read_block = 0;
   } // End count_image
+
+#ifdef ACTIVATION_LOG
+  conv_in_gen_log_file.close();
+#endif
 
 } // End generator
 

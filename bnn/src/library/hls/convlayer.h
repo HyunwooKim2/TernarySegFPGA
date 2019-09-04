@@ -138,34 +138,34 @@ void ConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
 
   // hwkim modified for debug
 #ifdef ACTIVATION_LOG
-            ofstream conv_in_gen_log_file("conv_in_gen_log.txt");
-            if(!conv_in_gen_log_file.is_open()){
-            	cout << "conv_in_gen_log_file open error!!" << endl;
-              }
-            for(int y=0; y<OFMHeight; y++){
-            	for(int x=0; x<OFMDim; x++){
-            		for(int ky=0; ky<3; ky++){
-            			for(int kx=0; kx<3; kx++){
-							if((x==0 && kx==0) ||
-								(y==0 && ky==0) ||
-								(x==OFMDim-1 && kx==2) ||
-								(y==OFMHeight-1 && ky==2)){
-								;
-							}
-							else{
-									for(int in_ch=0; in_ch<IFMChannels/SIMD; in_ch++){
-										conv_in_gen_log_file << setw(20) << hex << (unsigned int)convInp_log.read() << " ";
-									}
-							}
-            				conv_in_gen_log_file << " | ";
-            			}
-            			conv_in_gen_log_file << endl;
-            		}
-            		conv_in_gen_log_file << "x,y=" << dec << x << "," << y << endl;
-            	}
-            	conv_in_gen_log_file << endl;
-              }
-            conv_in_gen_log_file.close();
+//            ofstream conv_in_gen_log_file("conv_in_gen_log.txt");
+//            if(!conv_in_gen_log_file.is_open()){
+//            	cout << "conv_in_gen_log_file open error!!" << endl;
+//              }
+//            for(int y=0; y<OFMHeight; y++){
+//            	for(int x=0; x<OFMDim; x++){
+//            		for(int ky=0; ky<3; ky++){
+//            			for(int kx=0; kx<3; kx++){
+//							if((x==0 && kx==0) ||
+//								(y==0 && ky==0) ||
+//								(x==OFMDim-1 && kx==2) ||
+//								(y==OFMHeight-1 && ky==2)){
+//								;
+//							}
+//							else{
+//									for(int in_ch=0; in_ch<IFMChannels/SIMD; in_ch++){
+//										conv_in_gen_log_file << setw(20) << hex << (unsigned int)convInp_log.read() << " ";
+//									}
+//							}
+//            				conv_in_gen_log_file << " | ";
+//            			}
+//            			conv_in_gen_log_file << endl;
+//            		}
+//            		conv_in_gen_log_file << "x,y=" << dec << x << "," << y << endl;
+//            	}
+//            	conv_in_gen_log_file << endl;
+//              }
+//            conv_in_gen_log_file.close();
 //            cout << "convInp.size = " << convInp.size() << endl;
 #endif
 
@@ -253,36 +253,36 @@ void UpConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
 
   // hwkim modified for debug
 #ifdef ACTIVATION_LOG
-            ofstream conv_in_gen_log_file("conv_in_gen_log.txt");
-            if(!conv_in_gen_log_file.is_open()){
-            	cout << "conv_in_gen_log_file open error!!" << endl;
-              }
-            for(unsigned int y=0; y<OFMHeight; y++){
-            	for(unsigned int x=0; x<OFMDim; x++){
-            		conv_in_gen_log_file << "y,x: " << dec << "(" << y << "," << x << ")" << endl;
-            		for(int ky=0; ky<((y-1)%2 + 1); ky++){
-            			for(int kx=0; kx<((x-1)%2 + 1); kx++){
-            				if((y==0 && ky==1) || (x==0 & kx==1)){
-            					;
-            				}
-            				else{
-            					unsigned int convInp_log_buf[IFMChannels/SIMD];
-								for(int in_ch=0; in_ch<IFMChannels/SIMD; in_ch++){
-									convInp_log_buf[in_ch] = convInp_log.read();
-//									conv_in_gen_log_file << hex << (unsigned int)convInp_log.read() << " ";
-								}
-								for(int in_ch=IFMChannels/SIMD-1; in_ch>=0; in_ch--){
-									conv_in_gen_log_file << hex << setw(8) << setfill('0') << convInp_log_buf[in_ch];
-								}
-            				}
-            				conv_in_gen_log_file << endl;
-            			}
-            		}
-            	}
-            	conv_in_gen_log_file << endl;
-              }
-            conv_in_gen_log_file.close();
-            cout << "convInp.size = " << convInp_log.size() << endl;
+//            ofstream conv_in_gen_log_file("conv_in_gen_log.txt");
+//            if(!conv_in_gen_log_file.is_open()){
+//            	cout << "conv_in_gen_log_file open error!!" << endl;
+//              }
+//            for(unsigned int y=0; y<OFMHeight; y++){
+//            	for(unsigned int x=0; x<OFMDim; x++){
+//            		conv_in_gen_log_file << "y,x: " << dec << "(" << y << "," << x << ")" << endl;
+//            		for(int ky=0; ky<((y-1)%2 + 1); ky++){
+//            			for(int kx=0; kx<((x-1)%2 + 1); kx++){
+//            				if((y==0 && ky==1) || (x==0 & kx==1)){
+//            					;
+//            				}
+//            				else{
+//            					unsigned int convInp_log_buf[IFMChannels/SIMD];
+//								for(int in_ch=0; in_ch<IFMChannels/SIMD; in_ch++){
+//									convInp_log_buf[in_ch] = convInp_log.read();
+////									conv_in_gen_log_file << hex << (unsigned int)convInp_log.read() << " ";
+//								}
+//								for(int in_ch=IFMChannels/SIMD-1; in_ch>=0; in_ch--){
+//									conv_in_gen_log_file << hex << setw(8) << setfill('0') << convInp_log_buf[in_ch];
+//								}
+//            				}
+//            				conv_in_gen_log_file << endl;
+//            			}
+//            		}
+//            	}
+//            	conv_in_gen_log_file << endl;
+//              }
+//            conv_in_gen_log_file.close();
+//            cout << "convInp.size = " << convInp_log.size() << endl;
 #endif
 
 	Matrix_Vector_Activate_Batch_Skipping<IFMChannels, MatrixH, SIMD, PE, OFMDim,
