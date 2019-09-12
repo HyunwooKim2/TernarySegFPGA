@@ -93,7 +93,7 @@ extern "C" void load_parameters(const char* path) {
   FoldedMVLoadLayerMem(path,  7,  L7_PE,  L7_WMEM,  L7_TMEM, L7_API);
   FoldedMVLoadLayerMem(path,  8,  L8_PE,  L8_WMEM,  L8_TMEM, L8_API);
   FoldedMVLoadLayerMem(path,  9,  L9_PE,  L9_WMEM,  L9_TMEM, L9_API);
-  FoldedMVLoadLayerMem(path, 10, L10_PE, L10_WMEM, L10_TMEM, 0);
+  FoldedMVLoadLayerMem(path, 10, L10_PE, L10_WMEM, L10_TMEM, L10_API);
 
 //  FoldedMVLoadLayerMem(path, 7, L7_PE, L7_WMEM, L7_TMEM, L7_API);
 //  FoldedMVLoadLayerMem(path, 8, L8_PE, L8_WMEM, L8_TMEM, 0);

@@ -75,10 +75,6 @@ template<unsigned int ConvKernelDim,
 void ConvolutionInputGenerator(
 		stream<ap_uint<SIMD*Input_precision> > & in,
 		stream<ap_uint<SIMD*Input_precision> > & out,
-		// hwkim modified for debug
-#ifdef ACTIVATION_LOG
-		stream<ap_uint<SIMD*Input_precision> > & out_log,
-#endif
 		const unsigned int numReps = 1) {
   if(IFMChannels % SIMD != 0) {
     cout << "Error: IFM channels has to be a multiple of SIMD" << endl;
@@ -202,7 +198,6 @@ void ConvolutionInputGenerator(
 				  outElem = inputBuf[current_block_read_kernel][(current_line_in_block)];
 		    	  out.write(outElem);
 #ifdef ACTIVATION_LOG
-		    	  out_log.write(outElem);
 		    	  conv_in_gen_log_file << hex << (unsigned int)outElem << " ";
 #endif
 			  }
@@ -215,9 +210,6 @@ void ConvolutionInputGenerator(
 
 			  // hwkim modified for removing pad from conv in
 //			  out.write(outElem);	  // hwkim modified for debug
-//#ifdef ACTIVATION_LOG
-//			  out_log.write(outElem);
-//#endif
 			  count_simd++;
 			  if (count_simd == multiplying_factor) {
 				  count_simd=0;
@@ -320,10 +312,6 @@ template<unsigned int ConvKernelDim,
 void TConvolutionInputGenerator(
 		stream<ap_uint<SIMD*Input_precision> > & in,
 		stream<ap_uint<SIMD*Input_precision> > & out,
-		// hwkim modified for debug
-#ifdef ACTIVATION_LOG
-		stream<ap_uint<SIMD*Input_precision> > & out_log,
-#endif
 		const unsigned int numReps = 1) {
   if(IFMChannels % SIMD != 0) {
     cout << "Error: IFM channels has to be a multiple of SIMD" << endl;
@@ -430,7 +418,6 @@ void TConvolutionInputGenerator(
 
 			  	  out.write(outElem);
 #ifdef ACTIVATION_LOG
-		    	  out_log.write(outElem);
 		    	  conv_in_gen_log_file << hex << outElem << " ";
 #endif
 		      }

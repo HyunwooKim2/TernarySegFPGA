@@ -87,42 +87,6 @@ static PassThroughAndBatchNorm<L10_TMEM, L10_PE, L10_API, ap_int<16>, ap_int<16>
  * pass through activation
  */
 
-// hwkim added for separated simulation
-template <unsigned int OutWidth>
-void read_activation_file(
-		string snapshot_file_name,
-		stream<ap_uint<OutWidth>> & out_stream
-		)
-{
-	FILE * act_snapshot_file = fopen(snapshot_file_name.c_str(), "rt");
-	//if(!inter4_snapshot_file.is_open()){
-	if(act_snapshot_file==NULL){
-		cout << "act_snapshot_file open error!" << endl;
-	}
-
-	//unsigned long inter_snap_buf;
-	ap_uint<OutWidth> act_snap_buf;
-	unsigned long act_snap_long;
-	char act_snap_ch[OutWidth/4];
-	char act_snap_ch64[17];
-	int stream_cnt=0;
-	while(!feof(act_snapshot_file)){
-		act_snap_buf = 0;
-		act_snap_ch64[16] = 0;
-		fscanf(act_snapshot_file, "%s", act_snap_ch);
-		for(int word_cnt=0; word_cnt<OutWidth/64; word_cnt++){
-			for(int i=0; i<64/4; i++){
-				act_snap_ch64[i] = act_snap_ch[word_cnt*16+i];
-			}
-			act_snap_long = strtoul(act_snap_ch64, NULL, 16);
-			act_snap_buf = act_snap_buf << 64;
-			act_snap_buf = act_snap_buf | (*reinterpret_cast<ap_uint<64> *>(&act_snap_long));
-		}
-		out_stream.write(act_snap_buf);
-		stream_cnt++;
-		//cout << dec << stream_cnt << " : " << hex << out_stream.read() << endl;
-	}
-}
 
 // hwkim modified for average pooling
 template <int AVE_IFM_CH, int AVE_IFM_DIM>
@@ -208,6 +172,8 @@ void activation_log(
 	FILE * golden_file;
 	ofstream compare_result_file;
 
+	int compare_skip = 0;
+
 	act_file_name = snapshot_dir + "activation_" + to_string(layer_cnt+1) + "_log.txt";
 	//act_file_name = "activation_" + to_string(layer_cnt+1) + "_log.txt";
 	activation_log_file.open(act_file_name);
@@ -230,6 +196,7 @@ void activation_log(
 	golden_file = fopen(golden_file_name.c_str(),"rt");
 	if(golden_file==NULL){
 		cout << golden_file_name << " open error!!" << endl;
+		compare_skip = 1;
 	}
 
 	compare_result_file_name = "compare_result_" + to_string(layer_cnt+1) + ".txt";
@@ -248,52 +215,65 @@ void activation_log(
 	//unsigned long long gold_buf;
 //	cout << "inter" << (layer_cnt+1) << " stream size = " << in_stream.size() << endl;
 
+	if(InWidth%8!=0){
+		cout << "Activation log error! InWidth is not a multiple of 8" << endl;
+	}
+
 	// hwkim modified for stride
 	for(int y=0; y<OFMHeight; y++){
 		  for(int x=0; x<OFMDim; x++){
 //	for(int y=0; y<OFMHeight/Stride; y++){
 //		  for(int x=0; x<OFMDim/Stride; x++){
 
-			  gold_buf = 0;
 			  act_buf = in_stream.read();
-			  fscanf(golden_file, "%s", gold_buf_ch);
-			  for(int word_cnt=0; word_cnt<InWidth/64; word_cnt++){
-				  for(int i=0; i<64/4; i++){
-					  gold_buf_ch64[i] = gold_buf_ch[word_cnt*16+i];
+			  if(compare_skip==0){
+
+				  gold_buf = 0;
+				  fscanf(golden_file, "%s", gold_buf_ch);
+				  for(int word_cnt=0; word_cnt<InWidth/64; word_cnt++){
+					  for(int i=0; i<64/4; i++){
+						  gold_buf_ch64[i] = gold_buf_ch[word_cnt*16+i];
+					  }
+					  gold_buf_long = strtoul(gold_buf_ch64, NULL, 16);
+					  gold_buf = gold_buf << 64;
+					  gold_buf = gold_buf | (*reinterpret_cast<ap_uint<64> *>(&gold_buf_long));
 				  }
-				  gold_buf_long = strtoul(gold_buf_ch64, NULL, 16);
-				  gold_buf = gold_buf << 64;
-				  gold_buf = gold_buf | (*reinterpret_cast<ap_uint<64> *>(&gold_buf_long));
-			  }
 
 			  // hwkim added for stride
-//			  for(int stride_cnt=0; stride_cnt<(Stride-1); stride_cnt++){
-//				  fscanf(golden_file, "%s", gold_buf_ch);	//skip one activation read
-//			  }
+//				  for(int stride_cnt=0; stride_cnt<(Stride-1); stride_cnt++){
+//					  fscanf(golden_file, "%s", gold_buf_ch);	//skip one activation read
+//				  }
 
-			  if(act_buf!=gold_buf){
-				  compare_result_file << dec << "@(" << setw(2) << y << "," << setw(2) << x << ")" <<
-						  hex << " golden: ";
-				  if(InWidth>=64){
-					  for(int i=0; i<InWidth/64; i++){
-						  compare_result_file << (unsigned long long )(gold_buf >> 64*(InWidth/64-i-1));
+				  if(act_buf!=gold_buf){
+					  compare_result_file << dec << "@(" << setw(2) << y << "," << setw(2) << x << ")" <<
+							  hex << " golden: ";
+					  if(InWidth>=64){
+						  for(int i=0; i<InWidth/64; i++){
+							  compare_result_file << (unsigned long long )(gold_buf >> 64*(InWidth/64-i-1));
+						  }
+						  compare_result_file << "," << endl << setw(17) << hex << "act: ";
+						  for(int i=0; i<InWidth/64; i++){
+							  compare_result_file << (unsigned long long )(act_buf >> 64*(InWidth/64-i-1));
+						  }
+						  compare_result_file << endl;
 					  }
-					  compare_result_file << "," << endl << setw(17) << hex << "act: ";
-					  for(int i=0; i<InWidth/64; i++){
-						  compare_result_file << (unsigned long long )(act_buf >> 64*(InWidth/64-i-1));
+					  else{
+						  compare_result_file << (unsigned long long )gold_buf << "," << endl
+								  << setw(17) << hex << "act: "  << (unsigned long long )act_buf << endl;
 					  }
-					  compare_result_file << endl;
-				  }
-				  else{
-					  compare_result_file << (unsigned long long )gold_buf << "," << endl
-							  << setw(17) << hex << "act: "  << (unsigned long long )act_buf << endl;
 				  }
 			  }
+
 			  if(InWidth>64){
-				  for(int i=0; i<InWidth/64; i++){
-					  activation_log_file << uppercase << setfill('0') << setw(16) << hex << (unsigned long long )(act_buf >> 64*(InWidth/64-i-1));
+//				  for(int i=0; i<InWidth/64; i++){
+//					  activation_log_file << uppercase << setfill('0') << setw(16) << hex << (unsigned long long )(act_buf >> 64*(InWidth/64-i-1));
+//				  }
+				  ap_uint<InWidth> log_mask = ((ap_uint<InWidth>)0xF<<(InWidth-4));
+				  for(int i=0; i<InWidth/4; i++){
+					  activation_log_file << uppercase << hex << (unsigned int)((act_buf&log_mask)>>(InWidth-4));
+					  act_buf = act_buf << 4;
 				  }
-				  activation_log_file << endl;	//" | ";
+				  activation_log_file << endl;	//" | ";				  cout << endl;
 			  }
 			  else{
 				  activation_log_file << uppercase << setfill('0') << setw(16) << hex << (unsigned long long )act_buf << endl;	//" |\t";
@@ -304,10 +284,63 @@ void activation_log(
 
 	activation_log_file.close();
 	//golden_file.close();
-	fclose(golden_file);
+	if(compare_skip==0)
+		fclose(golden_file);
 	compare_result_file.close();
 
 }
+
+
+// hwkim added for separated simulation
+template <unsigned int OutWidth>
+void read_activation_file(
+		//string snapshot_file_name,
+		stream<ap_uint<OutWidth>> & out_stream,
+		int layer_cnt
+		)
+{
+	string snapshot_file_name = snapshot_dir + "activation_" + to_string(layer_cnt+1) + "_log.txt";
+	FILE * act_snapshot_file = fopen(snapshot_file_name.c_str(), "rt");
+	//if(!inter4_snapshot_file.is_open()){
+	if(act_snapshot_file==NULL){
+		cout << "act_snapshot_file open error!" << endl;
+	}
+
+	//unsigned long inter_snap_buf;
+	ap_uint<OutWidth> act_snap_buf;
+	unsigned long act_snap_long;
+	char act_snap_ch_arr[OutWidth/4];
+	unsigned char act_snap_int;
+	char act_snap_ch64[17];
+	int stream_cnt=0;
+	while(!feof(act_snapshot_file)){
+		act_snap_buf = 0;
+		act_snap_ch64[16] = 0;
+		fscanf(act_snapshot_file, "%s", act_snap_ch_arr);
+//		for(int word_cnt=0; word_cnt<OutWidth/64; word_cnt++){
+//			for(int i=0; i<64/4; i++){
+//				act_snap_ch64[i] = act_snap_ch[word_cnt*16+i];
+//			}
+//			act_snap_long = strtoul(act_snap_ch64, NULL, 16);
+//			act_snap_buf = act_snap_buf << 64;
+//			act_snap_buf = act_snap_buf | (*reinterpret_cast<ap_uint<64> *>(&act_snap_long));
+//		}
+		for(int word_cnt=0; word_cnt<OutWidth/4; word_cnt++){
+			if(act_snap_ch_arr[word_cnt]>0x40)
+				act_snap_int = act_snap_ch_arr[word_cnt]-55;
+			else
+				act_snap_int = act_snap_ch_arr[word_cnt]-0x30;
+			act_snap_buf = act_snap_buf << 4;
+			act_snap_buf = act_snap_buf | (act_snap_int&0xF);
+		}
+		out_stream.write(act_snap_buf);
+		stream_cnt++;
+		//cout << dec << stream_cnt << " : " << hex << out_stream.read() << endl;
+	}
+
+	fclose(act_snapshot_file);
+}
+
 #endif
 
 unsigned int paddedSizeHW(unsigned int in, unsigned int padTo) {
@@ -474,13 +507,14 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 
   // hwkim modified for segmentation
   //const unsigned int outBits = L8_MH*16;
-  const unsigned int outBits = L10_OFM_CH*16;
+  const unsigned int outBits = L10_OFM_DIM*L10_OFM_HEIGHT/(64/16);
 
   // hwkim modified for separated simulation
-  int start_layer = 10;
-  string snapshot_file_name;
+  int start_layer = 11;
 
+#ifdef ACTIVATION_LOG
   if(start_layer < 1){
+#endif
 
 	  Mem2Stream_Batch<64, inBits / 8>(in, inter0, numReps);
 
@@ -506,22 +540,22 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 			weights0, threshs0, numReps, ap_resource_lut());
 
 	  // hwkim modified for debug
-	#ifdef ACTIVATION_LOG
+#ifdef ACTIVATION_LOG
 	  activation_log<L0_OFM_DIM, L0_OFM_HEIGHT, 64, 1>(inter1_log, 0);
   }
 	  weighted_layer_cnt++;
-	#endif
-
   // hwkim modified for separated simulation
   if(start_layer >= 1){
-	  snapshot_file_name = snapshot_dir + "activation_1_log.txt";
-	  read_activation_file<64>(snapshot_file_name, inter1);
+	  read_activation_file<64>(inter1, 0);
   }
+#endif
 
   //////////////////////////////////////////////////////////////////
   // Layer 2 - binary convolution
   //////////////////////////////////////////////////////////////////
+#ifdef ACTIVATION_LOG
     if(start_layer < 2){
+#endif
     	// hwkim modified for padding
 //	  stream<ap_uint<64>> inter1_pad("DoCompute.inter1_pad");
 //	  insert_pad<L1_IFM_DIM, L1_IFM_HEIGHT, 64, 1, 1, 1, 1>(inter1, inter1_pad);
@@ -535,22 +569,22 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 		#endif
 			weights1, threshs1, numReps, ap_resource_lut());
 
-	  #ifdef ACTIVATION_LOG
+#ifdef ACTIVATION_LOG
 	  	  activation_log<L1_OFM_DIM, L1_OFM_HEIGHT, 64, 1>(inter2_log, 1);
     }
 	  weighted_layer_cnt++;
-	#endif
-
   // hwkim modified for separated simulation
   if(start_layer >= 2){
-	  snapshot_file_name = snapshot_dir + "activation_2_log.txt";
-	  read_activation_file<64>(snapshot_file_name, inter2);
+	  read_activation_file<64>(inter2, 1);
   }
+#endif
 
   //////////////////////////////////////////////////////////////////
   // Layer 3 - binary convolution - stride 2, channel x2
   //////////////////////////////////////////////////////////////////
+#ifdef ACTIVATION_LOG
   if(start_layer < 3){
+#endif
 	  // hwkim modified for padding
 //	  stream<ap_uint<64>> inter2_pad("DoCompute.inter2_pad");
 //	  insert_pad<L2_IFM_DIM, L2_IFM_HEIGHT, 64, 0, 1, 0, 1>(inter2, inter2_pad);
@@ -564,21 +598,22 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 		#endif
 			weights2, threshs2, numReps, ap_resource_lut());
 
-	  #ifdef ACTIVATION_LOG
+#ifdef ACTIVATION_LOG
 	  	  activation_log<L2_OFM_DIM, L2_OFM_HEIGHT, 128, 2>(inter3_log, 2);
   }
 	  weighted_layer_cnt++;
-	#endif
-
   // hwkim modified for separated simulation
   if(start_layer >= 3){
-	  snapshot_file_name = snapshot_dir + "activation_3_log.txt";
-	  read_activation_file<128>(snapshot_file_name, inter3);
+	  read_activation_file<128>(inter3, 2);
   }
+#endif
+
   //////////////////////////////////////////////////////////////////
   // Layer 4 - binary convolution
   //////////////////////////////////////////////////////////////////
+#ifdef ACTIVATION_LOG
   if(start_layer < 4){
+#endif
 	  // hwkim modified for padding
 //	  stream<ap_uint<128>> inter3_pad("DoCompute.inter3_pad");
 //	  insert_pad<L3_IFM_DIM, L3_IFM_HEIGHT, 128, 1, 1, 1, 1>(inter3, inter3_pad);
@@ -591,22 +626,22 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 		#endif
 		  weights3, threshs3, numReps, ap_resource_lut());
 
-	#ifdef ACTIVATION_LOG
+#ifdef ACTIVATION_LOG
 	  activation_log<L3_OFM_DIM, L3_OFM_HEIGHT, 128, 1>(inter4_log, 3);
   }
 	  weighted_layer_cnt++;
-	#endif
-
   // hwkim modified for separated simulation
 	if(start_layer >= 4){
-	  snapshot_file_name = snapshot_dir + "activation_4_log.txt";
-	  read_activation_file<128>(snapshot_file_name, inter4);
+	  read_activation_file<128>(inter4, 3);
 	}
+#endif
 
 	//////////////////////////////////////////////////////////////////
 	// Layer 5 - binary convolution - stride 2, channel x2
 	//////////////////////////////////////////////////////////////////
+#ifdef ACTIVATION_LOG
 	if(start_layer < 5){
+#endif
 		// hwkim modified for padding
 //	  stream<ap_uint<128>> inter4_pad("DoCompute.inter4_pad");
 //	  insert_pad<L4_IFM_DIM, L4_IFM_HEIGHT, 128, 0, 1, 0, 1>(inter4, inter4_pad);
@@ -620,22 +655,22 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 		#endif
 		  weights4, threshs4, numReps, ap_resource_lut());
 
-	#ifdef ACTIVATION_LOG
+#ifdef ACTIVATION_LOG
 	  activation_log<L4_OFM_DIM, L4_OFM_HEIGHT, 256, 1>(inter5_log, 4);
 	}
  	weighted_layer_cnt++;
-	#endif
-
 	// hwkim modified for separated simulation
 	if(start_layer >= 5){
-	  snapshot_file_name = snapshot_dir + "activation_5_log.txt";
-	  read_activation_file<256>(snapshot_file_name, inter5);
+	  read_activation_file<256>(inter5, 4);
 	}
+#endif
 
 	//////////////////////////////////////////////////////////////////
 	// Layer 6 - binary convolution
 	//////////////////////////////////////////////////////////////////
+#ifdef ACTIVATION_LOG
 	if(start_layer < 6){
+#endif
 		// hwkim modified for padding
 //	  stream<ap_uint<256>> inter5_pad("DoCompute.inter5_pad");
 //	  insert_pad<L5_IFM_DIM, L5_IFM_HEIGHT, 256, 1, 1, 1, 1>(inter5, inter5_pad);
@@ -649,23 +684,22 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 		#endif
 		  weights5, threshs5, numReps, ap_resource_lut());
 
-	#ifdef ACTIVATION_LOG
+#ifdef ACTIVATION_LOG
 	  activation_log<L5_OFM_DIM, L5_OFM_HEIGHT, 256, 2>(inter6_log, 5);
 	}
 	weighted_layer_cnt++;
-	#endif
-
-
 	// hwkim modified for separated simulation
 	if(start_layer >= 6){
-	  snapshot_file_name = snapshot_dir + "activation_6_log.txt";
-	  read_activation_file<256>(snapshot_file_name, inter6);
+	  read_activation_file<256>(inter6, 5);
 	}
+#endif
 
 	//////////////////////////////////////////////////////////////////
 	// Layer 7 - binary transposed convolution - stride 2
 	//////////////////////////////////////////////////////////////////
+#ifdef ACTIVATION_LOG
 	if(start_layer < 7){
+#endif
 //	  stream<ap_uint<256>> inter6_pad("DoCompute.inter6_pad");
 //	  insert_pad<L6_IFM_DIM, L6_IFM_HEIGHT, 256, 1, 1, 1, 1>(inter6, inter6_pad);
 
@@ -678,22 +712,22 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 		#endif
 		  weights6, threshs6, numReps, ap_resource_lut());
 
-	#ifdef ACTIVATION_LOG
+#ifdef ACTIVATION_LOG
 	  activation_log<L6_OFM_DIM, L6_OFM_HEIGHT, 128, 1>(inter7_log, 6);
 	}
 	  weighted_layer_cnt++;
-	#endif
-
 	// hwkim modified for separated simulation
 	if(start_layer >= 7){
-	  snapshot_file_name = snapshot_dir + "activation_7_log.txt";
-	  read_activation_file<128>(snapshot_file_name, inter7);
+	  read_activation_file<128>(inter7, 6);
 	}
+#endif
 
 	//////////////////////////////////////////////////////////////////
 	// Layer 8 - binary transposed convolution - stride 1
 	//////////////////////////////////////////////////////////////////
+#ifdef ACTIVATION_LOG
 	if(start_layer < 8){
+#endif
 //	  stream<ap_uint<128>> inter7_pad("DoCompute.inter3_pad");
 //	  insert_pad<L7_IFM_DIM, L7_IFM_HEIGHT, 128, 1, 1, 1, 1>(inter7, inter7_pad);
 
@@ -706,34 +740,22 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 		#endif
 		  weights7, threshs7, numReps, ap_resource_lut());
 
-	#ifdef ACTIVATION_LOG
+#ifdef ACTIVATION_LOG
 	  activation_log<L7_OFM_DIM, L7_OFM_HEIGHT, 128, 1>(inter8_log, 7);
 	}
 	  weighted_layer_cnt++;
-	#endif
-
 	// hwkim modified for separated simulation
 	if(start_layer >= 8){
-	  snapshot_file_name = snapshot_dir + "activation_8_log.txt";
-	  read_activation_file<128>(snapshot_file_name, inter8);
+	  read_activation_file<128>(inter8, 7);
 	}
+#endif
 
 	//////////////////////////////////////////////////////////////////
 	// Layer 9 - binary transposed convolution - stride 2
 	//////////////////////////////////////////////////////////////////
-//  // hwkim modified for 3rd max pool layer
-//  StreamingMaxPool_Batch<L5_OFM_DIM, L5_OFM_HEIGHT, 2, L5_OFM_CH>(inter8, inter9,
-//		  // hwkim modified for debug
-//#ifdef ACTIVATION_LOG
-//		  inter9_log,
-//#endif
-//		  numReps);
-//  // hwkim modified for debug
-//#ifdef ACTIVATION_LOG
-//  activation_log<L5_OFM_DIM/2, L5_OFM_HEIGHT/2, 256, 1>(inter9_log,8);
-//  pooling_layer_cnt++;
-//#endif
+#ifdef ACTIVATION_LOG
 	if(start_layer < 9){
+#endif
 //	  stream<ap_uint<128>> inter8_pad("DoCompute.inter8_pad");
 //	  insert_pad<L8_IFM_DIM, L8_IFM_HEIGHT, 128, 0, 1, 0, 1>(inter8, inter8_pad);
 
@@ -746,22 +768,22 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 		#endif
 		  weights8, threshs8, numReps, ap_resource_lut());
 
-	#ifdef ACTIVATION_LOG
+#ifdef ACTIVATION_LOG
 	  activation_log<L8_OFM_DIM, L8_OFM_HEIGHT, 64, 2>(inter9_log, 8);
 	}
 	  weighted_layer_cnt++;
-	#endif
+	// hwkim modified for separated simulation
+	if(start_layer >= 9){
+	  read_activation_file<64>(inter9, 8);
+	}
+#endif
 
 	//////////////////////////////////////////////////////////////////
 	// Layer 10 - binary convolution
 	//////////////////////////////////////////////////////////////////
-	// hwkim modified for separated simulation
-	if(start_layer >= 9){
-	  snapshot_file_name = snapshot_dir + "activation_9_log.txt";
-	  read_activation_file<64>(snapshot_file_name, inter9);
-	}
-
+#ifdef ACTIVATION_LOG
 	if(start_layer < 10){
+#endif
 	  ConvLayer_Batch<L9_K, L9_IFM_CH, L9_IFM_DIM, L9_OFM_CH, L9_OFM_DIM,
 		  L9_IFM_HEIGHT, L9_OFM_HEIGHT, 1, 1, 1, 1, 1,
 		  L9_SIMD, L9_PE, Recast<XnorMul>>
@@ -771,22 +793,22 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 		#endif
 		  weights9, threshs9, numReps, ap_resource_lut());
 
-	#ifdef ACTIVATION_LOG
+#ifdef ACTIVATION_LOG
 	  activation_log<L9_OFM_DIM, L9_OFM_HEIGHT, 64, 1>(inter10_log, 9);
 	}
 	weighted_layer_cnt++;
-	#endif
+	// hwkim modified for separated simulation
+	if(start_layer >= 10){
+	  read_activation_file<64>(inter10, 9);
+	}
+#endif
 
 	//////////////////////////////////////////////////////////////////
 	// Layer 11 - binary convolution
 	//////////////////////////////////////////////////////////////////
-	// hwkim modified for separated simulation
-	if(start_layer >= 10){
-	  snapshot_file_name = snapshot_dir + "activation_10_log.txt";
-	  read_activation_file<64>(snapshot_file_name, inter10);
-	}
-
+#ifdef ACTIVATION_LOG
 	if(start_layer < 11){
+#endif
 	  ConvLayer_Batch<L10_K, L10_IFM_CH, L10_IFM_DIM, L10_OFM_CH, L10_OFM_DIM,
 		  L10_IFM_HEIGHT, L10_OFM_HEIGHT, 1, 1, 1, 1, 1,
 		  L10_SIMD, L10_PE, Recast<XnorMul>, Slice<ap_int<16> >>
@@ -796,11 +818,17 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 		#endif
 		  weights10, threshs10, numReps, ap_resource_lut());
 
-	#ifdef ACTIVATION_LOG
-//	  activation_log<L10_OFM_DIM, L10_OFM_HEIGHT, 11*16, 1>(inter11_log, 10);
+#ifdef ACTIVATION_LOG
+	  activation_log<L10_OFM_DIM, L10_OFM_HEIGHT, L10_OFM_CH*16, 1>(inter11_log, 10);
 	}
 	weighted_layer_cnt++;
-	#endif
+
+	// hwkim modified for separated simulation
+	if(start_layer >= 11){
+	  read_activation_file<L10_OFM_CH*16>(inter11, 10);
+	}
+	cout << "inter11 size = " << inter11.size() << endl;
+#endif
 
   // hwkim modified for average pool
 //#define AVE_IFM_CH 256
@@ -809,31 +837,34 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 //#define AVE_THRES (4*4/2)
 //  average_pooling<AVE_IFM_CH, AVE_IFM_DIM>(inter9, inter10, AVE_THRES);
 
-//  StreamingFCLayer_Batch<L6_MW, L6_MH, L6_SIMD, L6_PE, Recast<XnorMul>>
-//    (inter8, inter9,  weights6, threshs6, numReps, ap_resource_lut());
-//  StreamingFCLayer_Batch<L7_MW, L7_MH, L7_SIMD, L7_PE, Recast<XnorMul>>
-//    (inter9, inter10, weights7, threshs7, numReps, ap_resource_lut());
-//  StreamingFCLayer_Batch<L8_MW, L8_MH, L8_SIMD, L8_PE,
-//  	  Recast<XnorMul>, Slice<ap_uint<16> >>
-//    (inter10, static_cast<hls::stream<ap_uint<16 * L8_PE>>&>(wa_out),weights8, PassThroughActivation<ap_uint<16>>(), numReps, ap_resource_lut());
+	{
+		WidthAdjustedOutputStream<16, 64, L10_OFM_DIM*L10_OFM_HEIGHT>  wa_out(memOutStrm, numReps);
 
-  // fully connected layers
-//  {
-////  WidthAdjustedOutputStream<16 * L8_PE, 64, L8_MH / L8_PE>  wa_out(memOutStrm, numReps);
-//  WidthAdjustedOutputStream<16 * L6_PE, 64, L6_MH / L6_PE>  wa_out(memOutStrm, numReps);
-//
-////  StreamingFCLayer_Batch<L6_MW, L6_MH, L6_SIMD, L6_PE, Recast<XnorMul>, Slice<ap_uint<16> >>(inter8,static_cast<hls::stream<ap_uint<16 * L6_PE>>&>(wa_out),weights6,PassThroughActivation<ap_uint<16>>(),numReps,ap_resource_lut());
-//  StreamingFCLayer_Batch<L6_MW, L6_MH, L6_SIMD, L6_PE, Recast<XnorMul>, Slice<ap_uint<16> >>
-//  	  (inter10,
-//  	  static_cast<hls::stream<ap_uint<16 * L6_PE>>&>(wa_out),
-//  	  weights6,
-//  	  //PassThroughActivation<ap_uint<16>>(),
-//	  threshs6,
-//  	  numReps,
-//  	  ap_resource_lut());
-//  }
+		ap_uint<16*L10_OFM_CH> score_buf;
+		short cls_p;
+		short cls_n;
+		ap_uint<16> label=0;
+		for(int y=0; y<L10_OFM_HEIGHT; y++){
+			for(int x=0; x<L10_OFM_DIM; x++){
+				score_buf=inter11.read();
+				cls_p = score_buf & 0xFFFF;
+				cout << cls_p;
+				for(int i=1; i<L10_OFM_CH; i++){
+					score_buf = score_buf >> 16;
+					cls_n = score_buf & 0xFFFF;
+					cout << "\t" << cls_n;
+					if(cls_p < cls_n){
+						label=i;
+						cls_p = cls_n;
+					}
+				}
+				cout << "\tlabel: " << label << endl;
+				static_cast<hls::stream<ap_uint<16>>&>(wa_out).write(label);
+			}
+		}
+	}	// region for calling destructor of wa_out
 
-
+	cout << "memOutStrm size = " << memOutStrm.size() << endl;
 	Stream2Mem_Batch<64, outBits/8>(memOutStrm, out, numReps);
 }
 
