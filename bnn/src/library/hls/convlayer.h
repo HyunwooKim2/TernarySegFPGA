@@ -75,6 +75,9 @@ template<
 		unsigned int Bottom,
 		unsigned int Left,
 		unsigned int Right,
+#ifdef ACTIVATION_LOG
+		unsigned int LayerCnt,
+#endif
 
 		unsigned int SIMD, 				// number of SIMD lanes
 		unsigned int PE,				// number of PEs
@@ -88,9 +91,9 @@ template<
 >
 void ConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
 			    hls::stream<ap_uint<OutStreamW>> &out,
-#ifdef ACTIVATION_LOG
-				hls::stream<ap_uint<OutStreamW>> &out_log,
-#endif
+//#ifdef ACTIVATION_LOG
+//				hls::stream<ap_uint<OutStreamW>> &out_log,
+//#endif
 			    TW const        &weights,
 			    TA const        &activation,
 			    unsigned const   reps,
@@ -112,12 +115,12 @@ void ConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
   // hwkim modified for segmentation
   	  //OFMDim * OFMDim * (OFMChannels / PE)> mvOut (out,  reps);
   	  OFMDim * OFMHeight * (OFMChannels / PE)> mvOut (out,  reps);
-#ifdef ACTIVATION_LOG
-  WidthAdjustedOutputStream <PE*TDstI::width, OutStreamW,
-  // hwkim modified for segmentation
-	  //OFMDim * OFMDim * (OFMChannels / PE)> mvOut_log (out_log,  reps);
-  	  OFMDim * OFMHeight * (OFMChannels / PE)> mvOut_log (out_log,  reps);
-#endif
+//#ifdef ACTIVATION_LOG
+//  WidthAdjustedOutputStream <PE*TDstI::width, OutStreamW,
+//  	  // hwkim modified for segmentation
+//	  //OFMDim * OFMDim * (OFMChannels / PE)> mvOut_log (out_log,  reps);
+//  	  OFMDim * OFMHeight * (OFMChannels / PE)> mvOut_log (out_log,  reps);
+//#endif
 
   hls::stream<ap_uint<SIMD*TSrcI::width> > convInp("StreamingConvLayer_Batch.convInp");
 
@@ -134,11 +137,14 @@ void ConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
 //     weights, activation, reps* OFMDim * OFMDim, r);
 	Matrix_Vector_Activate_Batch_Padding<MatrixW, MatrixH, SIMD, PE, OFMDim,
 		OFMHeight, Top, Bottom, Left, Right,	// hwkim modified for segmentation
+#ifdef ACTIVATION_LOG
+		LayerCnt, (PE*TDstI::width),
+#endif
 		TSrcI, TDstI, TWeightI>
 			(static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>&>(convInp),
 			static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>  (mvOut),
 #ifdef ACTIVATION_LOG
-			static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>  (mvOut_log),
+//			static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>  (mvOut_log),
 #endif
 			// hwkim modified for segmentation
 //			weights, activation, reps* OFMDim * OFMDim, r);
@@ -153,6 +159,7 @@ template<
 		unsigned int IFMDim,			// width of input feature map (assumed square)
 		unsigned int OFMChannels,		// number of output feature maps
 		unsigned int OFMDim,			// IFMDim-ConvKernelDim+1 or less
+
 		// hwkim added for segmentation
 		unsigned int IFMHeight,
 		unsigned int OFMHeight,
@@ -161,6 +168,9 @@ template<
 		unsigned int Bottom,
 		unsigned int Left,
 		unsigned int Right,
+#ifdef ACTIVATION_LOG
+		unsigned int LayerCnt,
+#endif
 
 		unsigned int SIMD, 				// number of SIMD lanes
 		unsigned int PE,				// number of PEs
@@ -172,9 +182,9 @@ template<
 >
 void UpConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
 			    hls::stream<ap_uint<OutStreamW>> &out,
-#ifdef ACTIVATION_LOG
-				hls::stream<ap_uint<OutStreamW>> &out_log,
-#endif
+//#ifdef ACTIVATION_LOG
+//				hls::stream<ap_uint<OutStreamW>> &out_log,
+//#endif
 			    TW const        &weights,
 			    TA const        &activation,
 			    unsigned const   reps,
@@ -186,9 +196,9 @@ void UpConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
 
   WidthAdjustedInputStream <InStreamW, SIMD*TSrcI::width, InpPerImage>  wa_in (in,  reps);
   WidthAdjustedOutputStream <PE*TDstI::width, OutStreamW, OFMDim * OFMHeight * (OFMChannels / PE)> mvOut (out,  reps);
-#ifdef ACTIVATION_LOG
-  WidthAdjustedOutputStream <PE*TDstI::width, OutStreamW, OFMDim * OFMHeight * (OFMChannels / PE)> mvOut_log (out_log,  reps);
-#endif
+//#ifdef ACTIVATION_LOG
+//  WidthAdjustedOutputStream <PE*TDstI::width, OutStreamW, OFMDim * OFMHeight * (OFMChannels / PE)> mvOut_log (out_log,  reps);
+//#endif
 
   hls::stream<ap_uint<SIMD*TSrcI::width> > convInp("StreamingConvLayer_Batch.convInp");
 
@@ -199,12 +209,16 @@ void UpConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
 
 	Matrix_Vector_Activate_Batch_Skipping<IFMChannels, MatrixH, SIMD, PE, OFMDim,
 		OFMHeight, Top, Bottom, Left, Right,	// hwkim modified for segmentation
+#ifdef ACTIVATION_LOG
+		LayerCnt,
+		(PE*TDstI::width),
+#endif
 		TSrcI, TDstI, TWeightI>
 		(static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>&>(convInp),
 		static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>  (mvOut),
-#ifdef ACTIVATION_LOG
-		static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>  (mvOut_log),
-#endif
+//#ifdef ACTIVATION_LOG
+//		static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>  (mvOut_log),
+//#endif
 		weights, activation, reps* OFMDim * OFMHeight, r);
 }
 

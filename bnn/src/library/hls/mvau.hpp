@@ -61,7 +61,7 @@
 #ifdef ACTIVATION_LOG
 #include <fstream>
 #include <stdio.h>
-extern int weighted_layer_cnt;
+//extern int weighted_layer_cnt;
 #endif
 
 template<
@@ -370,6 +370,11 @@ template<
   unsigned Bottom,
   unsigned Left,
   unsigned Right,
+  // hwkim added for log
+#ifdef ACTIVATION_LOG
+  unsigned int LayerCnt,
+  unsigned int OutWidth,
+#endif
 
   typename TSrcI = Identity, typename TDstI = Identity, typename TWeightI = Identity,
   typename TI, typename TO, typename TW, typename TA, typename R
@@ -377,9 +382,9 @@ template<
 void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
 				  hls::stream<TO> &out,
 				  // hwkim modified for debug
-#ifdef ACTIVATION_LOG
-				  hls::stream<TO> &out_log,
-#endif
+//#ifdef ACTIVATION_LOG
+//				  hls::stream<TO> &out_log,
+//#endif
 				  TW  const &weights,
 				  TA  const &activation,
 				  int const  reps,
@@ -400,23 +405,47 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
 
   // hwkim modified for debug
 #ifdef ACTIVATION_LOG
-  string conv_out_file_name = "conv_" + to_string(weighted_layer_cnt+1) + "_out_minusBias.txt";
+  extern string snapshot_dir;
+  extern string golden_file_dir;
+  int compare_skip = 0;
+  ap_uint<OutWidth> act_buf_arr[NF];
+  ap_uint<NF*OutWidth> act_buf=0;
+
+  string conv_out_file_name = snapshot_dir + "conv_" + to_string(LayerCnt+1) + "_out_minusBias.txt";
   ofstream conv_out_log_file(conv_out_file_name);
   if(!conv_out_log_file.is_open()){
  	 cout << "conv_out_log_file open error" << endl;
   }
 
-  extern string golden_file_dir;
-  string golden_conv_out_file_name = golden_file_dir + "binConv" + to_string(weighted_layer_cnt+1) + "_minusBias.txt";
+  string act_file_name = snapshot_dir + "activation_" + to_string(LayerCnt+1) + "_log.txt";
+  ofstream activation_log_file(act_file_name);
+  if(!activation_log_file.is_open()){
+	  cout << act_file_name << " open error!!" << endl;
+  }
+
+  string golden_conv_out_file_name = golden_file_dir + "binConv" + to_string(LayerCnt+1) + "_minusBias.txt";
   ifstream golden_conv_out_file(golden_conv_out_file_name);
   if(!golden_conv_out_file.is_open()){
 	  cout << "golden_conv_out_file open error" << endl;
   }
 
-  string conv_out_comp_file_name = "conv_" + to_string(weighted_layer_cnt+1) + "_out_minusBias_comp.txt";
+  string golden_act_file_name = golden_file_dir + "Sign" + to_string(LayerCnt+1) + ".txt";
+  FILE * golden_file = fopen(golden_act_file_name.c_str(),"rt");
+  if(golden_file==NULL){
+	  cout << golden_act_file_name << " open error!!" << endl;
+	  compare_skip = 1;
+  }
+
+  string conv_out_comp_file_name = "conv_" + to_string(LayerCnt+1) + "_out_minusBias_comp.txt";
   ofstream conv_out_comp_file(conv_out_comp_file_name);
   if(!conv_out_comp_file.is_open()){
 	  cout << "conv_out_comp_file open error" << endl;
+  }
+
+  string act_comp_file_name = "act_" + to_string(LayerCnt+1) + "_comp.txt";
+  ofstream act_comp_file(act_comp_file_name);
+  if(!act_comp_file.is_open()){
+	  cout << act_comp_file_name << " open error!" << endl;
   }
 
 #endif
@@ -485,17 +514,6 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
     // compute matrix-vector product for each processing element
     auto const &w = weights.weights(tile);
 
-    // hwkim modified for padding (fan-in scaling)
-//    ap_uint<1> padding[PE];
-//    unsigned int fan_in_loss[PE];
-//    for(unsigned  pe = 0; pe < PE; pe++) {
-//#pragma HLS UNROLL
-//    	padding[pe] = 0;
-//    	fan_in_loss[pe] = 0;
-//    }
-//	}
-
-
     for(unsigned  pe = 0; pe < PE; pe++) {
 #pragma HLS UNROLL
       auto const  wgt = TWeightI()(w[pe]);
@@ -503,18 +521,10 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
 
       // hwkim modified for padding
       //accu[pe] = mac<SIMD>(accu[pe], wgt, act, r);
-      // hwkim modified for selective padding
-//      if((x==0 && kx==0)
-//    	  ||(y==0 && ky==0)
-//		  ||(x==(OFMDim-1) && kx==2)
-//		  ||(y==(OFMHeight-1) && ky==2)){
       if((x<Left && kx<Left)
 		  ||(y<Top && ky<Top)
 		  ||(x>(OFMDim-1-Right) && kx>(3-1-Right))
 		  ||(y>(OFMHeight-1-Bottom) && ky>(3-1-Bottom))){
-    	  // for fan-in scaling
-    	  //padding[pe] = 1;
-    	  //fan_in_loss[pe] += SIMD;
     	  ;	//skip pad from accumulation
        }
       else{
@@ -532,11 +542,11 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
 
 	     // hwkim modified for debug
 #ifdef ACTIVATION_LOG
+    	// write conv_out_minus_bias
 		conv_out_log_file << setprecision(8) << accu[pe] << endl;//" | ";
 
-   	// compare golden with computed
+		// compare golden with computed
 		decltype(activation.init(0,0))	golden_buf;
-		//double golden_buf;
 		golden_conv_out_file >> golden_buf;
 		if(accu[pe]!=golden_buf){
 			conv_out_comp_file << fixed;
@@ -549,22 +559,67 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
   	  // hwkim modified for bias
 //    	accu[pe] = accu[pe] + activation.m_thresholds[pe][nf][0];
     	outElem[pe] = activation.activate(nf, pe, accu[pe]);
-    	// hwkim modified for padding (fan-in scaling)
-//    	if((TI::width==1) && (padding[pe])){
-//			accu[pe] = accu[pe]*(decltype(activation.init(0,0)))((float)FAN_IN/(FAN_IN - fan_in_loss[pe]));
-//			outElem[pe] = activation.activate(nf, pe, accu[pe]);
-//		}
-//    	else{
-//    		outElem[pe] = activation.activate(nf, pe, accu[pe]);
-//    	}
-	     // hwkim modified for padding (fan-in scaling)
-	     //padding[pe] = 0;
-	     //fan_in_loss[pe] = 0;
       }
       out.write(outElem);
-      // hwkim modified for debug
+      // hwkim added for debug
 #ifdef ACTIVATION_LOG
-      out_log.write(outElem);
+      act_buf_arr[nf] = outElem;
+      if(nf==(NF-1)){
+    	  // write activation log - OutWidth(PE*TDst::width) is under 32 for conv(tconv) layers
+    	  act_buf = 0;
+    	  for(int nf_cnt=NF-1; nf_cnt>=0; nf_cnt--){
+			  for(int word_cnt=0; word_cnt<OutWidth/4; word_cnt++){
+				  activation_log_file << uppercase << hex << ((unsigned int)(act_buf_arr[nf_cnt]>>(OutWidth-4*(word_cnt+1)))&0xF);
+			  }
+    		  // filling act_buf
+			  act_buf = act_buf << OutWidth;	//OutWidth or PE
+			  act_buf = act_buf | act_buf_arr[nf_cnt];
+    	  }
+    	  activation_log_file  << endl;
+
+    	  // compare activation with gold result
+    	  ap_uint<NF*OutWidth> gold_buf = 0;
+    	  char gold_buf_ch[(NF*OutWidth)/4+1];
+    	  char gold_buf_ch64[17];
+    	  gold_buf_ch64[16] = 0;
+    	  unsigned long gold_buf_long;
+    	  if(compare_skip==0){
+    		  fscanf(golden_file, "%s", gold_buf_ch);
+    		  // there's no layers with channel count smaller than 64
+    		  for(int word_cnt=0; word_cnt<(NF*OutWidth)/64; word_cnt++){
+    			  for(int i=0; i<64/4; i++){
+    				  gold_buf_ch64[i] = gold_buf_ch[word_cnt*16+i];
+    			  }
+    			  gold_buf_long = strtoul(gold_buf_ch64, NULL, 16);
+    			  gold_buf = gold_buf << 64;
+    			  gold_buf = gold_buf | (*reinterpret_cast<ap_uint<64> *>(&gold_buf_long));
+    		  }
+
+    		  if(act_buf!=gold_buf){
+    			  act_comp_file << dec << "@(" << setw(2) << y << "," << setw(2) << x << ")" <<
+    					  hex << " golden: ";
+    			  if((NF*OutWidth)>=64){
+    				  for(int i=0; i<(NF*OutWidth)/64; i++){
+    					  act_comp_file << (unsigned long long )(gold_buf >> 64*(OutWidth/64-i-1));
+    				  }
+    				  act_comp_file << "," << endl << setw(17) << hex << "act: ";
+    				  for(int i=0; i<OutWidth/64; i++){
+    					  act_comp_file << (unsigned long long )(act_buf >> 64*(OutWidth/64-i-1));
+    				  }
+    				  act_comp_file << endl;
+    			  }
+    			  else{
+    				  act_comp_file << (unsigned long long )gold_buf << "," << endl
+    						  << setw(17) << hex << "act: "  << (unsigned long long )act_buf << endl;
+    			  }
+    		  }
+    	  }
+       }
+//      out_log.write(outElem);
+      if(nf==(NF-1)){
+    	  if(x==0)
+    		  cout << y << "/" << OFMHeight << endl;
+       }
 #endif
 
       // next folded neuron or image
@@ -575,9 +630,6 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
     	   */
 	    nf   = 0;
 	    tile = 0;
-//#ifdef ACTIVATION_LOG
-//	    conv_out_log_file << endl;
-//#endif
       }
     }
   }
@@ -598,6 +650,10 @@ template<
   unsigned Bottom,
   unsigned Left,
   unsigned Right,
+#ifdef ACTIVATION_LOG
+  unsigned int LayerCnt,
+  unsigned int OutWidth,
+#endif
 
   typename TSrcI = Identity, typename TDstI = Identity, typename TWeightI = Identity,
   typename TI, typename TO, typename TW, typename TA, typename R
@@ -605,9 +661,9 @@ template<
 void Matrix_Vector_Activate_Batch_Skipping(hls::stream<TI> & in,
 				  hls::stream<TO> &out,
 				  // hwkim modified for debug
-#ifdef ACTIVATION_LOG
-				  hls::stream<TO> &out_log,
-#endif
+//#ifdef ACTIVATION_LOG
+//				  hls::stream<TO> &out_log,
+//#endif
 				  TW  const &weights,
 				  TA  const &activation,
 				  int const  reps,
@@ -621,23 +677,66 @@ void Matrix_Vector_Activate_Batch_Skipping(hls::stream<TI> & in,
 
   // hwkim modified for debug
 #ifdef ACTIVATION_LOG
-  string conv_out_file_name = "conv_" + to_string(weighted_layer_cnt+1) + "_out_minusBias.txt";
+//  string conv_out_file_name = "conv_" + to_string(LayerCnt+1) + "_out_minusBias.txt";
+//  ofstream conv_out_log_file(conv_out_file_name);
+//  if(!conv_out_log_file.is_open()){
+// 	 cout << "conv_out_log_file open error" << endl;
+//  }
+//
+//  extern string golden_file_dir;
+//  string golden_conv_out_file_name = golden_file_dir + "binConv" + to_string(LayerCnt+1) + "_minusBias.txt";
+//  ifstream golden_conv_out_file(golden_conv_out_file_name);
+//  if(!golden_conv_out_file.is_open()){
+//	  cout << "golden_conv_out_file open error" << endl;
+//  }
+//
+//  string conv_out_comp_file_name = "conv_" + to_string(LayerCnt+1) + "_out_minusBias_comp.txt";
+//  ofstream conv_out_comp_file(conv_out_comp_file_name);
+//  if(!conv_out_comp_file.is_open()){
+//	  cout << "conv_out_comp_file open error" << endl;
+//  }
+
+  extern string snapshot_dir;
+  extern string golden_file_dir;
+  int compare_skip = 0;
+  ap_uint<OutWidth> act_buf_arr[NF];
+  ap_uint<NF*OutWidth> act_buf=0;
+
+  string conv_out_file_name = snapshot_dir + "conv_" + to_string(LayerCnt+1) + "_out_minusBias.txt";
   ofstream conv_out_log_file(conv_out_file_name);
   if(!conv_out_log_file.is_open()){
  	 cout << "conv_out_log_file open error" << endl;
   }
 
-  extern string golden_file_dir;
-  string golden_conv_out_file_name = golden_file_dir + "binConv" + to_string(weighted_layer_cnt+1) + "_minusBias.txt";
+  string act_file_name = snapshot_dir + "activation_" + to_string(LayerCnt+1) + "_log.txt";
+  ofstream activation_log_file(act_file_name);
+  if(!activation_log_file.is_open()){
+	  cout << act_file_name << " open error!!" << endl;
+  }
+
+  string golden_conv_out_file_name = golden_file_dir + "binConv" + to_string(LayerCnt+1) + "_minusBias.txt";
   ifstream golden_conv_out_file(golden_conv_out_file_name);
   if(!golden_conv_out_file.is_open()){
 	  cout << "golden_conv_out_file open error" << endl;
   }
 
-  string conv_out_comp_file_name = "conv_" + to_string(weighted_layer_cnt+1) + "_out_minusBias_comp.txt";
+  string golden_act_file_name = golden_file_dir + "Sign" + to_string(LayerCnt+1) + ".txt";
+  FILE * golden_file = fopen(golden_act_file_name.c_str(),"rt");
+  if(golden_file==NULL){
+	  cout << golden_act_file_name << " open error!!" << endl;
+	  compare_skip = 1;
+  }
+
+  string conv_out_comp_file_name = "conv_" + to_string(LayerCnt+1) + "_out_minusBias_comp.txt";
   ofstream conv_out_comp_file(conv_out_comp_file_name);
   if(!conv_out_comp_file.is_open()){
 	  cout << "conv_out_comp_file open error" << endl;
+  }
+
+  string act_comp_file_name = "act_" + to_string(LayerCnt+1) + "_comp.txt";
+  ofstream act_comp_file(act_comp_file_name);
+  if(!act_comp_file.is_open()){
+	  cout << act_comp_file_name << " open error!" << endl;
   }
 
 #endif
@@ -669,35 +768,6 @@ void Matrix_Vector_Activate_Batch_Skipping(hls::stream<TI> & in,
 #pragma HLS PIPELINE II=1
 
 	//tile: sf -> kx -> ky -> nf
-//	  unsigned int kx_max, ky_max;
-//	  unsigned char tile_idx = 0;
-//	  if((!(x&0x1))&&(!(y&0x1))){	// even x, even y
-//		tile_idx = 1;
-//		kx_max = 1;
-//		ky_max = 1;
-//		sf_max = 1*(IFMChannels/SIMD);
-//	  }
-//	  else if((x&0x1)&&(!(y&0x1))){	// odd x, even y
-//		tile_idx = 2;
-//		kx_max = 2;
-//		ky_max = 1;
-//		sf_max = 2*(IFMChannels/SIMD);
-//	  }
-//	  else if((!(x&0x1))&&(y&0x1)){	// even x, odd y
-//		tile_idx = 3;
-//		kx_max = 1;
-//		ky_max = 2;
-//		sf_max = 2*(IFMChannels/SIMD);
-//	  }
-//	  else if((x&0x1)&&(y&0x1)){	// odd x, odd y
-//		tile_idx = 4;
-//		kx_max = 2;
-//		ky_max = 2;
-//		sf_max = 4*(IFMChannels/SIMD);
-//	  }
-//	  else
-//		cout << "tile index error" << endl;
-
     TI  inElem;
     if(nf == 0) {
     	// hwkim modified for weight flip
@@ -790,7 +860,60 @@ void Matrix_Vector_Activate_Batch_Skipping(hls::stream<TI> & in,
      out.write(outElem);
       // hwkim modified for debug
 #ifdef ACTIVATION_LOG
-      out_log.write(outElem);
+     // hwkim added for debug
+     act_buf_arr[nf] = outElem;
+     if(nf==(NF-1)){
+		  // write activation log - PE is under 32 now
+		  act_buf = 0;
+		  for(int nf_cnt=NF-1; nf_cnt>=0; nf_cnt--){
+			  //activation_log_file << uppercase << setfill('0') << setw(PE/4) << hex << (unsigned long long)act_buf_arr[nf_cnt];
+			  for(int word_cnt=0; word_cnt<OutWidth/4; word_cnt++){
+				  activation_log_file << uppercase << hex << ((unsigned int)(act_buf_arr[nf_cnt]>>(OutWidth-4*(word_cnt+1)))&0xF);
+			  }
+			  act_buf = act_buf << OutWidth;	//OutWidth or PE
+			  act_buf = act_buf | act_buf_arr[nf_cnt];
+		  }
+		  activation_log_file  << endl;
+
+		  // compare activation with gold result
+		  ap_uint<NF*OutWidth> gold_buf = 0;
+		  char gold_buf_ch[(NF*OutWidth)/4+1];
+		  char gold_buf_ch64[17];
+		  gold_buf_ch64[16] = 0;
+		  unsigned long gold_buf_long;
+		  if(compare_skip==0){
+			  fscanf(golden_file, "%s", gold_buf_ch);
+			  // there's no layers with channel count smaller than 64
+			  for(int word_cnt=0; word_cnt<(NF*OutWidth)/64; word_cnt++){
+				  for(int i=0; i<64/4; i++){
+					  gold_buf_ch64[i] = gold_buf_ch[word_cnt*16+i];
+				  }
+				  gold_buf_long = strtoul(gold_buf_ch64, NULL, 16);
+				  gold_buf = gold_buf << 64;
+				  gold_buf = gold_buf | (*reinterpret_cast<ap_uint<64> *>(&gold_buf_long));
+			  }
+
+			  if(act_buf!=gold_buf){
+				  act_comp_file << dec << "@(" << setw(2) << y << "," << setw(2) << x << ")" <<
+						  hex << " golden: ";
+				  if((NF*OutWidth)>=64){
+					  for(int i=0; i<(NF*OutWidth)/64; i++){
+						  act_comp_file << (unsigned long long )(gold_buf >> 64*(OutWidth/64-i-1));
+					  }
+					  act_comp_file << "," << endl << setw(17) << hex << "act: ";
+					  for(int i=0; i<OutWidth/64; i++){
+						  act_comp_file << (unsigned long long )(act_buf >> 64*(OutWidth/64-i-1));
+					  }
+					  act_comp_file << endl;
+				  }
+				  else{
+					  act_comp_file << (unsigned long long )gold_buf << "," << endl
+							  << setw(17) << hex << "act: "  << (unsigned long long )act_buf << endl;
+				  }
+			  }
+		  }
+      }
+//      out_log.write(outElem);
 #endif
 
       // next folded neuron or image

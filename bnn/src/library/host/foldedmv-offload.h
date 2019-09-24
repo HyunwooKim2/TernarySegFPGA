@@ -48,6 +48,7 @@
 #include <iomanip>
 #ifdef ACTIVATION_LOG
 #include <fstream>
+extern std::string golden_file_dir;
 #endif
 
 using namespace std;
@@ -404,20 +405,36 @@ std::vector<int>  testPrebuiltCIFAR10_from_image(std::vector<tiny_cnn::vec_t> & 
    */
   auto t2 = chrono::high_resolution_clock::now();
 
+  // hwkim modified for segmentation - compare against labels
   // compare against labels
-  unsigned int ok = 0, failed = 0;
-  tiny_cnn::vec_t outTest(numCategories, 0);
-  copyFromLowPrecBuffer<LowPrecType>(&packedOut[0], outTest);
+//  unsigned int ok = 0, failed = 0;
+//  tiny_cnn::vec_t outTest(numCategories, 0);
+//  copyFromLowPrecBuffer<LowPrecType>(&packedOut[0], outTest);
   std::vector<int> result;
-  for(unsigned int j = 0; j < numCategories; j++) {
-    result.push_back(outTest[j]);
+//  for(unsigned int j = 0; j < numCategories; j++) {
+//    result.push_back(outTest[j]);
+//  }
+#ifdef ACTIVATION_LOG
+  std::string label_file_path = golden_file_dir + "2DLabelOutput.txt";
+  ifstream label_file(label_file_path);
+  ap_uint<16> label_buf;
+  ap_uint<64> packed_out_buf;
+  ap_uint<16> inferred_label;
+  for(int y=0; y<360; y++){
+	  for(int x=0; x<480; x++){
+		  label_file >> label_buf;
+		  packed_out_buf = packed_out_buf >> 16;
+		  if(x%4==0){
+			  packed_out_buf = packedOut[(y*360+x)/4];
+		  }
+		  inferred_label = (packed_out_buf & 0xFFFF) + 1;
+		  if(label_buf != inferred_label){
+			  cout << "output differ @ (y,x): " << y << "," << x << endl;
+		  }
+	  }
   }
-  // hwkim modified for debug
-  cout << "Output scores: ";
-  for(unsigned int j = 0; j < numCategories; j++) {
-	  cout << outTest[j] << "\t";
-  }
-  cout << endl;
+  label_file.close();
+#endif
 
   auto duration = chrono::duration_cast<chrono::microseconds>( t2 - t1 ).count();
   usecPerImage = (float)duration / (count);
