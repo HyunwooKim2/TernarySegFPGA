@@ -467,82 +467,103 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
   // hwkim modified for padding
   unsigned int xy, x, y, kx, ky;
 
-  for(unsigned  i = 0; i < reps * TOTAL_FOLD; i++) {
-#pragma HLS PIPELINE II=1
-	// hwkim modified for padding
-	xy = i/TOTAL_FOLD;
-	y = xy/OFMDim;
-	x = xy%OFMDim;
-	//tile: sf -> kx -> ky -> nf
-	ky = ((tile/(SF/9))%9)/3;
-	kx = ((tile/(SF/9))%9)%3;
+  // hwkim modified for dependency
+  //for(unsigned  i = 0; i < reps * TOTAL_FOLD; i++) {
+  for(unsigned  i = 0; i < reps * TOTAL_FOLD / SF; i++) {
+	  for(unsigned sf=0; sf < SF; sf++){
 
-    TI  inElem;
-    if(nf == 0) {
+#pragma HLS PIPELINE II=1
+		  // hwkim modified for padding
+		  // hwkim modified for dependency
+		  xy = i*SF/TOTAL_FOLD;
+//		  xy = i/TOTAL_FOLD;
+
+		  y = xy/OFMDim;
+		  x = xy%OFMDim;
+		  //tile: sf -> kx -> ky -> nf
+		  ky = ((tile/(SF/9))%9)/3;
+		  kx = ((tile/(SF/9))%9)%3;
+
+		  TI  inElem;
+		  if(nf == 0) {
 //      // read input from stream
 //      inElem = in.read();
 //      // store in appropriate buffer for reuse
 //      inputBuf[sf] = inElem;
-      // hwkim modified for padding
-      if((x<Left && kx<Left)
-		  ||(y<Top && ky<Top)
-		  ||(x>(OFMDim-1-Right) && kx>(3-1-Right))
-		  ||(y>(OFMHeight-1-Bottom) && ky>(3-1-Bottom))){
-    	  ;	// skip
-       }
-      else{
-    	    // read input from stream
-			inElem = in.read();
-			// store in appropriate buffer for reuse
-			inputBuf[sf] = inElem;
-       }
+			  // hwkim modified for padding
+			  if((x<Left && kx<Left)
+					  ||(y<Top && ky<Top)
+					  ||(x>(OFMDim-1-Right) && kx>(3-1-Right))
+					  ||(y>(OFMHeight-1-Bottom) && ky>(3-1-Bottom))){
+				  ;	// skip
+			  }
+			  else{
+				  // read input from stream
+				  inElem = in.read();
+				  // store in appropriate buffer for reuse
+				  inputBuf[sf] = inElem;
+			  }
+		  }
+		  else {
+			  // reuse buffered input
+			  inElem = inputBuf[sf];
+		  }
 
-    }
-    else {
-      // reuse buffered input
-      inElem = inputBuf[sf];
-    }
-
-    // Threshold Initialisation
-    if(sf == 0) {
-      for(unsigned  pe = 0; pe < PE; pe++) {
+		  // Threshold Initialisation
+		  if(sf == 0) {
+			  for(unsigned  pe = 0; pe < PE; pe++) {
 #pragma HLS UNROLL
-	    accu[pe] = activation.init(nf, pe);
-      }
-    }
+				  accu[pe] = activation.init(nf, pe);
+			  }
+		  }
 
-    // compute matrix-vector product for each processing element
-    auto const &w = weights.weights(tile);
+		  // compute matrix-vector product for each processing element
+		  auto const &w = weights.weights(tile);
 
-    for(unsigned  pe = 0; pe < PE; pe++) {
+		  for(unsigned  pe = 0; pe < PE; pe++) {
 #pragma HLS UNROLL
-      auto const  wgt = TWeightI()(w[pe]);
-      auto const  act = TSrcI()(inElem);
+			  auto const  wgt = TWeightI()(w[pe]);
+			  auto const  act = TSrcI()(inElem);
 
-      // hwkim modified for padding
-      //accu[pe] = mac<SIMD>(accu[pe], wgt, act, r);
-      if((x<Left && kx<Left)
-		  ||(y<Top && ky<Top)
-		  ||(x>(OFMDim-1-Right) && kx>(3-1-Right))
-		  ||(y>(OFMHeight-1-Bottom) && ky>(3-1-Bottom))){
-    	  ;	//skip pad from accumulation
-       }
-      else{
-    	  accu[pe] = mac<SIMD>(accu[pe], wgt, act, r);
-       }
-    }
+			  // hwkim modified for padding
+			  //accu[pe] = mac<SIMD>(accu[pe], wgt, act, r);
+			  if((x<Left && kx<Left)
+					  ||(y<Top && ky<Top)
+					  ||(x>(OFMDim-1-Right) && kx>(3-1-Right))
+					  ||(y>(OFMHeight-1-Bottom) && ky>(3-1-Bottom))){
+				  ;	//skip pad from accumulation
+			  }
+			  else{
+				  accu[pe] = mac<SIMD>(accu[pe], wgt, act, r);
+			  }
+		  }
 
-    // keep track of which folded synapse/neuron we are processing
-    ++tile;
-    if(++sf == SF) {
-      // produce output and clear accumulators
-      auto  outElem = TDstI().template operator()<TO>();
-      for (unsigned  pe = 0; pe < PE; pe++) {
+		  // keep track of which folded synapse/neuron we are processing
+		  ++tile;
+
+		  // hwkim added for debug
+//		  cout << dec;
+//		  cout << "tile: " << tile;
+//		  cout << ", sf: " << sf;
+//		  cout << ", nf: " << nf;
+//		  cout << ", ky, kx: " << ky << "," << kx;
+//		  cout << ", y, x: " << y << "," << x;
+//		  cout << endl;
+
+    // hwkim modified for dependency
+	}
+
+    // hwkim modified for dependency
+    //if(++sf == SF) {
+
+	// produce output and clear accumulators
+	auto  outElem = TDstI().template operator()<TO>();
+	for (unsigned  pe = 0; pe < PE; pe++) {
 #pragma HLS UNROLL
 
-	     // hwkim modified for debug
+		// hwkim modified for debug
 #ifdef ACTIVATION_LOG
-    	// write conv_out_minus_bias
+		// write conv_out_minus_bias
 		conv_out_log_file << setprecision(8) << accu[pe] << endl;//" | ";
 
 		// compare golden with computed
@@ -556,82 +577,87 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
 		}
 #endif
 
-  	  // hwkim modified for bias
+		// hwkim modified for bias
 //    	accu[pe] = accu[pe] + activation.m_thresholds[pe][nf][0];
     	outElem[pe] = activation.activate(nf, pe, accu[pe]);
-      }
-      out.write(outElem);
-      // hwkim added for debug
+	}
+	out.write(outElem);
+	// hwkim added for debug
 #ifdef ACTIVATION_LOG
-      act_buf_arr[nf] = outElem;
-      if(nf==(NF-1)){
-    	  // write activation log - OutWidth(PE*TDst::width) is under 32 for conv(tconv) layers
-    	  act_buf = 0;
-    	  for(int nf_cnt=NF-1; nf_cnt>=0; nf_cnt--){
-			  for(int word_cnt=0; word_cnt<OutWidth/4; word_cnt++){
-				  activation_log_file << uppercase << hex << ((unsigned int)(act_buf_arr[nf_cnt]>>(OutWidth-4*(word_cnt+1)))&0xF);
-			  }
-    		  // filling act_buf
-			  act_buf = act_buf << OutWidth;	//OutWidth or PE
-			  act_buf = act_buf | act_buf_arr[nf_cnt];
-    	  }
-    	  activation_log_file  << endl;
+	act_buf_arr[nf] = outElem;
+//	cout << hex << (unsigned int)act_buf_arr[nf] << endl;
+	if(nf==(NF-1)){
+		// write activation log - OutWidth(PE*TDst::width) is under 32 for conv(tconv) layers
+		act_buf = 0;
+		for(int nf_cnt=NF-1; nf_cnt>=0; nf_cnt--){
+			for(int word_cnt=0; word_cnt<OutWidth/4; word_cnt++){
+				activation_log_file << uppercase << hex << ((unsigned int)(act_buf_arr[nf_cnt]>>(OutWidth-4*(word_cnt+1)))&0xF);
+			}
+			// filling act_buf
+			act_buf = act_buf << OutWidth;	//OutWidth or PE
+			act_buf = act_buf | act_buf_arr[nf_cnt];
+		}
+		activation_log_file  << endl;
 
-    	  // compare activation with gold result
-    	  ap_uint<NF*OutWidth> gold_buf = 0;
-    	  char gold_buf_ch[(NF*OutWidth)/4+1];
-    	  char gold_buf_ch64[17];
-    	  gold_buf_ch64[16] = 0;
-    	  unsigned long gold_buf_long;
-    	  if(compare_skip==0){
-    		  fscanf(golden_file, "%s", gold_buf_ch);
-    		  // there's no layers with channel count smaller than 64
-    		  for(int word_cnt=0; word_cnt<(NF*OutWidth)/64; word_cnt++){
-    			  for(int i=0; i<64/4; i++){
-    				  gold_buf_ch64[i] = gold_buf_ch[word_cnt*16+i];
-    			  }
-    			  gold_buf_long = strtoul(gold_buf_ch64, NULL, 16);
-    			  gold_buf = gold_buf << 64;
-    			  gold_buf = gold_buf | (*reinterpret_cast<ap_uint<64> *>(&gold_buf_long));
-    		  }
+		// compare activation with gold result
+		ap_uint<NF*OutWidth> gold_buf = 0;
+		char gold_buf_ch[(NF*OutWidth)/4+1];
+		char gold_buf_ch64[17];
+		gold_buf_ch64[16] = 0;
+		unsigned long gold_buf_long;
+		if(compare_skip==0){
+			fscanf(golden_file, "%s", gold_buf_ch);
+			// there's no layers with channel count smaller than 64
+			for(int word_cnt=0; word_cnt<(NF*OutWidth)/64; word_cnt++){
+				for(int i=0; i<64/4; i++){
+					gold_buf_ch64[i] = gold_buf_ch[word_cnt*16+i];
+				}
+				gold_buf_long = strtoul(gold_buf_ch64, NULL, 16);
+				gold_buf = gold_buf << 64;
+				gold_buf = gold_buf | (*reinterpret_cast<ap_uint<64> *>(&gold_buf_long));
+			}
 
-    		  if(act_buf!=gold_buf){
-    			  act_comp_file << dec << "@(" << setw(2) << y << "," << setw(2) << x << ")" <<
-    					  hex << " golden: ";
-    			  if((NF*OutWidth)>=64){
-    				  for(int i=0; i<(NF*OutWidth)/64; i++){
-    					  act_comp_file << (unsigned long long )(gold_buf >> 64*(OutWidth/64-i-1));
-    				  }
-    				  act_comp_file << "," << endl << setw(17) << hex << "act: ";
-    				  for(int i=0; i<OutWidth/64; i++){
-    					  act_comp_file << (unsigned long long )(act_buf >> 64*(OutWidth/64-i-1));
-    				  }
-    				  act_comp_file << endl;
-    			  }
-    			  else{
-    				  act_comp_file << (unsigned long long )gold_buf << "," << endl
-    						  << setw(17) << hex << "act: "  << (unsigned long long )act_buf << endl;
-    			  }
-    		  }
-    	  }
-       }
+			if(act_buf!=gold_buf){
+				act_comp_file << dec << "@(" << setw(2) << y << "," << setw(2) << x << ")" <<
+						hex << " golden: ";
+				if((NF*OutWidth)>=64){
+					for(int i=0; i<(NF*OutWidth)/64; i++){
+						act_comp_file << (unsigned long long )(gold_buf >> 64*(OutWidth/64-i-1));
+					}
+					act_comp_file << "," << endl << setw(17) << hex << "act: ";
+					for(int i=0; i<OutWidth/64; i++){
+						act_comp_file << (unsigned long long )(act_buf >> 64*(OutWidth/64-i-1));
+					}
+					act_comp_file << endl;
+				}
+				else{
+					act_comp_file << (unsigned long long )gold_buf << "," << endl
+							<< setw(17) << hex << "act: "  << (unsigned long long )act_buf << endl;
+				}
+			}
+		}
+	}
 //      out_log.write(outElem);
-      if(nf==(NF-1)){
-    	  if(x==0)
-    		  cout << y << "/" << OFMHeight << endl;
-       }
+	if(nf==(NF-1)){
+		if(x==0)
+			cout << y << "/" << OFMHeight << endl;
+	}
 #endif
 
-      // next folded neuron or image
-      sf = 0;
-      if(++nf == NF) {
-    	  /* hwkim commented
-    	   * 모든 kernel에 대해 연산 다 했으면
-    	   */
-	    nf   = 0;
-	    tile = 0;
-      }
-    }
+	// next folded neuron or image
+	// hwkim modified for dependency
+	//sf = 0;
+
+	if(++nf == NF) {
+		/* hwkim commented
+		 * 모든 kernel에 대해 연산 다 했으면
+		 */
+		nf   = 0;
+		tile = 0;
+	}
+	// hwkim modified for dependency
+//	}
+
   }
 
 #ifdef ACTIVATION_LOG

@@ -515,7 +515,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 
 #ifdef SEP_SIM
   // hwkim modified for separated simulation
-  int start_layer = 11;
+  int start_layer = 0;
   if(start_layer < 1){
 #endif
 
