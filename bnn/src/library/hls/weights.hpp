@@ -86,6 +86,9 @@ class BinaryWeights {
    public:
     ap_uint<SIMD> operator[](unsigned const  pe) const {
 #pragma HLS inline
+    	// hwkim added for pipeline lack of memory port
+#pragma HLS ARRAY_PARTITION variable=m_par.m_weights complete dim=1
+
       return  m_par.m_weights[pe][m_idx];
     }
   };

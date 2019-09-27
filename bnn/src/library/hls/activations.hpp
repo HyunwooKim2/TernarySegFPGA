@@ -144,6 +144,9 @@ public:
   TR activate(unsigned const  nf, unsigned const  pe,  TA const &accu) const {
 #pragma HLS inline
     TR result=ActVal;
+    // hwkim modified for II violation
+#pragma HLS ARRAY_PARTITION variable=m_thresholds complete dim=1
+#pragma HLS ARRAY_PARTITION variable=m_thresholds complete dim=3
 
     // hwkim modified for bias
     TA act = accu + m_thresholds[pe][nf][0];
