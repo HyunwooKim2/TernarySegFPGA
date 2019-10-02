@@ -444,32 +444,36 @@ void DoMemInit(unsigned int targetLayer, unsigned int targetMem, unsigned int ta
 void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 #pragma HLS DATAFLOW
   stream<ap_uint<64>> inter0("DoCompute.inter0");
+#pragma HLS STREAM variable=inter0 //depth=128
   stream<ap_uint<192>> inter0_1("DoCompute.inter0_1");
+#pragma HLS STREAM variable=inter0_1 //depth=128
   stream<ap_uint<24>> inter0_2("DoCompute.inter0_2");
-//#pragma HLS STREAM variable=inter0_2 depth=128
+#pragma HLS STREAM variable=inter0_2 //depth=128
   /* hwkim commented
    *  단순 FIFO size 지정
    */
   stream<ap_uint<64>> inter1("DoCompute.inter1");
-//#pragma HLS STREAM variable=inter1 depth=128
+#pragma HLS STREAM variable=inter1 //depth=128
   stream<ap_uint<64>> inter2("DoCompute.inter2");
+#pragma HLS STREAM variable=inter2 //depth=128
   stream<ap_uint<128>> inter3("DoCompute.inter3");
-//#pragma HLS STREAM variable=inter3 depth=128
+#pragma HLS STREAM variable=inter3 //depth=128
   stream<ap_uint<128>> inter4("DoCompute.inter4");
-//#pragma HLS STREAM variable=inter4 depth=128
+#pragma HLS STREAM variable=inter4 //depth=128
   stream<ap_uint<256>> inter5("DoCompute.inter5");
+#pragma HLS STREAM variable=inter5 //depth=128
   stream<ap_uint<256>> inter6("DoCompute.inter6");
-//#pragma HLS STREAM variable=inter6 depth=81
+#pragma HLS STREAM variable=inter6 //depth=81
   stream<ap_uint<128>> inter7("DoCompute.inter7");
-//#pragma HLS STREAM variable=inter7 depth=1
+#pragma HLS STREAM variable=inter7 //depth=1
   stream<ap_uint<128>> inter8("DoCompute.inter8");
-//#pragma HLS STREAM variable=inter8 depth=1
+#pragma HLS STREAM variable=inter8 //depth=1
   stream<ap_uint<64>> inter9("DoCompute.inter9");
-//#pragma HLS STREAM variable=inter9 depth=1
+#pragma HLS STREAM variable=inter9 //depth=1
   stream<ap_uint<64>> inter10("DoCompute.inter10");
-//#pragma HLS STREAM variable=inter10 depth=1
+#pragma HLS STREAM variable=inter10 //depth=1
   stream<ap_uint<11*16>> inter11("DoCompute.inter11");
-  //#pragma HLS STREAM variable=inter10 depth=1
+#pragma HLS STREAM variable=inter11 //depth=1
 
   stream<ap_uint<64>> memOutStrm("DoCompute.memOutStrm");
 

@@ -472,7 +472,7 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
   for(unsigned  i = 0; i < reps * TOTAL_FOLD / SF; i++) {
 	  for(unsigned sf=0; sf < SF; sf++){
 
-#pragma HLS PIPELINE II=1
+#pragma HLS PIPELINE II=1 rewind
 		  // hwkim modified for padding
 		  // hwkim modified for dependency
 		  xy = i*SF/TOTAL_FOLD;
