@@ -69,7 +69,10 @@ static BinaryWeights< L8_SIMD,  L8_PE,  L8_WMEM>  weights8;
 static BinaryWeights< L9_SIMD,  L9_PE,  L9_WMEM>  weights9;
 static BinaryWeights<L10_SIMD, L10_PE, L10_WMEM>  weights10;
 
-static ThresholdsActivation< L0_TMEM,  L0_PE,  L0_API, ap_fixed<24, 16>, ap_uint<L0_API> > threshs0;
+// hwkim modified for positive only accumulation
+//static ThresholdsActivation< L0_TMEM,  L0_PE,  L0_API, ap_fixed<24, 16>, ap_uint<L0_API> > threshs0;
+static InputLayerActivation< L0_TMEM,  L0_PE,  L0_API, ap_fixed<24, 16>, ap_uint<L0_API> > threshs0;
+
 static ThresholdsActivation< L1_TMEM,  L1_PE,  L1_API, ap_int<16>, ap_uint<L1_API>>  		threshs1;
 static ThresholdsActivation< L2_TMEM,  L2_PE,  L2_API, ap_int<16>, ap_uint<L2_API>>  		threshs2;
 static ThresholdsActivation< L3_TMEM,  L3_PE,  L3_API, ap_int<16>, ap_uint<L3_API>>  		threshs3;
@@ -946,6 +949,9 @@ void BlackBoxJam(ap_uint<64> *in, ap_uint<64> *out, bool doInit,
 	/* hwkim commented
 	 * numReps - number of repetitions? (input image 장 수)
 	 */
+	// hwkim modified for positive only accumulation
+	numReps = 1;
+
 // pragmas for MLBP jam interface
 // signals to be mapped to the AXI Lite slave port
 #pragma HLS INTERFACE s_axilite port=return bundle=control

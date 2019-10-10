@@ -140,7 +140,7 @@ if [[ ("$MODE" == "h") || ("$MODE" == "a")  ]]; then
     TARGET_CLOCK=3
   elif [[ ("$PLATFORM" == "zcu104") ]]; then
     PLATFORM_PART="xczu7ev-ffvc1156-2-e"
-    TARGET_CLOCK=10
+    TARGET_CLOCK=5
   else
 	echo "Error: Platform not supported. Please choose between pynqZ1-Z2 and ultra96."
 	exit 1

@@ -141,17 +141,22 @@ public:
   }
 
 public:
-  TR activate(unsigned const  nf, unsigned const  pe,  TA const &accu) const {
+//  TR activate(unsigned const  nf, unsigned const  pe,  TA const &accu) const {
+    TR activate(unsigned const  nf, unsigned const  pe,  TA const &accu, TA const fan_in) const {
 #pragma HLS inline
     TR result=ActVal;
     // hwkim modified for II violation
 #pragma HLS ARRAY_PARTITION variable=m_thresholds complete dim=1
 #pragma HLS ARRAY_PARTITION variable=m_thresholds complete dim=3
 
-    // hwkim modified for bias
-    TA act = accu + m_thresholds[pe][nf][0];
+    // hwkim modified for positive only accum
+    //TA act = accu + m_thresholds[pe][nf][0];
+    TA act = accu + (m_thresholds[pe][nf][0]>>1);
 //    cout << setprecision(9) << "accu" << pe << "=" << act << endl;
-    if(act >= (TR)0)
+
+    // hwkim modified for positive only accum
+    //if(act >= (TR)0)
+    if(act >= (fan_in>>1))
     	result = (TR)1;
     else
     	result = (TR)0;
@@ -177,7 +182,9 @@ public:
   }
 
 public:
-  TR activate(unsigned const  nf, unsigned const  pe,  TA const &accu) const {
+  // hwkim modified for positive only accumulation
+  //TR activate(unsigned const  nf, unsigned const  pe,  TA const &accu) const {
+  TR activate(unsigned const  nf, unsigned const  pe,  TA const &accu, unsigned const fan_in) const {
 #pragma HLS inline
     TR result=ActVal;
     // hwkim modified for II violation
@@ -188,5 +195,45 @@ public:
     return result;
   }
 };
+
+template<unsigned NF, unsigned PE, unsigned NumTH,
+	 typename TA, typename TR, int ActVal = 0, typename Compare = std::less<TA>>
+class InputLayerActivation {
+public:
+  TA m_thresholds[PE][NF][NumTH];
+
+public:
+  TA init(unsigned const  nf, unsigned const  pe) const {
+#pragma HLS inline
+    return  TA(0);
+  }
+
+public:
+//  TR activate(unsigned const  nf, unsigned const  pe,  TA const &accu) const {
+    TR activate(unsigned const  nf, unsigned const  pe,  TA const &accu, TA const fan_in) const {
+#pragma HLS inline
+    TR result=ActVal;
+    // hwkim modified for II violation
+#pragma HLS ARRAY_PARTITION variable=m_thresholds complete dim=1
+#pragma HLS ARRAY_PARTITION variable=m_thresholds complete dim=3
+
+    // hwkim modified for positive only accum
+    TA act = accu + m_thresholds[pe][nf][0];
+//    cout << setprecision(9) << "accu" << pe << "=" << act << endl;
+
+    // hwkim modified for positive only accum
+    if(act >= (TA)0)
+    	result = (TR)1;
+    else
+    	result = (TR)0;
+//	for(unsigned int i=0; i< NumTH; i++){
+//#pragma HLS unroll
+//      result+=Compare()(m_thresholds[pe][nf][i], accu);
+//    }
+    return result;
+  }
+};
+
+
 
 #endif
