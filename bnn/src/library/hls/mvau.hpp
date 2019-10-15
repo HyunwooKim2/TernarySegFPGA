@@ -729,8 +729,6 @@ void Matrix_Vector_Activate_Batch_Skipping(hls::stream<TI> & in,
   // alternatively: number of horizontal matrix chunks
 
   //unsigned const  SF = MatrixW / SIMD;
-  // hwkim modified for padding (fan-in scaling)
-	unsigned const FAN_IN = IFMChannels*3*3;
 
   // hwkim modified for debug
 #ifdef ACTIVATION_LOG
@@ -801,6 +799,11 @@ void Matrix_Vector_Activate_Batch_Skipping(hls::stream<TI> & in,
   unsigned int w_addr=0;
   unsigned int sf_max=0;
 
+  // hwkim modified for padding (fan-in scaling)
+	//unsigned const FAN_IN = IFMChannels*3*3;
+  unsigned int fan_in = 0;
+  unsigned const fan_in_step = IFMChannels;
+
   //for(unsigned  i = 0; i < reps * TOTAL_FOLD; i++) {
   for(unsigned  i = 0; i < TOTAL_FOLD; i++) {
 #pragma HLS PIPELINE II=1
@@ -811,7 +814,6 @@ void Matrix_Vector_Activate_Batch_Skipping(hls::stream<TI> & in,
     	// hwkim modified for weight flip
     	if(((y==0)&&(ky==0))
 			|| ((x==0)&&(kx==0))){
-
     		;	// skip
     	}
     	else{
@@ -854,6 +856,9 @@ void Matrix_Vector_Activate_Batch_Skipping(hls::stream<TI> & in,
       }
       else{
     	  accu[pe] = mac<SIMD>(accu[pe], wgt, act, r);
+    	  // hwkim modified for positive only accumulation
+    	  if((pe==0) && (simd_cnt==0))
+    		  fan_in += fan_in_step;
       }
     }
 
@@ -869,7 +874,8 @@ void Matrix_Vector_Activate_Batch_Skipping(hls::stream<TI> & in,
 //	cout << ", simd_cnt: " << simd_cnt;
 //	cout << ", w_addr: " << w_addr;
 //	cout << ", sf: " << sf;
-//	cout << ", nf: " << nf << endl;
+//	cout << ", nf: " << nf;
+//	cout << ", fanin: " << fan_in << endl;
 
     // keep track of which folded synapse/neuron we are processing
     //++tile;
@@ -895,7 +901,7 @@ void Matrix_Vector_Activate_Batch_Skipping(hls::stream<TI> & in,
 #endif
 			// hwkim modified for positive only accum
 			//outElem[pe] = activation.activate(nf, pe, accu[pe]);
-			outElem[pe] = activation.activate(nf, pe, accu[pe], FAN_IN);
+			outElem[pe] = activation.activate(nf, pe, accu[pe], fan_in);
       }
      out.write(outElem);
       // hwkim modified for debug
@@ -971,6 +977,7 @@ void Matrix_Vector_Activate_Batch_Skipping(hls::stream<TI> & in,
     		kx=0;
     		if(++ky==(!(y&0x1)+1)){
     			ky=0;
+    			fan_in = 0;
     			if(++nf==NF){
     				nf=0;
 //    				cout << "==================================" << endl;
