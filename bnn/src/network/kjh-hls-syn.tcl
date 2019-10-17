@@ -88,7 +88,8 @@ config_interface -m_axi_addr64
 
 # syntesize and export
 create_clock -period $config_clkperiod -name default
-csim_design -argv "$directory_params $test_image 10 $expected_result" -compiler clang
+#csim_design -argv "/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/../params/camvid_params/bnn_seg_net/0829 /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/../params/camvid_params/bnn_seg_net/0829/input.bin 10 3" -compiler clang
 csynth_design
+cosim_design -argv "/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/../params/camvid_params/bnn_seg_net/0829 /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/../params/camvid_params/bnn_seg_net/0829/input.bin 10 3" -compiler clang
 export_design -format ip_catalog
 exit 0

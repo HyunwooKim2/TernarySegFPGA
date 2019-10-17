@@ -1,0 +1,12 @@
+#-----------------------------------------------------------
+# Vivado v2019.1.1 (64-bit)
+# SW Build 2580384 on Sat Jun 29 08:04:45 MDT 2019
+# IP Build 2579722 on Sat Jun 29 11:35:40 MDT 2019
+# Start of session at: Tue Oct 15 10:31:54 2019
+# Process ID: 6246
+# Current directory: /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/library
+# Command line: vivado
+# Log file: /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/library/vivado.log
+# Journal file: /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/library/vivado.jou
+#-----------------------------------------------------------
+start_gui

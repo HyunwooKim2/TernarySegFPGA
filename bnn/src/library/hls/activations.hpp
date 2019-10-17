@@ -146,8 +146,8 @@ public:
 #pragma HLS inline
     TR result=ActVal;
     // hwkim modified for II violation
-#pragma HLS ARRAY_PARTITION variable=m_thresholds complete dim=1
-#pragma HLS ARRAY_PARTITION variable=m_thresholds complete dim=3
+//#pragma HLS ARRAY_PARTITION variable=m_thresholds complete dim=1
+//#pragma HLS ARRAY_PARTITION variable=m_thresholds complete dim=3
 
     // hwkim modified for positive only accum
     //TA act = accu + m_thresholds[pe][nf][0];
@@ -188,8 +188,8 @@ public:
 #pragma HLS inline
     TR result=ActVal;
     // hwkim modified for II violation
-#pragma HLS ARRAY_PARTITION variable=m_thresholds complete dim=1
-#pragma HLS ARRAY_PARTITION variable=m_thresholds complete dim=3
+//#pragma HLS ARRAY_PARTITION variable=m_thresholds complete dim=1
+//#pragma HLS ARRAY_PARTITION variable=m_thresholds complete dim=3
 
     result = accu + m_thresholds[pe][nf][0];
     return result;
@@ -214,8 +214,8 @@ public:
 #pragma HLS inline
     TR result=ActVal;
     // hwkim modified for II violation
-#pragma HLS ARRAY_PARTITION variable=m_thresholds complete dim=1
-#pragma HLS ARRAY_PARTITION variable=m_thresholds complete dim=3
+//#pragma HLS ARRAY_PARTITION variable=m_thresholds complete dim=1
+//#pragma HLS ARRAY_PARTITION variable=m_thresholds complete dim=3
 
     // hwkim modified for positive only accum
     TA act = accu + m_thresholds[pe][nf][0];

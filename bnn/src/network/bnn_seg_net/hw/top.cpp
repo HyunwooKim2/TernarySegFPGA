@@ -949,9 +949,6 @@ void BlackBoxJam(ap_uint<64> *in, ap_uint<64> *out, bool doInit,
 	/* hwkim commented
 	 * numReps - number of repetitions? (input image 장 수)
 	 */
-	// hwkim modified for positive only accumulation
-	numReps = 1;
-
 // pragmas for MLBP jam interface
 // signals to be mapped to the AXI Lite slave port
 #pragma HLS INTERFACE s_axilite port=return bundle=control
@@ -963,9 +960,15 @@ void BlackBoxJam(ap_uint<64> *in, ap_uint<64> *out, bool doInit,
 #pragma HLS INTERFACE s_axilite port=val bundle=control
 #pragma HLS INTERFACE s_axilite port=numReps bundle=control
 // signals to be mapped to the AXI master port (hostmem)
-#pragma HLS INTERFACE m_axi offset=slave port=in bundle=hostmem depth=512
+	// hwkim modified for cosim
+//#pragma HLS INTERFACE m_axi offset=slave port=in bundle=hostmem depth=512
+#pragma HLS INTERFACE m_axi depth=1024 port=in offset=slave bundle=hostmem
+
 #pragma HLS INTERFACE s_axilite port=in bundle=control
-#pragma HLS INTERFACE m_axi offset=slave port=out bundle=hostmem depth=16
+	// hwkim modified for cosim
+//#pragma HLS INTERFACE m_axi offset=slave port=out bundle=hostmem depth=16
+#pragma HLS INTERFACE m_axi depth=1024 port=out offset=slave bundle=hostmem
+
 #pragma HLS INTERFACE s_axilite port=out bundle=control
 
 // partition PE arrays
@@ -990,16 +993,22 @@ void BlackBoxJam(ap_uint<64> *in, ap_uint<64> *out, bool doInit,
 #pragma HLS ARRAY_PARTITION variable=weights6.m_weights complete dim=1
 #pragma HLS ARRAY_PARTITION variable=threshs6.m_thresholds complete dim=1
 #pragma HLS ARRAY_PARTITION variable=threshs6.m_thresholds complete dim=3
-//#pragma HLS ARRAY_PARTITION variable=weights7.m_weights complete dim=1
-//#pragma HLS ARRAY_PARTITION variable=threshs7.m_thresholds complete dim=1
-//#pragma HLS ARRAY_PARTITION variable=threshs7.m_thresholds complete dim=3
-//#pragma HLS ARRAY_PARTITION variable=weights8.m_weights complete dim=1
+#pragma HLS ARRAY_PARTITION variable=weights7.m_weights complete dim=1
+#pragma HLS ARRAY_PARTITION variable=threshs7.m_thresholds complete dim=1
+#pragma HLS ARRAY_PARTITION variable=threshs7.m_thresholds complete dim=3
+#pragma HLS ARRAY_PARTITION variable=weights8.m_weights complete dim=1
+#pragma HLS ARRAY_PARTITION variable=threshs8.m_thresholds complete dim=1
+#pragma HLS ARRAY_PARTITION variable=threshs8.m_thresholds complete dim=3
+#pragma HLS ARRAY_PARTITION variable=weights9.m_weights complete dim=1
+#pragma HLS ARRAY_PARTITION variable=threshs9.m_thresholds complete dim=1
+#pragma HLS ARRAY_PARTITION variable=threshs9.m_thresholds complete dim=3
+#pragma HLS ARRAY_PARTITION variable=weights10.m_weights complete dim=1
+#pragma HLS ARRAY_PARTITION variable=threshs10.m_thresholds complete dim=1
+#pragma HLS ARRAY_PARTITION variable=threshs10.m_thresholds complete dim=3
 
   if (doInit) {
     DoMemInit(targetLayer, targetMem, targetInd, targetThresh, val);
   } else {
-	  // hwkim modified for analysis - undefined latency
-//    DoCompute(in, out, numReps);
-	  DoCompute(in, out, 1);
+    DoCompute(in, out, numReps);
   }
 }

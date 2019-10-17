@@ -444,7 +444,7 @@ void TConvolutionInputGenerator(
 						  if (ofm_x == OFMDim) {
 							  ofm_x = 0;
 							  ofm_y++;
-							  if((ofm_y&0x1==1) && (ofm_y!=1)){
+							  if(((ofm_y&0x1)==1) && (ofm_y!=1)){
 								  current_block_read++;
 							  }
 							  if (current_block_read >= number_blocks) {
