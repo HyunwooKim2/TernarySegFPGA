@@ -167,6 +167,13 @@ void quantiseAndPack(const tiny_cnn::vec_t & in, ExtMemWord * out, unsigned int 
 	}
 	quantise_realnum_log_file << fixed;
 	quantise_realnum_log_file.precision(8);
+
+	ofstream quantise_bin_file("quantise_bin.bin");
+	if(!quantise_bin_file.is_open()){
+		cout << "quantise_bin_file open error!!" << endl;
+	}
+
+
 //	ifstream golden_file("/home/khw1204/work/params/guinness_params/cifar10_params/190606/Activations/Scale1.txt");
 //	if(!golden_file.is_open()){
 //		cout << "golden input file open error!!" << endl;
@@ -203,6 +210,7 @@ void quantiseAndPack(const tiny_cnn::vec_t & in, ExtMemWord * out, unsigned int 
 				}
 //				if((x!=0) && (y!=0) && (x!=33) && (y!=33))	//for \n
 //					golden_file.read(&golden_buf,1);
+				quantise_bin_file << *reinterpret_cast<unsigned char *>(&uValue);
 				quantise_log_file << " | ";
 				quantise_realnum_log_file << fxdValue << " | ";
 			}
@@ -234,6 +242,7 @@ void quantiseAndPack(const tiny_cnn::vec_t & in, ExtMemWord * out, unsigned int 
 	}
 	quantise_log_file.close();
 	quantise_realnum_log_file.close();
+	quantise_bin_file.close();
 #endif
 }
 
