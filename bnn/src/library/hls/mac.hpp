@@ -86,7 +86,6 @@ auto mul(TC const &c, TD const &d, ap_resource_lut const&) -> decltype(c*d) {
 #pragma HLS RESOURCE variable=res core=Mul_LUT
   // hwkim modified for debug
   //cout << res << endl;
-
   return  res;
 }
 
@@ -101,22 +100,24 @@ auto mul(TC const &c, TD const &d, ap_resource_dsp const&) -> decltype(c*d) {
 
 //- MAC with selectable implementation resource
 template<unsigned N, typename T, typename TC, typename TD, typename R>
-T mac(T const &a, TC const &c, TD const &d, R const &r) {
+T mac(T const &a, TC const &c, TD const &d, R const &r
+		// hwkim modified for activation comparison using +- accumulation
+#ifdef ACTIVATION_LOG
+		, unsigned int pm
+#endif
+		) {
 #pragma HLS inline
   T  res = a;
   for(unsigned  i = 0; i < N; i++) {
 #pragma HLS unroll
-    res += mul(c[i], d[i], r);
-
-	// hwkim modified for debug
-//	cout << "res=c[" << i << "]*d[" << i << "]" << "=";
-//	cout << res << "\t";
+	  if(pm)
+		  res += mul(c[i], d[i], r)? 1 : -1;
+	  else
+		  res += mul(c[i], d[i], r);
   }
-  // hwkim modified for debug
-//  cout << "accum=" << res << endl;
-
   return  res;
 }
+
 template<unsigned N, typename T, typename TC, typename TD>
 inline T mac(T const &a, TC const &c, TD const &d) {
 #pragma HLS inline

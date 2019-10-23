@@ -305,7 +305,12 @@ void Matrix_Vector_Activate_Batch(hls::stream<TI> & in,
        * 		act에 연결
        * 		(즉, act에 참조자 연결해서 해당 데이터에 접근할 수 있게 함)
        */
-      accu[pe] = mac<SIMD>(accu[pe], wgt, act, r);
+      // hwkim modified for conv layer's activation comparison using +- accumulation
+      accu[pe] = mac<SIMD>(accu[pe], wgt, act, r
+#ifdef ACTIVATION_LOG
+    		  , 0
+#endif
+    		  );
       /* hwkim commented
        * type
        * 	accu[pe] -> ThresholdsActivaiton class
@@ -454,6 +459,11 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
   decltype(activation.init(0,0))  accu[PE];
 #pragma HLS ARRAY_PARTITION variable=accu complete dim=0
 
+// hwkim added for activation comparision using +- accumulation
+#ifdef ACTIVATION_LOG
+  decltype(activation.init(0,0))  accu_pm[PE];
+#endif
+
   unsigned  nf   = 0;
   unsigned  sf   = 0;
   unsigned  tile = 0; // invariant: tile = nf*SF + sf
@@ -513,6 +523,9 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
 			  for(unsigned  pe = 0; pe < PE; pe++) {
 #pragma HLS UNROLL
 				  accu[pe] = activation.init(nf, pe);
+#ifdef ACTIVATION_LOG
+				  accu_pm[pe] = activation.init(nf, pe);
+#endif
 			  }
 		  }
 
@@ -523,6 +536,8 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
 #pragma HLS UNROLL
 			  auto const  wgt = TWeightI()(w[pe]);
 			  auto const  act = TSrcI()(inElem);
+			  // hwkim added for activation comparison using +- accumulation
+			  auto const  wgt_pm = Recast<XnorMul_pm>()(w[pe]);
 
 			  // hwkim modified for padding
 			  //accu[pe] = mac<SIMD>(accu[pe], wgt, act, r);
@@ -533,7 +548,15 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
 				  ;	//skip pad from accumulation
 			  }
 			  else{
-				  accu[pe] = mac<SIMD>(accu[pe], wgt, act, r);
+				  // hwkim modified for activation comparison using +- accumulation
+				  accu[pe] = mac<SIMD>(accu[pe], wgt, act, r
+#ifdef ACTIVATION_LOG
+						  , 0
+#endif
+				  );
+#ifdef ACTIVATION_LOG
+				  accu_pm[pe] = mac<SIMD>(accu_pm[pe], wgt, act, r, 1);
+#endif
 			  }
 		  }
 
@@ -586,14 +609,14 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
 #pragma HLS UNROLL
 
 // hwkim modified for debug
+// hwkim commented for 0-1 accumulation - not +- accum
 #ifdef ACTIVATION_LOG
 		  		// write conv_out_minus_bias
-		  		conv_out_log_file << setprecision(8) << accu[pe] << endl;//" | ";
-
-		  		// compare golden with computed
+		  		conv_out_log_file << setprecision(8) << accu_pm[pe] << endl;//" | ";
+		  		 //compare golden with computed
 		  		decltype(activation.init(0,0))	golden_buf;
 		  		golden_conv_out_file >> golden_buf;
-		  		if(accu[pe]!=golden_buf){
+		  		if(accu_pm[pe]!=golden_buf){
 		  			conv_out_comp_file << fixed;
 		  			conv_out_comp_file.precision(8);
 		  			conv_out_comp_file.setf(ios_base::showpoint);
@@ -664,7 +687,7 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
 		  			}
 		  		}
 		  		if(x==0)
-					cout << y << "/" << OFMHeight << endl;
+					cout << dec << y << "/" << OFMHeight << endl;
 		  	}
 		  //      out_log.write(outElem);
 #endif
@@ -785,6 +808,11 @@ void Matrix_Vector_Activate_Batch_Skipping(hls::stream<TI> & in,
   decltype(activation.init(0,0))  accu[PE];
 #pragma HLS ARRAY_PARTITION variable=accu complete dim=0
 
+  // hwkim modified for activation comparison using +- accumulation
+#ifdef ACTIVATION_LOG
+  decltype(activation.init(0,0))  accu_pm[PE];
+#endif
+
   unsigned  nf   = 0;
   unsigned  sf   = 0;
   unsigned  tile = 0; // invariant: tile = nf*SF + sf
@@ -832,6 +860,10 @@ void Matrix_Vector_Activate_Batch_Skipping(hls::stream<TI> & in,
       for(unsigned  pe = 0; pe < PE; pe++) {
 #pragma HLS UNROLL
 	    accu[pe] = activation.init(nf, pe);
+// hwkim added for activation comparison using +- accumulation
+#ifdef ACTIVATION_LOG
+	    accu_pm[pe] = activation.init(nf, pe);
+#endif
       }
     }
 
@@ -855,7 +887,16 @@ void Matrix_Vector_Activate_Batch_Skipping(hls::stream<TI> & in,
     	  ;	// skip
       }
       else{
-    	  accu[pe] = mac<SIMD>(accu[pe], wgt, act, r);
+    	  // hwkim modified for activation comparison using +- accumulation
+    	  accu[pe] = mac<SIMD>(accu[pe], wgt, act, r
+#ifdef ACTIVATION_LOG
+    			  , 0
+#endif
+    			  );
+#ifdef ACTIVATION_LOG
+    	  accu_pm[pe] = mac<SIMD>(accu_pm[pe], wgt, act, r, 1);
+#endif
+
     	  // hwkim modified for positive only accumulation
     	  if((pe==0) && (simd_cnt==0))
     		  fan_in += fan_in_step;
@@ -888,11 +929,12 @@ void Matrix_Vector_Activate_Batch_Skipping(hls::stream<TI> & in,
       auto  outElem = TDstI().template operator()<TO>();
       for (unsigned  pe = 0; pe < PE; pe++) {
 #pragma HLS UNROLL
+// hwkim commented for 0-1 accumulation - not +- accum
 #ifdef ACTIVATION_LOG
-			conv_out_log_file << setprecision(8) << accu[pe] << endl;//" | ";
+			conv_out_log_file << setprecision(8) << accu_pm[pe] << endl;//" | ";
 			decltype(activation.init(0,0))	golden_buf;
 			golden_conv_out_file >> golden_buf;
-			if(accu[pe]!=golden_buf){
+			if(accu_pm[pe]!=golden_buf){
 				conv_out_comp_file << fixed;
 				conv_out_comp_file.precision(8);
 				conv_out_comp_file.setf(ios_base::showpoint);
@@ -983,7 +1025,7 @@ void Matrix_Vector_Activate_Batch_Skipping(hls::stream<TI> & in,
 //    				cout << "==================================" << endl;
     				if(++x==OFMDim){
     					x=0;
-        				cout << y << "/" << OFMHeight << endl;
+        				cout << dec << y << "/" << OFMHeight << endl;
     					if(++y==OFMHeight){
     						y=0;
     					}

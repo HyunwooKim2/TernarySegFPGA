@@ -275,8 +275,10 @@ void testPrebinarized(std::vector<vec_t> & imgs, std::vector<label_t> & labels, 
   delete[] binLabels;
 }
 
-void FoldedMVLoadLayerMem(std::string dir, unsigned int layerNo, unsigned int peCount, unsigned int linesWMem,
-		unsigned int linesTMem, unsigned int cntThresh) {
+void FoldedMVLoadLayerMem(std::string dir, unsigned int layerNo,
+		unsigned int peCount, unsigned int linesWMem,
+		unsigned int linesTMem, unsigned int cntThresh
+	) {
   for(unsigned int pe = 0; pe < peCount; pe++) {
     // load weights
     ifstream wf(dir + "/" + to_string(layerNo) + "-" + to_string(pe) + "-weights.bin", ios::binary | ios::in);
@@ -340,6 +342,35 @@ void FoldedMVLoadLayerMem(std::string dir, unsigned int layerNo, unsigned int pe
     }
     tf.close();
   }
+}
+
+void FoldedMVLoadScaleMem()
+{
+	//ap_uint<8> uValue[11] = {0x53, 0x1d, 0x21, 0x34, 0x3f, 0x20, 0x25, 0x1d, 0x19, 0x18, 0x17};
+	// half scale
+	ap_uint<8> uValue[11] = {0x54, 0x1e, 0x21, 0x34, 0x3f, 0x20, 0x25, 0x1d, 0x1a, 0x18, 0x18};
+	ap_ufixed<8, 0, AP_TRN, AP_SAT> fxdValue[11] = {
+			0.1640625,
+			0.05859375,
+			0.064453125,
+			0.10351563,
+			0.12304688,
+			0.0625,
+			0.072265625,
+			0.05859375,
+			0.05078125,
+			0.046875,
+			0.046875
+	};
+	for (int tmp_i=0; tmp_i<11; tmp_i++){
+		//fxdValue[tmp_i] = *reinterpret_cast<ap_ufixed<8, 0, AP_TRN, AP_SAT> *>(&uValue[tmp_i]);
+		//fltValue[tmp_i] = *reinterpret_cast<float *>(&fxdValue[tmp_i]);
+		uValue[tmp_i] = *reinterpret_cast<ap_uint<8> *>(&fxdValue[tmp_i]);
+		cout << setprecision(10) << "Scale " << tmp_i << ": "<< dec << fxdValue[tmp_i] << ", "<< hex << uValue[tmp_i] << endl;
+	}
+	for(unsigned int pe=0; pe<11; pe++){
+		FoldedMVMemSet(-1, pe, 0, 0, uValue[pe]);
+	}
 }
 
 #endif

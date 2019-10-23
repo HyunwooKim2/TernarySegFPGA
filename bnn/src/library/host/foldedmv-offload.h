@@ -78,13 +78,17 @@ void FoldedMVInit(const char * attachName);
 void FoldedMVDeinit();
 
 void FoldedMVLoadLayerMem(std::string dir, 
-                          unsigned int peCount, 
-						  unsigned int layerNo, 
+                          unsigned int peCount,
+						  unsigned int layerNo,
 						  unsigned int linesWMem, 
 						  unsigned int linesTMem, 
-						  unsigned int numThresh);
+						  unsigned int numThresh
+						  );
 
-void FoldedMVMemSet(unsigned int targetLayer, 
+// hwkim added for batch norm scale
+void FoldedMVLoadScaleMem();
+
+void FoldedMVMemSet(int targetLayer,	//unsigned int targetLayer,	// hwkim modified for batch norm scale
                     unsigned int targetMem, 
 					unsigned int targetInd, 
 					unsigned int targetThresh, 
@@ -250,7 +254,9 @@ void quantiseAndPack(const tiny_cnn::vec_t & in, ExtMemWord * out, unsigned int 
 
 #include "bnn-library.h"
 
-void BlackBoxJam(ap_uint<64> * in, ap_uint<64> * out, bool doInit, unsigned int targetLayer, unsigned int targetMem, unsigned int targetInd, unsigned int targetThresh, ap_uint<64> val, unsigned int numReps);
+// hwkim modified for batch norm scale
+//void BlackBoxJam(ap_uint<64> * in, ap_uint<64> * out, bool doInit, unsigned int targetLayer, unsigned int targetMem, unsigned int targetInd, unsigned int targetThresh, ap_uint<64> val, unsigned int numReps);
+void BlackBoxJam(ap_uint<64> * in, ap_uint<64> * out, bool doInit, int targetLayer, unsigned int targetMem, unsigned int targetInd, unsigned int targetThresh, ap_uint<64> val, unsigned int numReps);
 
 extern ExtMemWord * bufIn, * bufOut;
 

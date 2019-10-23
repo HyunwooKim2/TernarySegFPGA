@@ -145,14 +145,10 @@ public:
     TR activate(unsigned const  nf, unsigned const  pe,  TA const &accu, TA const fan_in) const {
 #pragma HLS inline
     TR result=ActVal;
-    // hwkim modified for II violation
-//#pragma HLS ARRAY_PARTITION variable=m_thresholds complete dim=1
-//#pragma HLS ARRAY_PARTITION variable=m_thresholds complete dim=3
 
     // hwkim modified for positive only accum
     //TA act = accu + m_thresholds[pe][nf][0];
     TA act = accu + (m_thresholds[pe][nf][0]>>1);
-//    cout << setprecision(9) << "accu" << pe << "=" << act << endl;
 
     // hwkim modified for positive only accum
     //if(act >= (TR)0)
@@ -160,6 +156,7 @@ public:
     	result = (TR)1;
     else
     	result = (TR)0;
+
 //	for(unsigned int i=0; i< NumTH; i++){
 //#pragma HLS unroll
 //      result+=Compare()(m_thresholds[pe][nf][i], accu);
@@ -170,10 +167,15 @@ public:
 
 // hwkim added for last fc layer
 template<unsigned NF, unsigned PE, unsigned NumTH,
-	 typename TA, typename TR, int ActVal = 0, typename Compare = std::less<TA>>
+	 typename TA, typename TR,
+	 typename TS,	// hwkim added for batch norm scale
+	 int ActVal = 0, typename Compare = std::less<TA>
+>
 class PassThroughAndBatchNorm {
 public:
   TA m_thresholds[PE][NF][NumTH];
+  // hwkim added for batch norm scale
+  TS m_scales[PE];
 
 public:
   TA init(unsigned const  nf, unsigned const  pe) const {
@@ -187,11 +189,10 @@ public:
   TR activate(unsigned const  nf, unsigned const  pe,  TA const &accu, unsigned const fan_in) const {
 #pragma HLS inline
     TR result=ActVal;
-    // hwkim modified for II violation
-//#pragma HLS ARRAY_PARTITION variable=m_thresholds complete dim=1
-//#pragma HLS ARRAY_PARTITION variable=m_thresholds complete dim=3
-
-    result = accu + m_thresholds[pe][nf][0];
+	// hwkim modified for batch norm scale
+	result = (accu + m_thresholds[pe][nf][0]) * m_scales[pe];
+	// hwkim added for debug
+	//cout << result << endl;
     return result;
   }
 };

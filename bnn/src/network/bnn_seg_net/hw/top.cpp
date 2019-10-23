@@ -82,15 +82,13 @@ static ThresholdsActivation< L6_TMEM,  L6_PE,  L6_API, ap_int<16>, ap_uint<L6_AP
 static ThresholdsActivation< L7_TMEM,  L7_PE,  L7_API, ap_int<16>, ap_uint<L7_API>>  		threshs7;
 static ThresholdsActivation< L8_TMEM,  L8_PE,  L8_API, ap_int<16>, ap_uint<L8_API>>  		threshs8;
 static ThresholdsActivation< L9_TMEM,  L9_PE,  L9_API, ap_int<16>, ap_uint<L9_API>>  		threshs9;
-// hwkim modified for last fc layer
-//static ThresholdsActivation<L6_TMEM, L6_PE, L6_API, ap_int<16>, ap_uint<L6_API>>  		threshs6;
-//static ThresholdsActivation<L7_TMEM, L7_PE, L7_API, ap_int<16>, ap_uint<L7_API>>  		threshs7;
-static PassThroughAndBatchNorm<L10_TMEM, L10_PE, L10_API, ap_int<16>, ap_int<16>>  			threshs10;
+// hwkim modified for last fc layer & batch norm scale
+//static PassThroughAndBatchNorm<L10_TMEM, L10_PE, L10_API, ap_int<16>, ap_int<16>>			threshs10;
+static PassThroughAndBatchNorm<L10_TMEM, L10_PE, L10_API, ap_int<16>, ap_fixed<24,16,AP_TRN,AP_SAT>, ap_ufixed<8,0,AP_TRN,AP_SAT>>	threshs10;
 /* hwkim commented
  * 마지막 layer라 thresholding(activation) 안 하고,
  * pass through activation
  */
-
 
 // hwkim modified for average pooling
 template <int AVE_IFM_CH, int AVE_IFM_DIM>
@@ -152,8 +150,8 @@ void insert_pad(stream<ap_uint<InWidth>> & in_stream,
 
 // hwkim modified for debug
 #ifdef ACTIVATION_LOG
-string golden_file_dir = "/home/hwkim/work/params/guinness_params/camvid_params/0829/Activations/";
-string snapshot_dir = "/home/hwkim/work/params/finn_params/camvid_params/0829/snapshots/";
+string golden_file_dir = "/home/hwkim/work/params/guinness_params/camvid_params/1017/Activations/";
+string snapshot_dir = "/home/hwkim/work/params/finn_params/camvid_params/1017/snapshots/";
 
 template <unsigned int OFMDim,
 		unsigned int OFMHeight,
@@ -358,8 +356,10 @@ unsigned int paddedSizeHW(unsigned int in, unsigned int padTo) {
   }
 }
 
-void DoMemInit(unsigned int targetLayer, unsigned int targetMem, unsigned int targetInd,
-		unsigned int targetThresh, ap_uint<64> val) {
+// hwkim modified for batch norm scale
+//void DoMemInit(unsigned int targetLayer, unsigned int targetMem, unsigned int targetInd,
+void DoMemInit(int targetLayer,
+		unsigned int targetMem, unsigned int targetInd, unsigned int targetThresh, ap_uint<64> val) {
   switch (targetLayer) {
     case 0:
       weights0.m_weights[targetMem][targetInd] = val;
@@ -415,32 +415,7 @@ void DoMemInit(unsigned int targetLayer, unsigned int targetMem, unsigned int ta
     case 19: threshs9.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
     case 20: weights10.m_weights[targetMem][targetInd] = val; break;
     case 21: threshs10.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
-//    case 22: weights11.m_weights[targetMem][targetInd] = val; break;
-//    case 23: threshs11.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
-//    case 24: weights12.m_weights[targetMem][targetInd] = val; break;
-//    case 25: threshs12.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
-//    case 26: weights13.m_weights[targetMem][targetInd] = val; break;
-//    case 27: threshs13.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
-//    case 28: weights14.m_weights[targetMem][targetInd] = val; break;
-//    case 29: threshs14.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
-//    case 30: weights15.m_weights[targetMem][targetInd] = val; break;
-//    case 31: threshs15.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
-//    case 32: weights16.m_weights[targetMem][targetInd] = val; break;
-//    case 33: threshs16.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
-//    case 34: weights17.m_weights[targetMem][targetInd] = val; break;
-//    case 35: threshs17.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
-//    case 36: weights18.m_weights[targetMem][targetInd] = val; break;
-//    case 37: threshs18.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
-//    case 38: weights19.m_weights[targetMem][targetInd] = val; break;
-//    case 39: threshs19.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
-//    case 40: weights20.m_weights[targetMem][targetInd] = val; break;
-//    case 41: threshs20.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
-//    case 16:
-//      weights8.m_weights[targetMem][targetInd] = val;
-//      break;
-//    case 17:
-//      // do nothing, no thres mem for layer 8 as PassThrough activation is used
-//      break;
+    case -1: threshs10.m_scales[targetMem] = *reinterpret_cast<ap_ufixed<8, 0, AP_TRN, AP_SAT> *>(&val); break;
   }
 }
 
@@ -475,39 +450,12 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 #pragma HLS STREAM variable=inter9 //depth=1
   stream<ap_uint<64>> inter10("DoCompute.inter10");
 #pragma HLS STREAM variable=inter10 //depth=1
-  stream<ap_uint<11*16>> inter11("DoCompute.inter11");
+  // hwkim modified for batch norm scale
+  //stream<ap_uint<11*16>> inter11("DoCompute.inter11");
+  stream<ap_uint<11*24>> inter11("DoCompute.inter11");
 #pragma HLS STREAM variable=inter11 //depth=1
 
   stream<ap_uint<64>> memOutStrm("DoCompute.memOutStrm");
-
-  // hwkim modified for debug
-//#ifdef ACTIVATION_LOG
-//  stream<ap_uint<64>> inter1_log("DoCompute.inter1_log");
-////#pragma HLS STREAM variable=inter1_log depth=128
-//  stream<ap_uint<64>> inter2_log("DoCompute.inter2_log");
-//  stream<ap_uint<128>> inter3_log("DoCompute.inter3_log");
-////#pragma HLS STREAM variable=inter3_log depth=128
-//  stream<ap_uint<128>> inter4_log("DoCompute.inter4_log");
-////#pragma HLS STREAM variable=inter4_log depth=128
-//  stream<ap_uint<256>> inter5_log("DoCompute.inter5_log");
-//  stream<ap_uint<256>> inter6_log("DoCompute.inter6_log");
-////#pragma HLS STREAM variable=inter6_log depth=81
-//  stream<ap_uint<128>> inter7_log("DoCompute.inter7_log");
-////#pragma HLS STREAM variable=inter7_log depth=1
-//  stream<ap_uint<128>> inter8_log("DoCompute.inter8_log");
-////#pragma HLS STREAM variable=inter8_log depth=1
-//  stream<ap_uint<64>> inter9_log("DoCompute.inter9_log");
-////#pragma HLS STREAM variable=inter9_log depth=1
-//  stream<ap_uint<64>> inter10_log("DoCompute.inter10_log");
-////#pragma HLS STREAM variable=inter10 depth=1
-//  stream<ap_uint<11*16>> inter11_log("DoCompute.inter11_log");
-////#pragma HLS STREAM variable=inter11 depth=1
-//#endif
-
-  // hwkim added for debug
-//  activation_log<L0_OFM_DIM, L0_OFM_HEIGHT>(inter1_log, 0);
-//  weighted_layer_cnt = 2;
-//  activation_log<L2_OFM_DIM, L2_OFM_HEIGHT>(inter4_log,3);
 
   // hwkim modified for padding & segmentation
   //const unsigned int inBits = 32 * 32 * 3 * 8;
@@ -522,7 +470,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 
 #ifdef SEP_SIM
   // hwkim modified for separated simulation
-  int start_layer = 6;
+  int start_layer = 10;
   if(start_layer < 1){
 #endif
 
@@ -874,12 +822,11 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 #ifdef ACTIVATION_LOG
 		  10,
 #endif
-		  L10_SIMD, L10_PE, Recast<XnorMul>, Slice<ap_int<16> >>
-		  (inter10, inter11,
-//		#ifdef ACTIVATION_LOG
-//		  inter11_log,
-//		#endif
-		  weights10, threshs10, numReps, ap_resource_lut());
+		  L10_SIMD, L10_PE, Recast<XnorMul>,
+		  // hwkim modified for batch norm scale
+		  //Slice<ap_int<16> >>
+		  Slice<ap_fixed<24,16,AP_TRN,AP_SAT> >>
+		  (inter10, inter11, weights10, threshs10, numReps, ap_resource_lut());
 
 //#ifdef ACTIVATION_LOG
 //	  activation_log<L10_OFM_DIM, L10_OFM_HEIGHT, L10_OFM_CH*16, 1>(inter11_log, 10);
@@ -890,7 +837,8 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 
 	// hwkim modified for separated simulation
 	if(start_layer >= 11){
-	  read_activation_file<L10_OFM_CH*16>(inter11, 10);
+	  //read_activation_file<L10_OFM_CH*16>(inter11, 10);
+		read_activation_file<L10_OFM_CH*24>(inter11, 10);
 	}
 	cout << "inter11 size = " << inter11.size() << endl;
 #endif
@@ -902,12 +850,22 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 //#define AVE_THRES (4*4/2)
 //  average_pooling<AVE_IFM_CH, AVE_IFM_DIM>(inter9, inter10, AVE_THRES);
 
+	// hwkim modified for batch norm scale product
+//	ap_uint<8> uValue[11] = {0x53, 0x1d, 0x21, 0x34, 0x3f, 0x20, 0x25, 0x1d, 0x19, 0x18, 0x17};
+//	ap_ufixed<8, 0, AP_TRN, AP_SAT> fxdValue[11];
+//#pragma HLS ARRAY_PARTITION variable=fxdValue complete dim=1
+//	for (int tmp_i=0; tmp_i<11; tmp_i++){
+//		fxdValue[tmp_i] = *reinterpret_cast<ap_ufixed<8, 0, AP_TRN, AP_SAT> *>(&uValue[tmp_i]);
+////		cout << setprecision(10) << fxdValue[tmp_i] << endl;
+//	}
+
+
 	{
 //		WidthAdjustedOutputStream<16, 64, L10_OFM_DIM*L10_OFM_HEIGHT>  wa_out(memOutStrm, numReps);
 
-		ap_uint<16*L10_OFM_CH> score_buf;
-		short cls_p;
-		short cls_n;
+		ap_uint<L10_OFM_CH*24> score_buf;
+		ap_fixed<24,16,AP_TRN,AP_SAT> cls_p;
+		ap_fixed<24,16,AP_TRN,AP_SAT> cls_n;
 		ap_uint<16> label=0;
 
 		ap_uint<64> out_buf=0;
@@ -915,11 +873,11 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 		for(int y=0; y<L10_OFM_HEIGHT; y++){
 			for(int x=0; x<L10_OFM_DIM; x++){
 				score_buf=inter11.read();
-				cls_p = score_buf & 0xFFFF;
+				cls_p = score_buf & 0xFFFFFF;
 				cout << cls_p;
 				for(int i=1; i<L10_OFM_CH; i++){
-					score_buf = score_buf >> 16;
-					cls_n = score_buf & 0xFFFF;
+					score_buf = score_buf >> 24;
+					cls_n = score_buf & 0xFFFFFF;
 					cout << "\t" << cls_n;
 					if(cls_p < cls_n){
 						label=i;
@@ -944,7 +902,10 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 }
 
 void BlackBoxJam(ap_uint<64> *in, ap_uint<64> *out, bool doInit,
-		unsigned int targetLayer, unsigned int targetMem,
+		// hwkim modified for batch norm scale
+		int targetLayer,	//unsigned int targetLayer,
+
+		unsigned int targetMem,
 		unsigned int targetInd, unsigned int targetThresh, ap_uint<64> val, unsigned int numReps) {
 	/* hwkim commented
 	 * numReps - number of repetitions? (input image 장 수)
@@ -1005,6 +966,8 @@ void BlackBoxJam(ap_uint<64> *in, ap_uint<64> *out, bool doInit,
 #pragma HLS ARRAY_PARTITION variable=weights10.m_weights complete dim=1
 #pragma HLS ARRAY_PARTITION variable=threshs10.m_thresholds complete dim=1
 #pragma HLS ARRAY_PARTITION variable=threshs10.m_thresholds complete dim=3
+	// hwkim added for batch norm scale
+#pragma HLS ARRAY_PARTITION variable=threshs10.m_scales complete dim=1
 
   if (doInit) {
     DoMemInit(targetLayer, targetMem, targetInd, targetThresh, val);

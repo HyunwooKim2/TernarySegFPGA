@@ -73,7 +73,11 @@ void FoldedMVDeinit() {
   bufOut = 0;
 }
 
-void FoldedMVMemSet(unsigned int targetLayer, unsigned int targetMem,
+void FoldedMVMemSet(
+		// hwkim modified for batch norm scale
+		int targetLayer,	//unsigned int targetLayer,
+
+		unsigned int targetMem,
 		unsigned int targetInd, unsigned int targetThresh, ExtMemWord val) {
   // call the accelerator in weight init mode
 	/* hwkim commented

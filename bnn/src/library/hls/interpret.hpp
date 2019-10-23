@@ -64,15 +64,30 @@ class XnorMul {
  public:
   int operator*(ap_uint<1> const &b) const {
 #pragma HLS inline
-	  // hwkim commented for padding & +- accumulation
+	  // hwkim commented for padding & 0-1 accumulation
     return  m_val == b? 1 : 0;
-//    return  m_val == b? 1 : -1;
+    //return  m_val == b? 1 : -1;
   }
 };
 inline int operator*(ap_uint<1> const &a, XnorMul const &b) {
 #pragma HLS inline
   return  b*a;
 }
+
+// hwkim added for activation comparison using +- accumulation
+class XnorMul_pm {
+  ap_uint<1> const  m_val;
+ public:
+  XnorMul_pm(ap_uint<1> const  val) : m_val(val) {
+#pragma HLS inline
+  }
+
+ public:
+  int operator*(ap_uint<1> const &b) const {
+#pragma HLS inline
+    return  m_val == b? 1 : -1;
+  }
+};
 
 class Binary {
  public:
