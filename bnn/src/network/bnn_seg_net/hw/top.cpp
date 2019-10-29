@@ -91,6 +91,94 @@ static PassThroughAndBatchNorm<L10_TMEM, L10_PE, L10_API, ap_int<16>, ap_fixed<2
  * pass through activation
  */
 
+#ifdef ACTIVATION_LOG
+string golden_file_dir = "/home/hwkim/work/params/guinness_params/camvid_params/1017/Activations/";
+string snapshot_dir = "/home/hwkim/work/params/finn_params/camvid_params/1017/snapshots/";
+#endif
+
+// hwkim added to find inferred category
+template <unsigned int InStreamW, unsigned int OutStreamW>
+void infer_category(
+		stream<ap_uint<InStreamW>>& in,
+		stream<ap_uint<OutStreamW>>& out)
+{
+#ifdef ACTIVATION_LOG
+		string golden_score_file_name = golden_file_dir + "OutputScaleLayer.txt";
+		ifstream golden_score_file(golden_score_file_name);
+		if(!golden_score_file.is_open()){
+			cout << "golden_score_file open error" << endl;
+		}
+		ofstream computed_score_file("computed_score.txt");
+		if(!computed_score_file.is_open()){
+			cout << "computed_score_file open error" << endl;
+		}
+		ap_fixed<24,16,AP_TRN,AP_SAT> golden_score;
+#endif
+
+		ap_uint<L10_OFM_CH*24> score_buf;
+		ap_uint<24> uscore;
+		ap_fixed<24,16,AP_TRN,AP_SAT> cls_p;
+		ap_fixed<24,16,AP_TRN,AP_SAT> cls_n;
+		ap_uint<16> label=0;
+		ap_uint<64> out_buf=0;
+
+		for(int y=0; y<L10_OFM_HEIGHT; y++){
+			for(int x=0; x<L10_OFM_DIM; x++){
+#pragma HLS PIPELINE II=1 rewind
+				label=0;
+				score_buf=in.read();
+				uscore = score_buf & 0xFFFFFF;
+				if(uscore&0x800000){
+					uscore.VAL = 0xff000000 | uscore.VAL;
+				}
+				cls_p = *reinterpret_cast<ap_fixed<24,16,AP_TRN,AP_SAT> *>(&uscore);
+#ifdef ACTIVATION_LOG
+				//cout << setw(15) << setprecision(11) << cls_p << endl;
+				computed_score_file << dec << cls_p << endl;
+				golden_score_file >> golden_score;
+				if((golden_score>>1)!=cls_p){
+					cout << "golden: " << golden_score << ", computed: " << cls_p << endl;
+				}
+#endif
+				for(int i=1; i<L10_OFM_CH; i++){
+					score_buf = score_buf >> 24;
+					uscore = score_buf & 0xFFFFFF;
+					if(uscore&0x800000){
+						uscore.VAL = 0xff000000 | uscore.VAL;
+					}
+					cls_n = *reinterpret_cast<ap_fixed<24,16,AP_TRN,AP_SAT> *>(&uscore);
+#ifdef ACTIVATION_LOG
+					//cout << setw(15) << setprecision(11) << cls_n << endl;
+					computed_score_file << dec << cls_n << endl;
+					golden_score_file >> golden_score;
+					if((golden_score>>1)!=cls_n){
+						cout << "golden: " << golden_score << ", computed: " << cls_n << endl;
+					}
+#endif
+					if(cls_p < cls_n){
+						label=i;
+						cls_p = cls_n;
+					}
+				}
+				label++;
+				//cout << dec << "\tlabel: " << label << endl;
+
+				// packing output and write memOutStrm
+				out_buf = out_buf >> 16;
+				out_buf(63,48) = label;
+				if(x%4==3){
+					out.write(out_buf);
+					out_buf=0;
+				}
+				//static_cast<hls::stream<ap_uint<16>>&>(wa_out).write(label);
+			}
+		}
+#ifdef ACTIVATION_LOG
+		golden_score_file.close();
+		computed_score_file.close();
+#endif
+}
+
 // hwkim modified for average pooling
 template <int AVE_IFM_CH, int AVE_IFM_DIM>
 void average_pooling(
@@ -151,9 +239,6 @@ void insert_pad(stream<ap_uint<InWidth>> & in_stream,
 
 // hwkim modified for debug
 #ifdef ACTIVATION_LOG
-string golden_file_dir = "/home/hwkim/work/params/guinness_params/camvid_params/1017/Activations/";
-string snapshot_dir = "/home/hwkim/work/params/finn_params/camvid_params/1017/snapshots/";
-
 template <unsigned int OFMDim,
 		unsigned int OFMHeight,
 		unsigned int InWidth,
@@ -884,79 +969,11 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 //#define AVE_THRES (4*4/2)
 //  average_pooling<AVE_IFM_CH, AVE_IFM_DIM>(inter9, inter10, AVE_THRES);
 
-	//{
+//	{
 //		WidthAdjustedOutputStream<16, 64, L10_OFM_DIM*L10_OFM_HEIGHT>  wa_out(memOutStrm, numReps);
-#ifdef ACTIVATION_LOG
-		string golden_score_file_name = golden_file_dir + "OutputScaleLayer.txt";
-		ifstream golden_score_file(golden_score_file_name);
-		if(!golden_score_file.is_open()){
-			cout << "golden_score_file open error" << endl;
-		}
-		ofstream computed_score_file("computed_score.txt");
-		if(!computed_score_file.is_open()){
-			cout << "computed_score_file open error" << endl;
-		}
-		ap_fixed<24,16,AP_TRN,AP_SAT> golden_score;
-#endif
+//	}	// region for calling destructor of wa_out
 
-		ap_uint<L10_OFM_CH*24> score_buf;
-		ap_uint<24> uscore;
-		ap_fixed<24,16,AP_TRN,AP_SAT> cls_p;
-		ap_fixed<24,16,AP_TRN,AP_SAT> cls_n;
-		ap_uint<16> label=0;
-		ap_uint<64> out_buf=0;
-
-		for(int y=0; y<L10_OFM_HEIGHT; y++){
-			for(int x=0; x<L10_OFM_DIM; x++){
-				label=0;
-				score_buf=inter11.read();
-				uscore = score_buf & 0xFFFFFF;
-				if(uscore&0x800000){
-					uscore.VAL = 0xff000000 | uscore.VAL;
-				}
-				cls_p = *reinterpret_cast<ap_fixed<24,16,AP_TRN,AP_SAT> *>(&uscore);
-#ifdef ACTIVATION_LOG
-				//cout << setw(15) << setprecision(11) << cls_p << endl;
-				computed_score_file << dec << cls_p << endl;
-				golden_score_file >> golden_score;
-				if((golden_score>>1)!=cls_p){
-					cout << "golden: " << golden_score << ", computed: " << cls_p << endl;
-				}
-#endif
-				for(int i=1; i<L10_OFM_CH; i++){
-					score_buf = score_buf >> 24;
-					uscore = score_buf & 0xFFFFFF;
-					if(uscore&0x800000){
-						uscore.VAL = 0xff000000 | uscore.VAL;
-					}
-					cls_n = *reinterpret_cast<ap_fixed<24,16,AP_TRN,AP_SAT> *>(&uscore);
-#ifdef ACTIVATION_LOG
-					//cout << setw(15) << setprecision(11) << cls_n << endl;
-					computed_score_file << dec << cls_n << endl;
-					golden_score_file >> golden_score;
-					if((golden_score>>1)!=cls_n){
-						cout << "golden: " << golden_score << ", computed: " << cls_n << endl;
-					}
-#endif
-					if(cls_p < cls_n){
-						label=i;
-						cls_p = cls_n;
-					}
-				}
-				label++;
-				//cout << dec << "\tlabel: " << label << endl;
-
-				// packing output and write memOutStrm
-				out_buf = out_buf >> 16;
-				out_buf(63,48) = label;
-				if(x%4==3){
-					memOutStrm.write(out_buf);
-					out_buf=0;
-				}
-				//static_cast<hls::stream<ap_uint<16>>&>(wa_out).write(label);
-			}
-		}
-	//}	// region for calling destructor of wa_out
+	infer_category<(11*24), 64>(inter11, memOutStrm);
 
 	Stream2Mem_Batch<64, outBits/8>(memOutStrm, out, numReps);
 }
