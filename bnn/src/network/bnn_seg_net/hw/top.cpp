@@ -85,6 +85,7 @@ static ThresholdsActivation< L9_TMEM,  L9_PE,  L9_API, ap_int<16>, ap_uint<L9_AP
 // hwkim modified for last fc layer & batch norm scale
 //static PassThroughAndBatchNorm<L10_TMEM, L10_PE, L10_API, ap_int<16>, ap_int<16>>			threshs10;
 static PassThroughAndBatchNorm<L10_TMEM, L10_PE, L10_API, ap_int<16>, ap_fixed<24,16,AP_TRN,AP_SAT>, ap_ufixed<8,0,AP_TRN,AP_SAT>>	threshs10;
+//static PassThroughAndBatchNorm<L10_TMEM, L10_PE, L10_API, ap_int<16>, ap_int<16>, ap_ufixed<8,0,AP_TRN,AP_SAT>>	threshs10;
 /* hwkim commented
  * 마지막 layer라 thresholding(activation) 안 하고,
  * pass through activation
@@ -427,9 +428,6 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 #pragma HLS STREAM variable=inter0_1 //depth=128
   stream<ap_uint<24>> inter0_2("DoCompute.inter0_2");
 #pragma HLS STREAM variable=inter0_2 //depth=128
-  /* hwkim commented
-   *  단순 FIFO size 지정
-   */
   stream<ap_uint<64>> inter1("DoCompute.inter1");
 #pragma HLS STREAM variable=inter1 //depth=128
   stream<ap_uint<64>> inter2("DoCompute.inter2");
@@ -470,7 +468,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 
 #ifdef SEP_SIM
   // hwkim modified for separated simulation
-  int start_layer = 10;
+  int start_layer = 11;
   if(start_layer < 1){
 #endif
 
@@ -493,7 +491,11 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 #ifdef ACTIVATION_LOG
 		  0,
 #endif
-		  L0_SIMD, L0_PE, Slice<ap_fixed<8, 1, AP_TRN, AP_SAT>>, Identity, Recast<Binary>>
+		  L0_SIMD, L0_PE,
+		  // hwkim added for batch norm scale
+		  ap_uint<1>,
+
+		  Slice<ap_fixed<8, 1, AP_TRN, AP_SAT>>, Identity, Recast<Binary>>
 		  (inter0_2, inter1,
 //		#ifdef ACTIVATION_LOG
 //			inter1_log,
@@ -528,7 +530,11 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 #ifdef ACTIVATION_LOG
 		  1,
 #endif
-		  L1_SIMD, L1_PE, Recast<XnorMul>>
+		  L1_SIMD, L1_PE,
+		  // hwkim added for batch norm scale
+		  ap_uint<1>,
+
+		  Recast<XnorMul>>
 		  (inter1, inter2,
 //		#ifdef ACTIVATION_LOG
 //			inter2_log,
@@ -562,7 +568,11 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 #ifdef ACTIVATION_LOG
 		  2,
 #endif
-		  L2_SIMD, L2_PE, Recast<XnorMul>>
+		  L2_SIMD, L2_PE,
+		  // hwkim added for batch norm scale
+		  ap_uint<1>,
+
+		  Recast<XnorMul>>
 		  (inter2, inter3,
 //		#ifdef ACTIVATION_LOG
 //			inter3_log,
@@ -596,7 +606,11 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 #ifdef ACTIVATION_LOG
 		  3,
 #endif
-	  	  L3_SIMD, L3_PE, Recast<XnorMul>>(inter3, inter4,
+	  	  L3_SIMD, L3_PE,
+		  // hwkim added for batch norm scale
+		  ap_uint<1>,
+
+		  Recast<XnorMul>>(inter3, inter4,
 //		#ifdef ACTIVATION_LOG
 //	  	  inter4_log,
 //		#endif
@@ -629,7 +643,11 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 #ifdef ACTIVATION_LOG
 		  4,
 #endif
-		  L4_SIMD, L4_PE, Recast<XnorMul>>
+		  L4_SIMD, L4_PE,
+		  // hwkim added for batch norm scale
+		  ap_uint<1>,
+
+		  Recast<XnorMul>>
 		  (inter4, inter5,
 //		#ifdef ACTIVATION_LOG
 //		  inter5_log,
@@ -663,7 +681,11 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 #ifdef ACTIVATION_LOG
 		  5,
 #endif
-		  L5_SIMD, L5_PE, Recast<XnorMul>>
+		  L5_SIMD, L5_PE,
+		  // hwkim added for batch norm scale
+		  ap_uint<1>,
+
+		  Recast<XnorMul>>
 		  (inter5, inter6,
 //		#ifdef ACTIVATION_LOG
 //		  inter6_log,
@@ -729,7 +751,11 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 #ifdef ACTIVATION_LOG
 		  7,
 #endif
-		  L7_SIMD, L7_PE, Recast<XnorMul>>
+		  L7_SIMD, L7_PE,
+		  // hwkim added for batch norm scale
+		  ap_uint<1>,
+
+		  Recast<XnorMul>>
 		  (inter7, inter8,
 //		#ifdef ACTIVATION_LOG
 //		  inter8_log,
@@ -792,7 +818,11 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 #ifdef ACTIVATION_LOG
 		  9,
 #endif
-		  L9_SIMD, L9_PE, Recast<XnorMul>>
+		  L9_SIMD, L9_PE,
+		  // hwkim added for batch norm scale
+		  ap_uint<1>,
+
+		  Recast<XnorMul>>
 		  (inter9, inter10,
 //		#ifdef ACTIVATION_LOG
 //		  inter10_log,
@@ -822,10 +852,14 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 #ifdef ACTIVATION_LOG
 		  10,
 #endif
-		  L10_SIMD, L10_PE, Recast<XnorMul>,
+		  L10_SIMD, L10_PE,
+		  // hwkim added for batch norm scale
+		  ap_fixed<24,16,AP_TRN,AP_SAT>,
+
+		  Recast<XnorMul>,
 		  // hwkim modified for batch norm scale
-		  //Slice<ap_int<16> >>
-		  Slice<ap_fixed<24,16,AP_TRN,AP_SAT> >>
+		  Slice<ap_fixed<24,16,AP_TRN,AP_SAT> >>	//Slice<ap_int<16> >>
+
 		  (inter10, inter11, weights10, threshs10, numReps, ap_resource_lut());
 
 //#ifdef ACTIVATION_LOG
@@ -837,10 +871,10 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 
 	// hwkim modified for separated simulation
 	if(start_layer >= 11){
+		// hwkim modified for batch norm scale
 	  //read_activation_file<L10_OFM_CH*16>(inter11, 10);
-		read_activation_file<L10_OFM_CH*24>(inter11, 10);
+	  read_activation_file<L10_OFM_CH*24>(inter11, 10);
 	}
-	cout << "inter11 size = " << inter11.size() << endl;
 #endif
 
   // hwkim modified for average pool
@@ -850,41 +884,67 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 //#define AVE_THRES (4*4/2)
 //  average_pooling<AVE_IFM_CH, AVE_IFM_DIM>(inter9, inter10, AVE_THRES);
 
-	// hwkim modified for batch norm scale product
-//	ap_uint<8> uValue[11] = {0x53, 0x1d, 0x21, 0x34, 0x3f, 0x20, 0x25, 0x1d, 0x19, 0x18, 0x17};
-//	ap_ufixed<8, 0, AP_TRN, AP_SAT> fxdValue[11];
-//#pragma HLS ARRAY_PARTITION variable=fxdValue complete dim=1
-//	for (int tmp_i=0; tmp_i<11; tmp_i++){
-//		fxdValue[tmp_i] = *reinterpret_cast<ap_ufixed<8, 0, AP_TRN, AP_SAT> *>(&uValue[tmp_i]);
-////		cout << setprecision(10) << fxdValue[tmp_i] << endl;
-//	}
-
-
-	{
+	//{
 //		WidthAdjustedOutputStream<16, 64, L10_OFM_DIM*L10_OFM_HEIGHT>  wa_out(memOutStrm, numReps);
+#ifdef ACTIVATION_LOG
+		string golden_score_file_name = golden_file_dir + "OutputScaleLayer.txt";
+		ifstream golden_score_file(golden_score_file_name);
+		if(!golden_score_file.is_open()){
+			cout << "golden_score_file open error" << endl;
+		}
+		ofstream computed_score_file("computed_score.txt");
+		if(!computed_score_file.is_open()){
+			cout << "computed_score_file open error" << endl;
+		}
+		ap_fixed<24,16,AP_TRN,AP_SAT> golden_score;
+#endif
 
 		ap_uint<L10_OFM_CH*24> score_buf;
+		ap_uint<24> uscore;
 		ap_fixed<24,16,AP_TRN,AP_SAT> cls_p;
 		ap_fixed<24,16,AP_TRN,AP_SAT> cls_n;
 		ap_uint<16> label=0;
-
 		ap_uint<64> out_buf=0;
 
 		for(int y=0; y<L10_OFM_HEIGHT; y++){
 			for(int x=0; x<L10_OFM_DIM; x++){
+				label=0;
 				score_buf=inter11.read();
-				cls_p = score_buf & 0xFFFFFF;
-				cout << cls_p;
+				uscore = score_buf & 0xFFFFFF;
+				if(uscore&0x800000){
+					uscore.VAL = 0xff000000 | uscore.VAL;
+				}
+				cls_p = *reinterpret_cast<ap_fixed<24,16,AP_TRN,AP_SAT> *>(&uscore);
+#ifdef ACTIVATION_LOG
+				//cout << setw(15) << setprecision(11) << cls_p << endl;
+				computed_score_file << dec << cls_p << endl;
+				golden_score_file >> golden_score;
+				if((golden_score>>1)!=cls_p){
+					cout << "golden: " << golden_score << ", computed: " << cls_p << endl;
+				}
+#endif
 				for(int i=1; i<L10_OFM_CH; i++){
 					score_buf = score_buf >> 24;
-					cls_n = score_buf & 0xFFFFFF;
-					cout << "\t" << cls_n;
+					uscore = score_buf & 0xFFFFFF;
+					if(uscore&0x800000){
+						uscore.VAL = 0xff000000 | uscore.VAL;
+					}
+					cls_n = *reinterpret_cast<ap_fixed<24,16,AP_TRN,AP_SAT> *>(&uscore);
+#ifdef ACTIVATION_LOG
+					//cout << setw(15) << setprecision(11) << cls_n << endl;
+					computed_score_file << dec << cls_n << endl;
+					golden_score_file >> golden_score;
+					if((golden_score>>1)!=cls_n){
+						cout << "golden: " << golden_score << ", computed: " << cls_n << endl;
+					}
+#endif
 					if(cls_p < cls_n){
 						label=i;
 						cls_p = cls_n;
 					}
 				}
-				cout << "\tlabel: " << label << endl;
+				label++;
+				//cout << dec << "\tlabel: " << label << endl;
 
 				// packing output and write memOutStrm
 				out_buf = out_buf >> 16;
@@ -896,7 +956,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 				//static_cast<hls::stream<ap_uint<16>>&>(wa_out).write(label);
 			}
 		}
-	}	// region for calling destructor of wa_out
+	//}	// region for calling destructor of wa_out
 
 	Stream2Mem_Batch<64, outBits/8>(memOutStrm, out, numReps);
 }

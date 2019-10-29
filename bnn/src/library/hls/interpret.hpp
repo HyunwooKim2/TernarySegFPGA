@@ -222,7 +222,7 @@ class Slice {
     }
     auto operator[](unsigned const  idx) -> decltype(m_val(STRIDE, 0)) {
 #pragma HLS inline
-      return  m_val((idx+1)*STRIDE-1, idx*STRIDE);
+    	return  m_val((idx+1)*STRIDE-1, idx*STRIDE);
     }
     operator TV const&() const {
 #pragma HLS inline

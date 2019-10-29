@@ -380,6 +380,8 @@ template<
   unsigned int LayerCnt,
   unsigned int OutWidth,
 #endif
+  // hwkim added for batch norm scale
+  typename TDstElem,
 
   typename TSrcI = Identity, typename TDstI = Identity, typename TWeightI = Identity,
   typename TI, typename TO, typename TW, typename TA, typename R
@@ -448,6 +450,11 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
   ofstream act_comp_file(act_comp_file_name);
   if(!act_comp_file.is_open()){
 	  cout << act_comp_file_name << " open error!" << endl;
+  }
+
+  ofstream last_layer_scaled_file("last_layer_scaled_log.log");
+  if(!last_layer_scaled_file.is_open()){
+	  cout << "last_layer_scaled_file open error" << endl;
   }
 
 #endif
@@ -536,8 +543,6 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
 #pragma HLS UNROLL
 			  auto const  wgt = TWeightI()(w[pe]);
 			  auto const  act = TSrcI()(inElem);
-			  // hwkim added for activation comparison using +- accumulation
-			  auto const  wgt_pm = Recast<XnorMul_pm>()(w[pe]);
 
 			  // hwkim modified for padding
 			  //accu[pe] = mac<SIMD>(accu[pe], wgt, act, r);
@@ -626,7 +631,13 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
 		  		// hwkim modified for positive only accumulation
 		      	//accu[pe] = accu[pe] + activation.m_thresholds[pe][nf][0];
 		      	//outElem[pe] = activation.activate(nf, pe, accu[pe]);
-		  		outElem[pe] = activation.activate(nf, pe, accu[pe], fan_in);
+		  		// hwkim modified for batch norm scale
+		  		//ap_fixed<24,16,AP_TRN,AP_SAT> fxdoutElem;
+		  		TDstElem outElem_unit;
+		  		//ap_uint<TDstI::width> uoutElem;
+		  		outElem_unit = activation.activate(nf, pe, accu[pe], fan_in);
+		  		outElem[pe] = *reinterpret_cast<ap_uint<TDstI::width> *>(&outElem_unit);
+		  		//cout << outElem[pe] << endl;
 		  	}
 		  	out.write(outElem);
 		  	// hwkim modified for positive only accumulation
@@ -714,6 +725,7 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
 #ifdef ACTIVATION_LOG
   conv_out_log_file.close();
   conv_out_comp_file.close();
+  last_layer_scaled_file.close();
 #endif
 }
 

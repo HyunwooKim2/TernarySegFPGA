@@ -101,7 +101,7 @@ auto mul(TC const &c, TD const &d, ap_resource_dsp const&) -> decltype(c*d) {
 //- MAC with selectable implementation resource
 template<unsigned N, typename T, typename TC, typename TD, typename R>
 T mac(T const &a, TC const &c, TD const &d, R const &r
-		// hwkim modified for activation comparison using +- accumulation
+// hwkim modified for activation comparison using +- accumulation
 #ifdef ACTIVATION_LOG
 		, unsigned int pm
 #endif
@@ -110,9 +110,12 @@ T mac(T const &a, TC const &c, TD const &d, R const &r
   T  res = a;
   for(unsigned  i = 0; i < N; i++) {
 #pragma HLS unroll
+// hwkim modified for activation comparison using +- accumulation
+#ifdef ACTIVATION_LOG
 	  if(pm)
 		  res += mul(c[i], d[i], r)? 1 : -1;
 	  else
+#endif
 		  res += mul(c[i], d[i], r);
   }
   return  res;

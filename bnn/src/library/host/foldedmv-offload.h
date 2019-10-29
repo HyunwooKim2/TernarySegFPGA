@@ -375,11 +375,14 @@ std::vector<int>  testPrebuiltCIFAR10_from_image(std::vector<tiny_cnn::vec_t> & 
    * paddedSize()는 ExtMemWord로 나누어 떨어지지 않는 경우 +1을 해주기 위해
    */
   // number of ExtMemWords per output
-  const unsigned int pso = paddedSize(64*outWidth, bitsPerExtMemWord) / bitsPerExtMemWord;
+  // hwkim modified for segmentation
+  //const unsigned int pso = paddedSize(64*outWidth, bitsPerExtMemWord) / bitsPerExtMemWord;
+  const unsigned int pso = paddedSize(480*360*outWidth, bitsPerExtMemWord) / bitsPerExtMemWord;
   /* hwkim commented
    * pso -> output score가 ExtMemWord로 몇 개인지
    *  out은 score를 의미? (맞는 듯) -> outWidth는 score의 bit-width?
    */
+
   if(INPUT_BUF_ENTRIES < count*psi) {
     throw "Not enough space in accelBufIn";
   }
@@ -432,6 +435,18 @@ std::vector<int>  testPrebuiltCIFAR10_from_image(std::vector<tiny_cnn::vec_t> & 
 #ifdef ACTIVATION_LOG
   std::string label_file_path = golden_file_dir + "2DLabelOutput.txt";
   ifstream label_file(label_file_path);
+  if(!label_file.is_open()){
+	  cout << "label_file open error" << endl;
+  }
+  ofstream label_comp_file("label_comp.txt");
+  if(!label_comp_file.is_open()){
+	  cout << "label_comp_file open error" << endl;
+  }
+  ofstream label_log_file("inferred_label.log");
+  if(!label_log_file.is_open()){
+	  cout << "label_log_file open error" << endl;
+  }
+
   ap_uint<16> label_buf;
   ap_uint<64> packed_out_buf;
   ap_uint<16> inferred_label;
@@ -440,11 +455,12 @@ std::vector<int>  testPrebuiltCIFAR10_from_image(std::vector<tiny_cnn::vec_t> & 
 		  label_file >> label_buf;
 		  packed_out_buf = packed_out_buf >> 16;
 		  if(x%4==0){
-			  packed_out_buf = packedOut[(y*360+x)/4];
+			  packed_out_buf = packedOut[(y*480+x)/4];
 		  }
-		  inferred_label = (packed_out_buf & 0xFFFF) + 1;
+		  inferred_label = (packed_out_buf & 0xFFFF);
+		  label_log_file << dec << inferred_label << endl;
 		  if(label_buf != inferred_label){
-			  cout << "output differ @ (y,x): " << y << "," << x << endl;
+			  label_comp_file << "output differ @ (y,x): " << y << "," << x << endl;
 		  }
 	  }
   }

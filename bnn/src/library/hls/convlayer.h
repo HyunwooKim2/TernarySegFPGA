@@ -82,6 +82,9 @@ template<
 		unsigned int SIMD, 				// number of SIMD lanes
 		unsigned int PE,				// number of PEs
 		
+		// hwkim added for batch norm scale
+		typename TDstElem,
+
 		typename TSrcI = Identity,      // redefine I/O interpretation as needed for input activations
 		typename TDstI = Identity,		// redefine I/O interpretation as needed for output activations
 		typename TWeightI = Identity,	// redefine I/O interpretation as needed for weigths
@@ -140,6 +143,9 @@ void ConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
 #ifdef ACTIVATION_LOG
 		LayerCnt, (PE*TDstI::width),
 #endif
+		// hwkim added for batch norm scale
+		TDstElem,
+
 		TSrcI, TDstI, TWeightI>
 			(static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>&>(convInp),
 			static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>  (mvOut),

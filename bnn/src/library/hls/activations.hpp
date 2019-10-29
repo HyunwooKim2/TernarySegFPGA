@@ -54,7 +54,6 @@
 
 #ifndef ACTIVATIONS_HPP
 #define ACTIVATIONS_HPP
-
 /**
  * General contract for activation functions.
  *
@@ -190,9 +189,17 @@ public:
 #pragma HLS inline
     TR result=ActVal;
 	// hwkim modified for batch norm scale
-	result = (accu + m_thresholds[pe][nf][0]) * m_scales[pe];
+    TR half_thresholds = m_thresholds[pe][nf][0];
+    half_thresholds = half_thresholds/2;
+    result = ((accu + half_thresholds - (fan_in>>1)) * m_scales[pe]);	// << 1;	//full scale
 	// hwkim added for debug
-	//cout << result << endl;
+//	cout << dec;
+//	cout << "(";
+//	cout << accu << "+";
+//	cout << half_thresholds << "-";
+//	cout << (fan_in>>1) << ")*";
+//	cout << m_scales[pe] << "=";
+//	cout << result << endl;
     return result;
   }
 };
