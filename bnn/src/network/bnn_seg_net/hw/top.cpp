@@ -128,9 +128,10 @@ void infer_category(
 				label=0;
 				score_buf=in.read();
 				uscore = score_buf & 0xFFFFFF;
-				if(uscore&0x800000){
-					uscore.VAL = 0xff000000 | uscore.VAL;
-				}
+//				if(uscore&0x800000){
+//					//uscore.VAL = 0xff000000 | uscore.VAL;
+//					uscore = 0xff000000 | uscore;
+//				}
 				cls_p = *reinterpret_cast<ap_fixed<24,16,AP_TRN,AP_SAT> *>(&uscore);
 #ifdef ACTIVATION_LOG
 				//cout << setw(15) << setprecision(11) << cls_p << endl;
@@ -143,9 +144,10 @@ void infer_category(
 				for(int i=1; i<L10_OFM_CH; i++){
 					score_buf = score_buf >> 24;
 					uscore = score_buf & 0xFFFFFF;
-					if(uscore&0x800000){
-						uscore.VAL = 0xff000000 | uscore.VAL;
-					}
+//					if(uscore&0x800000){
+//						//uscore.VAL = 0xff000000 | uscore.VAL;
+//						uscore = 0xff000000 | uscore;
+//					}
 					cls_n = *reinterpret_cast<ap_fixed<24,16,AP_TRN,AP_SAT> *>(&uscore);
 #ifdef ACTIVATION_LOG
 					//cout << setw(15) << setprecision(11) << cls_n << endl;
