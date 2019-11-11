@@ -540,6 +540,33 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
   stream<ap_uint<11*24>> inter11("DoCompute.inter11");
 #pragma HLS STREAM variable=inter11 //depth=1
 
+#ifdef FPGA_DEBUG
+	  stream<ap_uint<64>> inter1_log("DoCompute.inter1_log");
+	#pragma HLS STREAM variable=inter1_log //depth=128
+	  stream<ap_uint<64>> inter2_log("DoCompute.inter2_log");
+	#pragma HLS STREAM variable=inter2_log //depth=128
+	  stream<ap_uint<128>> inter3_log("DoCompute.inter3_log");
+	#pragma HLS STREAM variable=inter3_log //depth=128
+	  stream<ap_uint<128>> inter4_log("DoCompute.inter4_log");
+	#pragma HLS STREAM variable=inter4_log //depth=128
+	  stream<ap_uint<256>> inter5_log("DoCompute.inter5_log");
+	#pragma HLS STREAM variable=inter5_log //depth=128
+	  stream<ap_uint<256>> inter6_log("DoCompute.inter6_log");
+	#pragma HLS STREAM variable=inter6_log //depth=81
+	  stream<ap_uint<128>> inter7_log("DoCompute.inter7_log");
+	#pragma HLS STREAM variable=inter7_log //depth=1
+	  stream<ap_uint<128>> inter8_log("DoCompute.inter8_log");
+	#pragma HLS STREAM variable=inter8_log //depth=1
+	  stream<ap_uint<64>> inter9_log("DoCompute.inter9_log");
+	#pragma HLS STREAM variable=inter9_log //depth=1
+	  stream<ap_uint<64>> inter10_log("DoCompute.inter10_log");
+	#pragma HLS STREAM variable=inter10_log //depth=1
+	  // hwkim modified for batch norm scale
+	  //stream<ap_uint<11*16>> inter11("DoCompute.inter11");
+	  stream<ap_uint<11*24>> inter11_log("DoCompute.inter11_log");
+	#pragma HLS STREAM variable=inter11_log //depth=1
+#endif
+
   stream<ap_uint<64>> memOutStrm("DoCompute.memOutStrm");
 
   // hwkim modified for padding & segmentation
@@ -1051,6 +1078,7 @@ void BlackBoxJam(ap_uint<64> *in, ap_uint<64> *out, bool doInit,
   if (doInit) {
     DoMemInit(targetLayer, targetMem, targetInd, targetThresh, val);
   } else {
-    DoCompute(in, out, numReps);
+    //DoCompute(in, out, numReps);
+	  DoCompute(in, out, 1);
   }
 }

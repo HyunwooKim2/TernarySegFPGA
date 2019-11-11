@@ -375,13 +375,25 @@ void FoldedMVLoadScaleMem()
 			0.09375,
 			0.09375
 	};
+#ifdef ACTIVATION_LOG
+		ofstream scale_bin_file("scale_bin.bin", ios::binary);
+		if(!scale_bin_file.is_open()){
+			cout << "scale_bin_file open error" << endl;
+		}
+#endif
 	for (int tmp_i=0; tmp_i<11; tmp_i++){
 		uValue[tmp_i] = *reinterpret_cast<ap_uint<8> *>(&fxdValue[tmp_i]);
 		//cout << setprecision(10) << "Scale " << tmp_i << ": "<< dec << fxdValue[tmp_i] << ", "<< hex << uValue[tmp_i] << endl;
+#ifdef ACTIVATION_LOG
+		scale_bin_file.write(reinterpret_cast<const char*>(&uValue[tmp_i]), sizeof(ap_uint<8>));
+#endif
 	}
 	for(unsigned int pe=0; pe<11; pe++){
 		FoldedMVMemSet(-1, pe, 0, 0, uValue[pe]);
 	}
+#ifdef ACTIVATION_LOG
+	scale_bin_file.close();
+#endif
 }
 
 #endif

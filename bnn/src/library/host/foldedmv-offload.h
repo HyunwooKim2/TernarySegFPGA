@@ -129,6 +129,13 @@ void quantiseAndPack(const tiny_cnn::vec_t & in, ExtMemWord * out, unsigned int 
   if((in.size() * inWidth) > (inBufSize * bitsPerExtMemWord)) {
     throw "Not enough space in input buffer";
   }
+#ifdef ACTIVATION_LOG
+	ofstream quantise_bin_file("quantise_bin.bin");
+	if(!quantise_bin_file.is_open()){
+		cout << "quantise_bin_file open error!!" << endl;
+	}
+#endif
+
   // first, fill the target buffer with padding data
   memset(out, 0, inBufSize * sizeof(ExtMemWord));
   ExtMemWord tmpv[bitsPerExtMemWord / inWidth];
@@ -144,13 +151,15 @@ void quantiseAndPack(const tiny_cnn::vec_t & in, ExtMemWord * out, unsigned int 
      * 64-bit floating point에서 1-bit integer, 7-bit fractal fixed point로 quantization
      */
     ap_uint<inWidth> uValue = *reinterpret_cast<ap_uint<inWidth> *>(&fxdValue); // Interpret the fixed value as an integer.
+#ifdef ACTIVATION_LOG
+    quantise_bin_file.write(reinterpret_cast<const char *>(&uValue), sizeof(ap_uint<inWidth>));
+#endif
     /* hwkim commented
      * 단순 8-bit fixed point -> 8-bit unsigned int로 변환
      */
     // hwkim modified for input debug 190614
     ExtMemWord v = ((ExtMemWord)uValue & (~(ExtMemWord)0 >> (bitsPerExtMemWord - inWidth))); // Zero all bits except for the (bitsPerExtMemWord - inWidth) least significant bits.
 //    ExtMemWord v = ((ExtMemWord)(uValue+1) & (~(ExtMemWord)0 >> (bitsPerExtMemWord - inWidth))); // Zero all bits except for the (bitsPerExtMemWord - inWidth) least significant bits.
-
     /* hwkim commented
      * 8-bit -> 64-bit(ExtMemWord)로 변환
      * inWidth인 8-bit 제외하고, 상위 모두 0으로
@@ -171,12 +180,6 @@ void quantiseAndPack(const tiny_cnn::vec_t & in, ExtMemWord * out, unsigned int 
 	}
 	quantise_realnum_log_file << fixed;
 	quantise_realnum_log_file.precision(8);
-
-	ofstream quantise_bin_file("quantise_bin.bin");
-	if(!quantise_bin_file.is_open()){
-		cout << "quantise_bin_file open error!!" << endl;
-	}
-
 
 //	ifstream golden_file("/home/khw1204/work/params/guinness_params/cifar10_params/190606/Activations/Scale1.txt");
 //	if(!golden_file.is_open()){
