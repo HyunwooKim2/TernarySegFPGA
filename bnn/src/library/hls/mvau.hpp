@@ -389,9 +389,9 @@ template<
 void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
 				  hls::stream<TO> &out,
 				  // hwkim modified for debug
-//#ifdef ACTIVATION_LOG
-//				  hls::stream<TO> &out_log,
-//#endif
+#ifdef FPGA_DEBUG
+				  hls::stream<TO> &out_log,
+#endif
 				  TW  const &weights,
 				  TA  const &activation,
 				  int const  reps,
@@ -640,6 +640,9 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
 		  		//cout << outElem[pe] << endl;
 		  	}
 		  	out.write(outElem);
+#ifdef FPGA_DEBUG
+		   out_log.write(outElem);
+#endif
 		  	// hwkim modified for positive only accumulation
 	  		fan_in=0;
 
@@ -700,7 +703,6 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
 		  		if(x==0)
 					cout << dec << y << "/" << OFMHeight << endl;
 		  	}
-		  //      out_log.write(outElem);
 #endif
 
 		  	// next folded neuron or image
@@ -750,9 +752,9 @@ template<
 void Matrix_Vector_Activate_Batch_Skipping(hls::stream<TI> & in,
 				  hls::stream<TO> &out,
 				  // hwkim modified for debug
-//#ifdef ACTIVATION_LOG
-//				  hls::stream<TO> &out_log,
-//#endif
+#ifdef FPGA_DEBUG
+				  hls::stream<TO> &out_log,
+#endif
 				  TW  const &weights,
 				  TA  const &activation,
 				  int const  reps,
@@ -958,6 +960,9 @@ void Matrix_Vector_Activate_Batch_Skipping(hls::stream<TI> & in,
 			outElem[pe] = activation.activate(nf, pe, accu[pe], fan_in);
       }
      out.write(outElem);
+#ifdef FPGA_DEBUG
+	  out_log.write(outElem);
+#endif
       // hwkim modified for debug
 #ifdef ACTIVATION_LOG
      // hwkim added for debug
@@ -1013,7 +1018,6 @@ void Matrix_Vector_Activate_Batch_Skipping(hls::stream<TI> & in,
 			  }
 		  }
       }
-//      out_log.write(outElem);
 #endif
 
       // next folded neuron or image

@@ -57,6 +57,11 @@
 //int pooling_layer_cnt = 0;
 #endif
 
+#ifdef FPGA_DEBUG
+#define ACT_BASE		49152		//49152*8=0x60000
+#define ACT_OFFSET	180224		//180224*8=0x160000
+#endif
+
 static BinaryWeights< L0_SIMD,  L0_PE,  L0_WMEM>  weights0;
 static BinaryWeights< L1_SIMD,  L1_PE,  L1_WMEM>  weights1;
 static BinaryWeights< L2_SIMD,  L2_PE,  L2_WMEM>  weights2;
@@ -565,6 +570,29 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 	  //stream<ap_uint<11*16>> inter11("DoCompute.inter11");
 	  stream<ap_uint<11*24>> inter11_log("DoCompute.inter11_log");
 	#pragma HLS STREAM variable=inter11_log //depth=1
+
+	  stream<ap_uint<64>> inter1_1_log("DoCompute.inter1_1_log");
+	#pragma HLS STREAM variable=inter1_log //depth=128
+	  stream<ap_uint<64>> inter2_1_log("DoCompute.inter2_1_log");
+	#pragma HLS STREAM variable=inter2_log //depth=128
+	  stream<ap_uint<64>> inter3_1_log("DoCompute.inter3_1_log");
+	#pragma HLS STREAM variable=inter3_log //depth=128
+	  stream<ap_uint<64>> inter4_1_log("DoCompute.inter4_1_log");
+	#pragma HLS STREAM variable=inter4_log //depth=128
+	  stream<ap_uint<64>> inter5_1_log("DoCompute.inter5_1_log");
+	#pragma HLS STREAM variable=inter5_log //depth=128
+	  stream<ap_uint<64>> inter6_1_log("DoCompute.inter6_1_log");
+	#pragma HLS STREAM variable=inter6_log //depth=81
+	  stream<ap_uint<64>> inter7_1_log("DoCompute.inter7_1_log");
+	#pragma HLS STREAM variable=inter7_log //depth=1
+	  stream<ap_uint<64>> inter8_1_log("DoCompute.inter8_1_log");
+	#pragma HLS STREAM variable=inter8_log //depth=1
+	  stream<ap_uint<64>> inter9_1_log("DoCompute.inter9_1_log");
+	#pragma HLS STREAM variable=inter9_log //depth=1
+	  stream<ap_uint<64>> inter10_1_log("DoCompute.inter101__log");
+	#pragma HLS STREAM variable=inter10_log //depth=1
+	  stream<ap_uint<64>> inter11_1_log("DoCompute.inter11_1_log");
+	#pragma HLS STREAM variable=inter11_1_log //depth=1
 #endif
 
   stream<ap_uint<64>> memOutStrm("DoCompute.memOutStrm");
@@ -582,8 +610,20 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 
 #ifdef SEP_SIM
   // hwkim modified for separated simulation
-  int start_layer = 11;
-  if(start_layer < 1){
+  //int start_layer = 10;
+  int sep_sim_layer1_en = 0;
+  int sep_sim_layer2_en = 0;
+  int sep_sim_layer3_en = 0;
+  int sep_sim_layer4_en = 0;
+  int sep_sim_layer5_en = 0;
+  int sep_sim_layer6_en = 0;
+  int sep_sim_layer7_en = 0;
+  int sep_sim_layer8_en = 0;
+  int sep_sim_layer9_en = 0;
+  int sep_sim_layer10_en = 0;
+  int sep_sim_layer11_en = 1;
+  //if(start_layer < 1){
+  if(sep_sim_layer1_en){
 #endif
 
 	  Mem2Stream_Batch<64, inBits / 8>(in, inter0, numReps);
@@ -611,29 +651,39 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 
 		  Slice<ap_fixed<8, 1, AP_TRN, AP_SAT>>, Identity, Recast<Binary>>
 		  (inter0_2, inter1,
-//		#ifdef ACTIVATION_LOG
-//			inter1_log,
-//		#endif
+#ifdef FPGA_DEBUG
+			inter1_log,
+#endif
 			weights0, threshs0, numReps, ap_resource_lut());
 
-	  // hwkim modified for debug
-//#ifdef ACTIVATION_LOG
-//	  activation_log<L0_OFM_DIM, L0_OFM_HEIGHT, 64, 1>(inter1_log, 0);
-//#endif
+#ifdef FPGA_DEBUG
+	  StreamingDataWidthConverter_Batch<L0_OFM_CH, 64, (L0_OFM_DIM*L0_OFM_HEIGHT)>(inter1_log, inter1_1_log, 1);
+	  Stream2Mem_Batch<64, (L0_OFM_DIM*L0_OFM_HEIGHT*L0_OFM_CH)/8>(inter1_1_log, &out[ACT_BASE], 1);
+#endif
+
+
 #ifdef SEP_SIM
-  }
-//	  weighted_layer_cnt++;
   // hwkim modified for separated simulation
-  if(start_layer >= 1){
-	  read_activation_file<64>(inter1, 0);
   }
+  //if(start_layer >= 1){
+  else{
+	  read_activation_file<L0_OFM_CH>(inter1, 0);
+#ifdef FPGA_DEBUG
+	  read_activation_file<L0_OFM_CH>(inter1_log, 0);
+	  StreamingDataWidthConverter_Batch<L0_OFM_CH, 64, (L0_OFM_DIM*L0_OFM_HEIGHT)>(inter1_log, inter1_1_log, 1);
+	  Stream2Mem_Batch<64, (L0_OFM_DIM*L0_OFM_HEIGHT*L0_OFM_CH)/8>(inter1_1_log, &out[ACT_BASE], 1);
+#endif
+
+  }
+  //	  weighted_layer_cnt++;
 #endif
 
   //////////////////////////////////////////////////////////////////
   // Layer 2 - binary convolution
   //////////////////////////////////////////////////////////////////
 #ifdef SEP_SIM
-    if(start_layer < 2){
+    //if(start_layer < 2){
+  if(sep_sim_layer2_en){
 #endif
     	// hwkim modified for padding
 //	  stream<ap_uint<64>> inter1_pad("DoCompute.inter1_pad");
@@ -650,28 +700,37 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 
 		  Recast<XnorMul>>
 		  (inter1, inter2,
-//		#ifdef ACTIVATION_LOG
-//			inter2_log,
-//		#endif
+#ifdef FPGA_DEBUG
+			inter2_log,
+#endif
 			weights1, threshs1, numReps, ap_resource_lut());
 
-//#ifdef ACTIVATION_LOG
-//	  	  activation_log<L1_OFM_DIM, L1_OFM_HEIGHT, 64, 1>(inter2_log, 1);
-//#endif
+#ifdef FPGA_DEBUG
+	  StreamingDataWidthConverter_Batch<L1_OFM_CH, 64, (L1_OFM_DIM*L1_OFM_HEIGHT)>(inter2_log, inter2_1_log, 1);
+	  Stream2Mem_Batch<64, (L1_OFM_DIM*L1_OFM_HEIGHT*L1_OFM_CH)/8>(inter2_1_log, &out[ACT_BASE+ACT_OFFSET], 1);
+#endif
+
 #ifdef SEP_SIM
-    }
-//	  weighted_layer_cnt++;
   // hwkim modified for separated simulation
-  if(start_layer >= 2){
-	  read_activation_file<64>(inter2, 1);
   }
+  //if(start_layer >= 2){
+  else{
+	  read_activation_file<L1_OFM_CH>(inter2, 1);
+#ifdef FPGA_DEBUG
+	  read_activation_file<L1_OFM_CH>(inter2_log, 1);
+	  StreamingDataWidthConverter_Batch<L1_OFM_CH, 64, (L1_OFM_DIM*L1_OFM_HEIGHT)>(inter2_log, inter2_1_log, 1);
+	  Stream2Mem_Batch<64, (L1_OFM_DIM*L1_OFM_HEIGHT*L1_OFM_CH)/8>(inter2_1_log, &out[ACT_BASE+ACT_OFFSET], 1);
+#endif
+  }
+  //	  weighted_layer_cnt++;
 #endif
 
   //////////////////////////////////////////////////////////////////
   // Layer 3 - binary convolution - stride 2, channel x2
   //////////////////////////////////////////////////////////////////
 #ifdef SEP_SIM
-  if(start_layer < 3){
+  //if(start_layer < 3){
+  if(sep_sim_layer3_en){
 #endif
 	  // hwkim modified for padding
 //	  stream<ap_uint<64>> inter2_pad("DoCompute.inter2_pad");
@@ -688,28 +747,37 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 
 		  Recast<XnorMul>>
 		  (inter2, inter3,
-//		#ifdef ACTIVATION_LOG
-//			inter3_log,
-//		#endif
+#ifdef FPGA_DEBUG
+			inter3_log,
+#endif
 			weights2, threshs2, numReps, ap_resource_lut());
 
-//#ifdef ACTIVATION_LOG
-//	  	  activation_log<L2_OFM_DIM, L2_OFM_HEIGHT, 128, 2>(inter3_log, 2);
-//#endif
+#ifdef FPGA_DEBUG
+	  StreamingDataWidthConverter_Batch<L2_OFM_CH, 64, (L2_OFM_DIM*L2_OFM_HEIGHT)>(inter3_log, inter3_1_log, 1);
+	  Stream2Mem_Batch<64, (L2_OFM_DIM*L2_OFM_HEIGHT*L2_OFM_CH)/8>(inter3_1_log, &out[ACT_BASE+2*ACT_OFFSET], 1);
+#endif
+
 #ifdef SEP_SIM
-  }
-//	  weighted_layer_cnt++;
   // hwkim modified for separated simulation
-  if(start_layer >= 3){
-	  read_activation_file<128>(inter3, 2);
   }
+  //if(start_layer >= 3){
+  else{
+	  read_activation_file<L2_OFM_CH>(inter3, 2);
+#ifdef FPGA_DEBUG
+	  read_activation_file<L2_OFM_CH>(inter3_log, 2);
+	  StreamingDataWidthConverter_Batch<L2_OFM_CH, 64, (L2_OFM_DIM*L2_OFM_HEIGHT)>(inter3_log, inter3_1_log, 1);
+	  Stream2Mem_Batch<64, (L2_OFM_DIM*L2_OFM_HEIGHT*L2_OFM_CH)/8>(inter3_1_log, &out[ACT_BASE+2*ACT_OFFSET], 1);
+#endif
+  }
+  //	  weighted_layer_cnt++;
 #endif
 
   //////////////////////////////////////////////////////////////////
   // Layer 4 - binary convolution
   //////////////////////////////////////////////////////////////////
 #ifdef SEP_SIM
-  if(start_layer < 4){
+  //if(start_layer < 4){
+  if(sep_sim_layer4_en){
 #endif
 	  // hwkim modified for padding
 //	  stream<ap_uint<128>> inter3_pad("DoCompute.inter3_pad");
@@ -725,28 +793,37 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 		  ap_uint<1>,
 
 		  Recast<XnorMul>>(inter3, inter4,
-//		#ifdef ACTIVATION_LOG
-//	  	  inter4_log,
-//		#endif
+#ifdef FPGA_DEBUG
+	  	  inter4_log,
+#endif
 		  weights3, threshs3, numReps, ap_resource_lut());
 
-//#ifdef ACTIVATION_LOG
-//	  activation_log<L3_OFM_DIM, L3_OFM_HEIGHT, 128, 1>(inter4_log, 3);
-//#endif
+#ifdef FPGA_DEBUG
+	  StreamingDataWidthConverter_Batch<L3_OFM_CH, 64, (L3_OFM_DIM*L3_OFM_HEIGHT)>(inter4_log, inter4_1_log, 1);
+	  Stream2Mem_Batch<64, (L3_OFM_DIM*L3_OFM_HEIGHT*L3_OFM_CH)/8>(inter4_1_log, &out[ACT_BASE+3*ACT_OFFSET], 1);
+#endif
+
 #ifdef SEP_SIM
-  }
-//	  weighted_layer_cnt++;
   // hwkim modified for separated simulation
-	if(start_layer >= 4){
-	  read_activation_file<128>(inter4, 3);
-	}
+  }
+	//if(start_layer >= 4){
+  else{
+	  read_activation_file<L3_OFM_CH>(inter4, 3);
+#ifdef FPGA_DEBUG
+	  read_activation_file<L3_OFM_CH>(inter4_log, 3);
+	  StreamingDataWidthConverter_Batch<L3_OFM_CH, 64, (L3_OFM_DIM*L3_OFM_HEIGHT)>(inter4_log, inter4_1_log, 1);
+	  Stream2Mem_Batch<64, (L3_OFM_DIM*L3_OFM_HEIGHT*L3_OFM_CH)/8>(inter4_1_log, &out[ACT_BASE+3*ACT_OFFSET], 1);
+#endif
+  }
+	//	  weighted_layer_cnt++;
 #endif
 
 	//////////////////////////////////////////////////////////////////
 	// Layer 5 - binary convolution - stride 2, channel x2
 	//////////////////////////////////////////////////////////////////
 #ifdef SEP_SIM
-	if(start_layer < 5){
+	//if(start_layer < 5){
+  if(sep_sim_layer5_en){
 #endif
 		// hwkim modified for padding
 //	  stream<ap_uint<128>> inter4_pad("DoCompute.inter4_pad");
@@ -763,28 +840,37 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 
 		  Recast<XnorMul>>
 		  (inter4, inter5,
-//		#ifdef ACTIVATION_LOG
-//		  inter5_log,
-//		#endif
+#ifdef FPGA_DEBUG
+		  inter5_log,
+#endif
 		  weights4, threshs4, numReps, ap_resource_lut());
 
-//#ifdef ACTIVATION_LOG
-//	  activation_log<L4_OFM_DIM, L4_OFM_HEIGHT, 256, 1>(inter5_log, 4);
-//#endif
+#ifdef FPGA_DEBUG
+	  StreamingDataWidthConverter_Batch<L4_OFM_CH, 64, (L4_OFM_DIM*L4_OFM_HEIGHT)>(inter5_log, inter5_1_log, 1);
+	  Stream2Mem_Batch<64, (L4_OFM_DIM*L4_OFM_HEIGHT*L4_OFM_CH)/8>(inter5_1_log, &out[ACT_BASE+4*ACT_OFFSET], 1);
+#endif
+
 #ifdef SEP_SIM
-	}
-// 	weighted_layer_cnt++;
 	// hwkim modified for separated simulation
-	if(start_layer >= 5){
-	  read_activation_file<256>(inter5, 4);
 	}
+	//if(start_layer >= 5){
+  else{
+	  read_activation_file<L4_OFM_CH>(inter5, 4);
+#ifdef FPGA_DEBUG
+	  read_activation_file<L4_OFM_CH>(inter5_log, 4);
+	  StreamingDataWidthConverter_Batch<L4_OFM_CH, 64, (L4_OFM_DIM*L4_OFM_HEIGHT)>(inter5_log, inter5_1_log, 1);
+	  Stream2Mem_Batch<64, (L4_OFM_DIM*L4_OFM_HEIGHT*L4_OFM_CH)/8>(inter5_1_log, &out[ACT_BASE+4*ACT_OFFSET], 1);
+#endif
+  }
+	// 	weighted_layer_cnt++;
 #endif
 
 	//////////////////////////////////////////////////////////////////
 	// Layer 6 - binary convolution
 	//////////////////////////////////////////////////////////////////
 #ifdef SEP_SIM
-	if(start_layer < 6){
+	//if(start_layer < 6){
+	if(sep_sim_layer6_en){
 #endif
 		// hwkim modified for padding
 //	  stream<ap_uint<256>> inter5_pad("DoCompute.inter5_pad");
@@ -801,28 +887,37 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 
 		  Recast<XnorMul>>
 		  (inter5, inter6,
-//		#ifdef ACTIVATION_LOG
-//		  inter6_log,
-//		#endif
+#ifdef FPGA_DEBUG
+		  inter6_log,
+#endif
 		  weights5, threshs5, numReps, ap_resource_lut());
 
-//#ifdef ACTIVATION_LOG
-//	  activation_log<L5_OFM_DIM, L5_OFM_HEIGHT, 256, 2>(inter6_log, 5);
-//#endif
+#ifdef FPGA_DEBUG
+	  StreamingDataWidthConverter_Batch<L5_OFM_CH, 64, (L5_OFM_DIM*L5_OFM_HEIGHT)>(inter6_log, inter6_1_log, 1);
+	  Stream2Mem_Batch<64, (L5_OFM_DIM*L5_OFM_HEIGHT*L5_OFM_CH)/8>(inter6_1_log, &out[ACT_BASE+5*ACT_OFFSET], 1);
+#endif
+
 #ifdef SEP_SIM
-	}
-//	weighted_layer_cnt++;
 	// hwkim modified for separated simulation
-	if(start_layer >= 6){
-	  read_activation_file<256>(inter6, 5);
 	}
+	//if(start_layer >= 6){
+	else{
+	  read_activation_file<L5_OFM_CH>(inter6, 5);
+#ifdef FPGA_DEBUG
+	  read_activation_file<L5_OFM_CH>(inter6_log, 5);
+	  StreamingDataWidthConverter_Batch<L5_OFM_CH, 64, (L5_OFM_DIM*L5_OFM_HEIGHT)>(inter6_log, inter6_1_log, 1);
+	  Stream2Mem_Batch<64, (L5_OFM_DIM*L5_OFM_HEIGHT*L5_OFM_CH)/8>(inter6_1_log, &out[ACT_BASE+5*ACT_OFFSET], 1);
+#endif
+	}
+	//	weighted_layer_cnt++;
 #endif
 
 	//////////////////////////////////////////////////////////////////
 	// Layer 7 - binary transposed convolution - stride 2
 	//////////////////////////////////////////////////////////////////
 #ifdef SEP_SIM
-	if(start_layer < 7){
+	//if(start_layer < 7){
+	if(sep_sim_layer7_en){
 #endif
 //	  stream<ap_uint<256>> inter6_pad("DoCompute.inter6_pad");
 //	  insert_pad<L6_IFM_DIM, L6_IFM_HEIGHT, 256, 1, 1, 1, 1>(inter6, inter6_pad);
@@ -834,28 +929,37 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 #endif
 		  L6_SIMD, L6_PE, Recast<XnorMul>>
 		  (inter6, inter7,
-//		#ifdef ACTIVATION_LOG
-//		  inter7_log,
-//		#endif
+#ifdef FPGA_DEBUG
+		  inter7_log,
+#endif
 		  weights6, threshs6, numReps, ap_resource_lut());
 
-//#ifdef ACTIVATION_LOG
-//	  activation_log<L6_OFM_DIM, L6_OFM_HEIGHT, 128, 1>(inter7_log, 6);
-//#endif
+#ifdef FPGA_DEBUG
+	  StreamingDataWidthConverter_Batch<L6_OFM_CH, 64, (L6_OFM_DIM*L6_OFM_HEIGHT)>(inter7_log, inter7_1_log, 1);
+	  Stream2Mem_Batch<64, (L6_OFM_DIM*L6_OFM_HEIGHT*L6_OFM_CH)/8>(inter7_1_log, &out[ACT_BASE+6*ACT_OFFSET], 1);
+#endif
+
 #ifdef SEP_SIM
-	}
-//	  weighted_layer_cnt++;
 	// hwkim modified for separated simulation
-	if(start_layer >= 7){
-	  read_activation_file<128>(inter7, 6);
 	}
+	//if(start_layer >= 7){
+	else{
+	  read_activation_file<L6_OFM_CH>(inter7, 6);
+#ifdef FPGA_DEBUG
+	  read_activation_file<L6_OFM_CH>(inter7_log, 6);
+	  StreamingDataWidthConverter_Batch<L6_OFM_CH, 64, (L6_OFM_DIM*L6_OFM_HEIGHT)>(inter7_log, inter7_1_log, 1);
+	  Stream2Mem_Batch<64, (L6_OFM_DIM*L6_OFM_HEIGHT*L6_OFM_CH)/8>(inter7_1_log, &out[ACT_BASE+6*ACT_OFFSET], 1);
+#endif
+	}
+	//	  weighted_layer_cnt++;
 #endif
 
 	//////////////////////////////////////////////////////////////////
 	// Layer 8 - binary transposed convolution - stride 1
 	//////////////////////////////////////////////////////////////////
 #ifdef SEP_SIM
-	if(start_layer < 8){
+	//if(start_layer < 8){
+	if(sep_sim_layer8_en){
 #endif
 //	  stream<ap_uint<128>> inter7_pad("DoCompute.inter3_pad");
 //	  insert_pad<L7_IFM_DIM, L7_IFM_HEIGHT, 128, 1, 1, 1, 1>(inter7, inter7_pad);
@@ -871,28 +975,37 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 
 		  Recast<XnorMul>>
 		  (inter7, inter8,
-//		#ifdef ACTIVATION_LOG
-//		  inter8_log,
-//		#endif
+#ifdef FPGA_DEBUG
+		  inter8_log,
+#endif
 		  weights7, threshs7, numReps, ap_resource_lut());
 
-//#ifdef ACTIVATION_LOG
-//	  activation_log<L7_OFM_DIM, L7_OFM_HEIGHT, 128, 1>(inter8_log, 7);
-//#endif
+#ifdef FPGA_DEBUG
+	  StreamingDataWidthConverter_Batch<L7_OFM_CH, 64, (L7_OFM_DIM*L7_OFM_HEIGHT)>(inter8_log, inter8_1_log, 1);
+	  Stream2Mem_Batch<64, (L7_OFM_DIM*L7_OFM_HEIGHT*L7_OFM_CH)/8>(inter8_1_log, &out[ACT_BASE+7*ACT_OFFSET], 1);
+#endif
+
 #ifdef SEP_SIM
-	}
-//	  weighted_layer_cnt++;
 	// hwkim modified for separated simulation
-	if(start_layer >= 8){
-	  read_activation_file<128>(inter8, 7);
 	}
+	//if(start_layer >= 8){
+	else{
+	  read_activation_file<L7_OFM_CH>(inter8, 7);
+#ifdef FPGA_DEBUG
+	  read_activation_file<L7_OFM_CH>(inter8_log, 7);
+	  StreamingDataWidthConverter_Batch<L7_OFM_CH, 64, (L7_OFM_DIM*L7_OFM_HEIGHT)>(inter8_log, inter8_1_log, 1);
+	  Stream2Mem_Batch<64, (L7_OFM_DIM*L7_OFM_HEIGHT*L7_OFM_CH)/8>(inter8_1_log, &out[ACT_BASE+7*ACT_OFFSET], 1);
+#endif
+	}
+	//	  weighted_layer_cnt++;
 #endif
 
 	//////////////////////////////////////////////////////////////////
 	// Layer 9 - binary transposed convolution - stride 2
 	//////////////////////////////////////////////////////////////////
 #ifdef SEP_SIM
-	if(start_layer < 9){
+	//if(start_layer < 9){
+	if(sep_sim_layer9_en){
 #endif
 //	  stream<ap_uint<128>> inter8_pad("DoCompute.inter8_pad");
 //	  insert_pad<L8_IFM_DIM, L8_IFM_HEIGHT, 128, 0, 1, 0, 1>(inter8, inter8_pad);
@@ -904,28 +1017,38 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 #endif
 		  L8_SIMD, L8_PE, Recast<XnorMul>>
 		  (inter8, inter9,
-//		#ifdef ACTIVATION_LOG
-//		  inter9_log,
-//		#endif
+#ifdef FPGA_DEBUG
+		  inter9_log,
+#endif
 		  weights8, threshs8, numReps, ap_resource_lut());
 
-//#ifdef ACTIVATION_LOG
-//	  activation_log<L8_OFM_DIM, L8_OFM_HEIGHT, 64, 2>(inter9_log, 8);
-//#endif
-#ifdef SEP_SIM
-	}
-//	  weighted_layer_cnt++;
-	// hwkim modified for separated simulation
-	if(start_layer >= 9){
-	  read_activation_file<64>(inter9, 8);
-	}
+#ifdef FPGA_DEBUG
+	  StreamingDataWidthConverter_Batch<L8_OFM_CH, 64, (L8_OFM_DIM*L8_OFM_HEIGHT)>(inter9_log, inter9_1_log, 1);
+	  Stream2Mem_Batch<64, (L8_OFM_DIM*L8_OFM_HEIGHT*L8_OFM_CH)/8>(inter9_1_log, &out[ACT_BASE+8*ACT_OFFSET], 1);
 #endif
+
+#ifdef SEP_SIM
+	// hwkim modified for separated simulation
+	}
+	//if(start_layer >= 9){
+	else{
+	  read_activation_file<L8_OFM_CH>(inter9, 8);
+#ifdef FPGA_DEBUG
+	  read_activation_file<L8_OFM_CH>(inter9_log, 8);
+	  StreamingDataWidthConverter_Batch<L8_OFM_CH, 64, (L8_OFM_DIM*L8_OFM_HEIGHT)>(inter9_log, inter9_1_log, 1);
+	  Stream2Mem_Batch<64, (L8_OFM_DIM*L8_OFM_HEIGHT*L8_OFM_CH)/8>(inter9_1_log, &out[ACT_BASE+8*ACT_OFFSET], 1);
+#endif
+	}
+	//	  weighted_layer_cnt++;
+#endif
+
 
 	//////////////////////////////////////////////////////////////////
 	// Layer 10 - binary convolution
 	//////////////////////////////////////////////////////////////////
 #ifdef SEP_SIM
-	if(start_layer < 10){
+	//if(start_layer < 10){
+	if(sep_sim_layer10_en){
 #endif
 	  ConvLayer_Batch<L9_K, L9_IFM_CH, L9_IFM_DIM, L9_OFM_CH, L9_OFM_DIM,
 		  L9_IFM_HEIGHT, L9_OFM_HEIGHT, 1, 1, 1, 1, 1,
@@ -938,28 +1061,38 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 
 		  Recast<XnorMul>>
 		  (inter9, inter10,
-//		#ifdef ACTIVATION_LOG
-//		  inter10_log,
-//		#endif
+#ifdef FPGA_DEBUG
+		  inter10_log,
+#endif
 		  weights9, threshs9, numReps, ap_resource_lut());
 
-//#ifdef ACTIVATION_LOG
-//	  activation_log<L9_OFM_DIM, L9_OFM_HEIGHT, 64, 1>(inter10_log, 9);
-//#endif
+#ifdef FPGA_DEBUG
+	  StreamingDataWidthConverter_Batch<64, 64, (L9_OFM_DIM*L9_OFM_HEIGHT)>(inter10_log, inter10_1_log, 1);
+	  Stream2Mem_Batch<64, (L9_OFM_DIM*L9_OFM_HEIGHT*L9_OFM_CH)/8>(inter10_1_log, &out[ACT_BASE+9*ACT_OFFSET], 1);	//49152*8=0x60000
+#endif
+
 #ifdef SEP_SIM
-	}
-//	weighted_layer_cnt++;
 	// hwkim modified for separated simulation
-	if(start_layer >= 10){
-	  read_activation_file<64>(inter10, 9);
 	}
+	//if(start_layer >= 10){
+	else{
+	  read_activation_file<L9_OFM_CH>(inter10, 9);
+	}
+	//	weighted_layer_cnt++;
+#endif
+
+#ifdef FPGA_DEBUG
+	read_activation_file<L9_OFM_CH>(inter10_log, 9);
+	  StreamingDataWidthConverter_Batch<64, 64, (L9_OFM_DIM*L9_OFM_HEIGHT)>(inter10_log, inter10_1_log, 1);
+	  Stream2Mem_Batch<64, (L9_OFM_DIM*L9_OFM_HEIGHT*L9_OFM_CH)/8>(inter10_1_log, &out[ACT_BASE+9*ACT_OFFSET], 1);	//49152*8=0x60000
 #endif
 
 	//////////////////////////////////////////////////////////////////
 	// Layer 11 - binary convolution
 	//////////////////////////////////////////////////////////////////
 #ifdef SEP_SIM
-	if(start_layer < 11){
+	//if(start_layer < 11){
+	if(sep_sim_layer11_en){
 #endif
 	  ConvLayer_Batch<L10_K, L10_IFM_CH, L10_IFM_DIM, L10_OFM_CH, L10_OFM_DIM,
 		  L10_IFM_HEIGHT, L10_OFM_HEIGHT, 1, 1, 1, 1, 1,
@@ -974,22 +1107,39 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 		  // hwkim modified for batch norm scale
 		  Slice<ap_fixed<24,16,AP_TRN,AP_SAT> >>	//Slice<ap_int<16> >>
 
-		  (inter10, inter11, weights10, threshs10, numReps, ap_resource_lut());
+		  (inter10, inter11,
+#ifdef FPGA_DEBUG
+		  inter11_log,
+#endif
+		  weights10, threshs10, numReps, ap_resource_lut());
+
+#ifdef FPGA_DEBUG
+	  StreamingDataWidthConverter_Batch<(11*24), 64, (L10_OFM_DIM*L10_OFM_HEIGHT)>(inter11_log, inter11_1_log, 1);
+	  Stream2Mem_Batch<64, (L10_OFM_DIM*L10_OFM_HEIGHT*(L10_OFM_CH*24 + 64 - (L10_OFM_CH*24 % 64)))/8>(inter11_1_log, &out[ACT_BASE+10*ACT_OFFSET], 1);
+#endif
 
 //#ifdef ACTIVATION_LOG
 //	  activation_log<L10_OFM_DIM, L10_OFM_HEIGHT, L10_OFM_CH*16, 1>(inter11_log, 10);
 //#endif
 #ifdef SEP_SIM
-	}
-//	weighted_layer_cnt++;
-
 	// hwkim modified for separated simulation
-	if(start_layer >= 11){
+	}
+	//if(start_layer >= 11){
+	else{
 		// hwkim modified for batch norm scale
 	  //read_activation_file<L10_OFM_CH*16>(inter11, 10);
 	  read_activation_file<L10_OFM_CH*24>(inter11, 10);
-	}
+#ifdef FPGA_DEBUG
+	  read_activation_file<L10_OFM_CH*24>(inter11_log, 10);
+	  StreamingDataWidthConverter_Batch<(11*24), 64, (L10_OFM_DIM*L10_OFM_HEIGHT)>(inter11_log, inter11_1_log, 1);
+	  Stream2Mem_Batch<64, (L10_OFM_DIM*L10_OFM_HEIGHT*(L10_OFM_CH*24 + 64 - (L10_OFM_CH*24 % 64)))/8>(inter11_1_log, &out[ACT_BASE+10*ACT_OFFSET], 1);
+	  	  // (L10_OFM_CH*24 + 64 - (L10_OFM_CH*24 % 64)) for 64-bit align
+	  	  // L10_OFM_CH*24=264 is not 64-bit aligned
 #endif
+	}
+	//	weighted_layer_cnt++;
+#endif
+
 
   // hwkim modified for average pool
 //#define AVE_IFM_CH 256

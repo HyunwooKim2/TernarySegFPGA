@@ -49,6 +49,7 @@
 #ifdef ACTIVATION_LOG
 #include <fstream>
 extern std::string golden_file_dir;
+extern std::string snapshot_dir;
 #endif
 
 using namespace std;
@@ -353,6 +354,59 @@ void testPrebuiltCIFAR10(std::vector<tiny_cnn::vec_t> & imgs, std::vector<tiny_c
   delete[] packedOut;
 }
 
+// hwkim added for FPGA debug
+#ifdef FPGA_DEBUG
+
+#define ACT_BASE		49152		//49152*8=0x60000
+#define ACT_OFFSET	180224		//180224*8=0x160000
+
+template<unsigned int CH, unsigned int WIDTH, unsigned int HEIGHT>
+void confirm_activation_for_fpga_debug(int layer_cnt, ExtMemWord * packedOut){
+	std::string activation_log_file_name;
+	ifstream activation_log_file;
+	ap_uint<CH> golden_act_buf;
+	ap_uint<CH> log_for_fpga;
+	char act_ch_arr[CH/4];
+	unsigned char act_int;
+	int word_cnt_max;
+
+	activation_log_file_name = snapshot_dir + "activation_" + to_string(layer_cnt+1) + "_log.txt";
+	activation_log_file.open(activation_log_file_name);
+	if(!activation_log_file.is_open()){
+		cout << "activation_log_file open error!" << endl;
+	}
+
+	if(CH%64==0)
+		word_cnt_max=CH/64;
+	else
+		word_cnt_max=CH/64+1;
+	for(int y=0; y<HEIGHT; y++){
+	  for(int x=0; x<WIDTH; x++){
+		  golden_act_buf = 0;
+		  activation_log_file >> act_ch_arr;
+		  for(int nibble_cnt=0; nibble_cnt<CH/4; nibble_cnt++){
+			  if(act_ch_arr[nibble_cnt]>0x40)
+				  act_int = act_ch_arr[nibble_cnt]-55;
+			  else
+				  act_int = act_ch_arr[nibble_cnt]-0x30;
+			  golden_act_buf = golden_act_buf << 4;
+			  golden_act_buf = golden_act_buf | (act_int&0xF);
+		  }
+		  log_for_fpga = 0;
+		  for(int word_cnt=0; word_cnt<word_cnt_max; word_cnt++){
+			  log_for_fpga = log_for_fpga | ((ap_uint<CH>)packedOut[ACT_BASE + (layer_cnt*ACT_OFFSET) + y*(WIDTH*word_cnt_max) + (x*word_cnt_max) + word_cnt] << (word_cnt*64));
+		  }
+		  cout << hex << &packedOut[ACT_BASE + (layer_cnt*ACT_OFFSET) + y*(WIDTH*word_cnt_max) + (x*word_cnt_max)] << ": ";
+		  cout << log_for_fpga << endl;
+		  if(golden_act_buf!=log_for_fpga){
+			  cout << "act differ @ (" << y << "," << x <<")" << endl;
+		  }
+
+//		  cout << hex << golden_act_buf << endl;
+	  }
+	}
+}
+#endif
 
 template<unsigned int inWidth, unsigned int outWidth, typename LowPrecType>
 /* hwkim commented
@@ -394,7 +448,9 @@ std::vector<int>  testPrebuiltCIFAR10_from_image(std::vector<tiny_cnn::vec_t> & 
   }
   // allocate host-side buffers for packed input and outputs
   ExtMemWord * packedImages = new ExtMemWord[(count * psi)];
-  ExtMemWord * packedOut = new ExtMemWord[(count * pso)];
+  // hwkim modified for fpga debug (temp)
+  //ExtMemWord * packedOut = new ExtMemWord[(count * pso)];
+  ExtMemWord * packedOut = new ExtMemWord[(count * pso) + ACT_BASE + 10*ACT_OFFSET + (480*360*5)];	//480*360*5 -> # of 64-bit word of last layer
   
   // hwkim fixed bug of padding & modified for segmentation
   //tiny_cnn::chaninterleave_layer<tiny_cnn::activation::identity> interleaver(3, 32 * 32, false);
@@ -435,6 +491,29 @@ std::vector<int>  testPrebuiltCIFAR10_from_image(std::vector<tiny_cnn::vec_t> & 
 //  for(unsigned int j = 0; j < numCategories; j++) {
 //    result.push_back(outTest[j]);
 //  }
+
+
+  // hwkim added for FPGA debug
+#ifdef FPGA_DEBUG
+//  ifstream activation_log_file;
+//  int ch_out[11] 		= { 64, 64,128,128,256,256,128,128, 64, 64, 11};
+//  int out_dim[11] 	= {480,480,240,240,120,120,240,240,480,480,480};
+//  int out_height[11]	= {360,360,180,180, 90, 90,180,180,360,360,360};//  ap_uint<256> golden_act_buf;
+  confirm_activation_for_fpga_debug<64,480,360>(0,packedOut);
+  confirm_activation_for_fpga_debug<64,480,360>(1,packedOut);
+  confirm_activation_for_fpga_debug<128,240,180>(2,packedOut);
+  confirm_activation_for_fpga_debug<128,240,180>(3,packedOut);
+  confirm_activation_for_fpga_debug<256,120,90>(4,packedOut);
+  confirm_activation_for_fpga_debug<256,120,90>(5,packedOut);
+  confirm_activation_for_fpga_debug<128,240,180>(6,packedOut);
+  confirm_activation_for_fpga_debug<128,240,180>(7,packedOut);
+  confirm_activation_for_fpga_debug<64,480,360>(8,packedOut);
+  confirm_activation_for_fpga_debug<64,480,360>(9,packedOut);
+  confirm_activation_for_fpga_debug<11*24,480,360>(10,packedOut);
+  cout << dec;
+#endif
+
+
 #ifdef ACTIVATION_LOG
   std::string label_file_path = golden_file_dir + "2DLabelOutput.txt";
   ifstream label_file(label_file_path);

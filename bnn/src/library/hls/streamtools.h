@@ -97,7 +97,14 @@ void StreamingDataWidthConverter_Batch(hls::stream<ap_uint<InWidth> > & in,
   if (InWidth > OutWidth) {
     // emit multiple output words per input word read
     CASSERT_DATAFLOW(InWidth % OutWidth == 0);
-    const unsigned int outPerIn = InWidth / OutWidth;
+    // hwkim modified for remainder
+    //const unsigned int outPerIn = InWidth / OutWidth;
+    unsigned int outPerIn;
+    if(InWidth % OutWidth == 0)
+    	outPerIn = InWidth / OutWidth;
+    else
+    	outPerIn = (InWidth / OutWidth) + 1;
+
     const unsigned int totalIters = NumInWords * outPerIn * numReps;
     unsigned int o = 0;
     ap_uint<InWidth> ei = 0;
