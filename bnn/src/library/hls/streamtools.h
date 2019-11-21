@@ -167,6 +167,54 @@ void StreamingDataWidthConverter_Batch(hls::stream<ap_uint<InWidth> > & in,
   }
 }
 
+#ifdef FPGA_DEBUG
+template<unsigned int InWidth,		// width of input stream
+		unsigned int OutWidth,		// width of output stream
+		unsigned int NumInWords		// number of input words to process
+>
+void StreamingDataWidthConvert_Stream2Mem(
+		hls::stream<ap_uint<InWidth> > & in,
+		ap_uint<OutWidth> * out,
+		const unsigned int numReps)
+{
+  if (InWidth > OutWidth) {
+    // emit multiple output words per input word read
+    CASSERT_DATAFLOW(InWidth % OutWidth == 0);
+    // hwkim modified for remainder
+    //const unsigned int outPerIn = InWidth / OutWidth;
+    unsigned int outPerIn;
+    if(InWidth % OutWidth == 0)
+    	outPerIn = InWidth / OutWidth;
+    else
+    	outPerIn = (InWidth / OutWidth) + 1;
+
+    const unsigned int totalIters = NumInWords * outPerIn * numReps;
+    unsigned int o = 0;
+    ap_uint<InWidth> ei = 0;
+    for (unsigned int t = 0; t < totalIters; t++) {
+#pragma HLS PIPELINE II=1
+      if (o == 0)
+        ei = in.read();
+      ap_uint<OutWidth> eo = ei(OutWidth - 1, 0);
+      out[t] = eo;
+      ei = ei >> OutWidth;
+      o++;
+      if (o == outPerIn)
+        o = 0;
+    }
+  } else if (InWidth == OutWidth) {
+    for (unsigned int i = 0; i < NumInWords * numReps; i++) {
+#pragma HLS PIPELINE II=1
+      ap_uint<InWidth> e = in.read();
+      out[i] = e;
+    }
+  } else {
+	  cout << "Error: width of log for FPGA debug is wrong!!" << endl;
+  }
+}
+#endif
+
+
 template<unsigned IW, unsigned OW, unsigned N>
  class WidthAdjustedInputStream {
   hls::stream<ap_uint<OW>>  m_target;
@@ -190,6 +238,9 @@ template<unsigned IW, unsigned OW, unsigned N>
     /* hwkim commented
      * m_target -> 현재 class가 내장하고 있는 stream
      */
+//#ifdef FPGA_DEBUG
+//#pragma HLS STREAM variable=m_target depth=256
+//#endif
   }
   ~WidthAdjustedInputStream() {}
 
@@ -219,12 +270,29 @@ class WidthAdjustedOutputStream {
   hls::stream<ap_uint<IW>>  m_buffer;
   hls::stream<ap_uint<OW>> &m_target;
   unsigned const  m_reps;
+#ifdef FPGA_DEBUG
+  unsigned char log_en;
+#endif
   
  public:
-  WidthAdjustedOutputStream(hls::stream<ap_uint<OW> >&  target, unsigned const  reps) :
-	  m_target(target), m_reps(reps) {}
+  WidthAdjustedOutputStream(hls::stream<ap_uint<OW> >&  target, unsigned const  reps
+#ifdef FPGA_DEBUG
+		  , unsigned char log_en
+#endif
+		  ) :
+	  m_target(target), m_reps(reps)
+#ifdef FPGA_DEBUG
+  	  , log_en(log_en)
+#endif
+  {}
   ~WidthAdjustedOutputStream() {
+#ifdef FPGA_DEBUG
+	  if(log_en)
+#endif
     StreamingDataWidthConverter_Batch<IW, OW, N>(m_buffer, m_target, m_reps);
+//#ifdef FPGA_DEBUG
+//#pragma HLS STREAM variable=m_buffer depth=256
+//#endif
   }
 
  public:
@@ -235,10 +303,21 @@ class WidthAdjustedOutputStream {
 template<unsigned W, unsigned N>
  class WidthAdjustedOutputStream<W, W, N> {
   hls::stream<ap_uint<W>> &m_target;
+#ifdef FPGA_DEBUG
+  unsigned char log_en;
+#endif
 
  public:
-  WidthAdjustedOutputStream(hls::stream<ap_uint<W> >&  target, unsigned const  reps)
-    : m_target(target) {}
+  WidthAdjustedOutputStream(hls::stream<ap_uint<W> >&  target, unsigned const  reps
+#ifdef FPGA_DEBUG
+		  , unsigned char log_en
+#endif
+		  )
+    : m_target(target)
+#ifdef FPGA_DEBUG
+ , log_en(log_en)
+#endif
+ {}
   ~WidthAdjustedOutputStream() {}
 
  public:

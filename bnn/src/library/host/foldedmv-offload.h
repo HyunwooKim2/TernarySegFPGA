@@ -394,10 +394,11 @@ void confirm_activation_for_fpga_debug(int layer_cnt, ExtMemWord * packedOut){
 		  }
 		  log_for_fpga = 0;
 		  for(int word_cnt=0; word_cnt<word_cnt_max; word_cnt++){
-			  log_for_fpga = log_for_fpga | ((ap_uint<CH>)packedOut[ACT_BASE + (layer_cnt*ACT_OFFSET) + y*(WIDTH*word_cnt_max) + (x*word_cnt_max) + word_cnt] << (word_cnt*64));
+//			  log_for_fpga = log_for_fpga | ((ap_uint<CH>)packedOut[ACT_BASE + (layer_cnt*ACT_OFFSET) + y*(WIDTH*word_cnt_max) + (x*word_cnt_max) + word_cnt] << (word_cnt*64));
+			  log_for_fpga = log_for_fpga | ((ap_uint<CH>)packedOut[y*(WIDTH*word_cnt_max) + (x*word_cnt_max) + word_cnt] << (word_cnt*64));
 		  }
-		  cout << hex << &packedOut[ACT_BASE + (layer_cnt*ACT_OFFSET) + y*(WIDTH*word_cnt_max) + (x*word_cnt_max)] << ": ";
-		  cout << log_for_fpga << endl;
+//		  cout << hex << &packedOut[ACT_BASE + (layer_cnt*ACT_OFFSET) + y*(WIDTH*word_cnt_max) + (x*word_cnt_max)] << ": ";
+		  cout << hex << log_for_fpga << endl;
 		  if(golden_act_buf!=log_for_fpga){
 			  cout << "act differ @ (" << y << "," << x <<")" << endl;
 		  }
@@ -476,9 +477,11 @@ std::vector<int>  testPrebuiltCIFAR10_from_image(std::vector<tiny_cnn::vec_t> & 
 
   auto t1 = chrono::high_resolution_clock::now();
   // call the accelerator in compute mode
+  // hkim modified for FPGA debug
+  //BlackBoxJam((ap_uint<64> *)packedImages, (ap_uint<64> *)packedOut, false, 0, 0, 0, 0, 0, count);
   BlackBoxJam((ap_uint<64> *)packedImages, (ap_uint<64> *)packedOut, false, 0, 0, 0, 0, 0, count);
   /* hwkim commented
-   * input, output array의 주소만 전달 -> DRAM 주소?(maybe)
+   * input, output array의 주소만 전달 -> DRAM 주소
    */
   auto t2 = chrono::high_resolution_clock::now();
 
@@ -495,21 +498,17 @@ std::vector<int>  testPrebuiltCIFAR10_from_image(std::vector<tiny_cnn::vec_t> & 
 
   // hwkim added for FPGA debug
 #ifdef FPGA_DEBUG
-//  ifstream activation_log_file;
-//  int ch_out[11] 		= { 64, 64,128,128,256,256,128,128, 64, 64, 11};
-//  int out_dim[11] 	= {480,480,240,240,120,120,240,240,480,480,480};
-//  int out_height[11]	= {360,360,180,180, 90, 90,180,180,360,360,360};//  ap_uint<256> golden_act_buf;
   confirm_activation_for_fpga_debug<64,480,360>(0,packedOut);
-  confirm_activation_for_fpga_debug<64,480,360>(1,packedOut);
-  confirm_activation_for_fpga_debug<128,240,180>(2,packedOut);
-  confirm_activation_for_fpga_debug<128,240,180>(3,packedOut);
-  confirm_activation_for_fpga_debug<256,120,90>(4,packedOut);
-  confirm_activation_for_fpga_debug<256,120,90>(5,packedOut);
-  confirm_activation_for_fpga_debug<128,240,180>(6,packedOut);
-  confirm_activation_for_fpga_debug<128,240,180>(7,packedOut);
-  confirm_activation_for_fpga_debug<64,480,360>(8,packedOut);
-  confirm_activation_for_fpga_debug<64,480,360>(9,packedOut);
-  confirm_activation_for_fpga_debug<11*24,480,360>(10,packedOut);
+//  confirm_activation_for_fpga_debug<64,480,360>(1,packedOut);
+//  confirm_activation_for_fpga_debug<128,240,180>(2,packedOut);
+//  confirm_activation_for_fpga_debug<128,240,180>(3,packedOut);
+//  confirm_activation_for_fpga_debug<256,120,90>(4,packedOut);
+//  confirm_activation_for_fpga_debug<256,120,90>(5,packedOut);
+//  confirm_activation_for_fpga_debug<128,240,180>(6,packedOut);
+//  confirm_activation_for_fpga_debug<128,240,180>(7,packedOut);
+//  confirm_activation_for_fpga_debug<64,480,360>(8,packedOut);
+//  confirm_activation_for_fpga_debug<64,480,360>(9,packedOut);
+//  confirm_activation_for_fpga_debug<11*24,480,360>(10,packedOut);
   cout << dec;
 #endif
 
