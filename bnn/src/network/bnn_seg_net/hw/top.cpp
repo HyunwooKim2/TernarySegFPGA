@@ -57,10 +57,10 @@
 //int pooling_layer_cnt = 0;
 #endif
 
-#ifdef FPGA_DEBUG
-#define ACT_BASE		49152		//49152*8=0x60000
-#define ACT_OFFSET	180224		//180224*8=0x160000
-#endif
+//#ifdef FPGA_DEBUG
+//#define ACT_BASE		49152		//49152*8=0x60000
+//#define ACT_OFFSET	180224		//180224*8=0x160000
+//#endif
 
 static BinaryWeights< L0_SIMD,  L0_PE,  L0_WMEM>  weights0;
 static BinaryWeights< L1_SIMD,  L1_PE,  L1_WMEM>  weights1;
@@ -101,15 +101,53 @@ string golden_file_dir = "/home/hwkim/work/params/guinness_params/camvid_params/
 string snapshot_dir = "/home/hwkim/work/params/finn_params/camvid_params/1017/snapshots/";
 #endif
 
+void integrate_stream(
+		stream<ap_uint<64>> &act_log1,
+		stream<ap_uint<64>> &act_log2,
+		stream<ap_uint<64>> &act_log3,
+		stream<ap_uint<64>> &act_log4,
+		stream<ap_uint<64>> &act_log5,
+		stream<ap_uint<64>> &act_log6,
+		stream<ap_uint<64>> &act_log7,
+		stream<ap_uint<64>> &act_log8,
+		stream<ap_uint<64>> &act_log9,
+		stream<ap_uint<64>> &act_log10,
+		stream<ap_uint<64>> &act_log11,
+		stream<ap_uint<64>> &category_out,
+		ap_uint<64> * out
+		){
+	int mem_idx=0;
+	for(int word_cnt=0; word_cnt<L0_ACT_SIZE_IN_64B; word_cnt++)
+		out[mem_idx++] = act_log1.read();
+	for(int word_cnt=0; word_cnt<L1_ACT_SIZE_IN_64B; word_cnt++)
+		out[mem_idx++] = act_log2.read();
+	for(int word_cnt=0; word_cnt<L2_ACT_SIZE_IN_64B; word_cnt++)
+		out[mem_idx++] = act_log3.read();
+	for(int word_cnt=0; word_cnt<L3_ACT_SIZE_IN_64B; word_cnt++)
+		out[mem_idx++] = act_log4.read();
+	for(int word_cnt=0; word_cnt<L4_ACT_SIZE_IN_64B; word_cnt++)
+		out[mem_idx++] = act_log5.read();
+	for(int word_cnt=0; word_cnt<L5_ACT_SIZE_IN_64B; word_cnt++)
+		out[mem_idx++] = act_log6.read();
+	for(int word_cnt=0; word_cnt<L6_ACT_SIZE_IN_64B; word_cnt++)
+		out[mem_idx++] = act_log7.read();
+	for(int word_cnt=0; word_cnt<L7_ACT_SIZE_IN_64B; word_cnt++)
+		out[mem_idx++] = act_log8.read();
+	for(int word_cnt=0; word_cnt<L8_ACT_SIZE_IN_64B; word_cnt++)
+		out[mem_idx++] = act_log9.read();
+	for(int word_cnt=0; word_cnt<L9_ACT_SIZE_IN_64B; word_cnt++)
+		out[mem_idx++] = act_log10.read();
+	for(int word_cnt=0; word_cnt<L10_ACT_SIZE_IN_64B; word_cnt++)
+		out[mem_idx++] = act_log11.read();
+	for(int word_cnt=0; word_cnt<CAT_SIZE_IN_64B; word_cnt++)
+		out[mem_idx++] = category_out.read();
+}
+
 // hwkim added to find inferred category
 template <unsigned int InStreamW, unsigned int OutStreamW>
 void infer_category(
 		stream<ap_uint<InStreamW>>& in,
-		stream<ap_uint<OutStreamW>>& out
-#ifdef FPGA_DEBUG
-		, unsigned char log_en
-#endif
-		)
+		stream<ap_uint<OutStreamW>>& out)
 {
 #ifdef ACTIVATION_LOG
 		string golden_score_file_name = golden_file_dir + "OutputScaleLayer.txt";
@@ -178,11 +216,7 @@ void infer_category(
 				out_buf = out_buf >> 16;
 				out_buf(63,48) = label;
 				if(x%4==3){
-//					out.write(out_buf);
-#ifdef FPGA_DEBUG
-					if(log_en)
-						out.write(out_buf);
-#endif
+					out.write(out_buf);
 					out_buf=0;
 				}
 				//static_cast<hls::stream<ap_uint<16>>&>(wa_out).write(label);
@@ -520,12 +554,7 @@ void DoMemInit(int targetLayer,
   }
 }
 
-void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps
-		// hwkim added for FPGA debug
-#ifdef FPGA_DEBUG
-		, unsigned int targetLayer
-#endif
-		) {
+void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 #pragma HLS DATAFLOW
   stream<ap_uint<64>> inter0("DoCompute.inter0");
 #pragma HLS STREAM variable=inter0 //depth=256
@@ -584,28 +613,33 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps
 	  stream<ap_uint<11*24>> inter11_log("DoCompute.inter11_log");
 	#pragma HLS STREAM variable=inter11_log //depth=256
 
-//	  stream<ap_uint<64>> inter1_1_log("DoCompute.inter1_1_log");
-//	#pragma HLS STREAM variable=inter1_1_log //depth=256
-//	  stream<ap_uint<64>> inter2_1_log("DoCompute.inter2_1_log");
-//	#pragma HLS STREAM variable=inter2_1_log //depth=256
-//	  stream<ap_uint<64>> inter3_1_log("DoCompute.inter3_1_log");
-//	#pragma HLS STREAM variable=inter3_1_log //depth=256
-//	  stream<ap_uint<64>> inter4_1_log("DoCompute.inter4_1_log");
-//	#pragma HLS STREAM variable=inter4_1_log //depth=256
-//	  stream<ap_uint<64>> inter5_1_log("DoCompute.inter5_1_log");
-//	#pragma HLS STREAM variable=inter5_1_log //depth=256
-//	  stream<ap_uint<64>> inter6_1_log("DoCompute.inter6_1_log");
-//	#pragma HLS STREAM variable=inter6_1_log //depth=256
-//	  stream<ap_uint<64>> inter7_1_log("DoCompute.inter7_1_log");
-//	#pragma HLS STREAM variable=inter7_1_log //depth=256
-//	  stream<ap_uint<64>> inter8_1_log("DoCompute.inter8_1_log");
-//	#pragma HLS STREAM variable=inter8_1_log //depth=256
-//	  stream<ap_uint<64>> inter9_1_log("DoCompute.inter9_1_log");
-//	#pragma HLS STREAM variable=inter9_1_log //depth=256
-//	  stream<ap_uint<64>> inter10_1_log("DoCompute.inter101__log");
-//	#pragma HLS STREAM variable=inter10_1_log //depth=256
-//	  stream<ap_uint<64>> inter11_1_log("DoCompute.inter11_1_log");
-//	#pragma HLS STREAM variable=inter11_1_log //depth=256
+	  stream<ap_uint<64>> integrated_log("DoCompute.integrated_log");
+	#pragma HLS STREAM variable=integrated_log //depth=256
+
+	  stream<ap_uint<64>> inter1_1_log("DoCompute.inter1_1_log");
+	#pragma HLS STREAM variable=inter1_1_log //depth=256
+	  stream<ap_uint<64>> inter2_1_log("DoCompute.inter2_1_log");
+	#pragma HLS STREAM variable=inter2_1_log //depth=256
+	  stream<ap_uint<64>> inter3_1_log("DoCompute.inter3_1_log");
+	#pragma HLS STREAM variable=inter3_1_log //depth=256
+	  stream<ap_uint<64>> inter4_1_log("DoCompute.inter4_1_log");
+	#pragma HLS STREAM variable=inter4_1_log //depth=256
+	  stream<ap_uint<64>> inter5_1_log("DoCompute.inter5_1_log");
+	#pragma HLS STREAM variable=inter5_1_log //depth=256
+	  stream<ap_uint<64>> inter6_1_log("DoCompute.inter6_1_log");
+	#pragma HLS STREAM variable=inter6_1_log //depth=256
+	  stream<ap_uint<64>> inter7_1_log("DoCompute.inter7_1_log");
+	#pragma HLS STREAM variable=inter7_1_log //depth=256
+	  stream<ap_uint<64>> inter8_1_log("DoCompute.inter8_1_log");
+	#pragma HLS STREAM variable=inter8_1_log //depth=256
+	  stream<ap_uint<64>> inter9_1_log("DoCompute.inter9_1_log");
+	#pragma HLS STREAM variable=inter9_1_log //depth=256
+	  stream<ap_uint<64>> inter10_1_log("DoCompute.inter101__log");
+	#pragma HLS STREAM variable=inter10_1_log //depth=256
+	  stream<ap_uint<64>> inter11_1_log("DoCompute.inter11_1_log");
+	#pragma HLS STREAM variable=inter11_1_log //depth=256
+	  stream<ap_uint<64>> category_out("DoCompute.category_out");
+	#pragma HLS STREAM variable=category_out
 #endif
 
   stream<ap_uint<64>> memOutStrm("DoCompute.memOutStrm");
@@ -622,15 +656,31 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps
 
   // hwkim modified for segmentation
   //const unsigned int outBits = L8_MH*16;
-  const unsigned int outBits = L10_OFM_DIM*L10_OFM_HEIGHT*16;
+  // hwkim modified for FPGA debug
+  //const unsigned int outBits = L10_OFM_DIM*L10_OFM_HEIGHT*16;
 #ifdef FPGA_DEBUG
-  unsigned char log_en;
+  const unsigned int outBits =
+		  (L0_OFM_DIM*L0_OFM_HEIGHT*L0_OFM_CH) +	/* layer 0 log */
+		  (L1_OFM_DIM*L1_OFM_HEIGHT*L1_OFM_CH) +	/* layer 1 log */
+		  (L2_OFM_DIM*L2_OFM_HEIGHT*L2_OFM_CH) +	/* layer 2 log */
+		  (L3_OFM_DIM*L3_OFM_HEIGHT*L3_OFM_CH) +	/* layer 3 log */
+		  (L4_OFM_DIM*L4_OFM_HEIGHT*L4_OFM_CH) +	/* layer 4 log */
+		  (L5_OFM_DIM*L5_OFM_HEIGHT*L5_OFM_CH) +	/* layer 5 log */
+		  (L6_OFM_DIM*L6_OFM_HEIGHT*L6_OFM_CH) +	/* layer 6 log */
+		  (L7_OFM_DIM*L7_OFM_HEIGHT*L7_OFM_CH) +	/* layer 7 log */
+		  (L8_OFM_DIM*L8_OFM_HEIGHT*L8_OFM_CH) +	/* layer 8 log */
+		  (L9_OFM_DIM*L9_OFM_HEIGHT*L9_OFM_CH) +	/* layer 9 log */
+		  (L10_OFM_DIM*L10_OFM_HEIGHT*(L10_OFM_CH*24 + 64 - (L10_OFM_CH*24 % 64))) +		/* layer 10 log */
+		  (L10_OFM_DIM*L10_OFM_HEIGHT*16);	/* output categories */
+#else
+  const unsigned int outBits = L10_OFM_DIM*L10_OFM_HEIGHT*16;
 #endif
+
 #ifdef SEP_SIM
   // hwkim modified for separated simulation
   //int start_layer = 10;
   int sep_sim_layer1_en = 0;
-  int sep_sim_layer2_en = 1;
+  int sep_sim_layer2_en = 0;
   int sep_sim_layer3_en = 0;
   int sep_sim_layer4_en = 0;
   int sep_sim_layer5_en = 0;
@@ -658,12 +708,6 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps
 	  //////////////////////////////////////////////////////////////////
 	  // Layer 1 - fixed point input, binary weight
 	  //////////////////////////////////////////////////////////////////
-#ifdef FPGA_DEBUG
-	  if(targetLayer==0)
-		  log_en=1;
-	  else
-		  log_en=0;
-#endif
 	  ConvLayer_Batch<L0_K, L0_IFM_CH, L0_IFM_DIM, L0_OFM_CH, L0_OFM_DIM,
 	  	  L0_IFM_HEIGHT, L0_OFM_HEIGHT, 1, 1, 1, 1, 1,
 #ifdef ACTIVATION_LOG
@@ -677,16 +721,8 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps
 		  (inter0_2, inter1,
 #ifdef FPGA_DEBUG
 			inter1_log,
-			log_en,
 #endif
 			weights0, threshs0, numReps, ap_resource_lut());
-
-//#ifdef FPGA_DEBUG
-//	  if(targetLayer!=0)
-//		  while(!inter1_log.empty())
-//			  inter1_log.read();
-//#endif
-
 
 #ifdef SEP_SIM
   // hwkim modified for separated simulation
@@ -714,12 +750,6 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps
     	// hwkim modified for padding
 //	  stream<ap_uint<64>> inter1_pad("DoCompute.inter1_pad");
 //	  insert_pad<L1_IFM_DIM, L1_IFM_HEIGHT, 64, 1, 1, 1, 1>(inter1, inter1_pad);
-#ifdef FPGA_DEBUG
-	  if(targetLayer==1)
-		  log_en=1;
-	  else
-		  log_en=0;
-#endif
 	  ConvLayer_Batch<L1_K, L1_IFM_CH, L1_IFM_DIM, L1_OFM_CH, L1_OFM_DIM,
 	  	  L1_IFM_HEIGHT, L1_OFM_HEIGHT, 1, 1, 1, 1, 1,
 #ifdef ACTIVATION_LOG
@@ -733,15 +763,8 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps
 		  (inter1, inter2,
 #ifdef FPGA_DEBUG
 			inter2_log,
-			log_en,
 #endif
 			weights1, threshs1, numReps, ap_resource_lut());
-
-//#ifdef FPGA_DEBUG
-//	  if(targetLayer!=1)
-//		  while(!inter2_log.empty())
-//			  inter2_log.read();
-//#endif
 
 #ifdef SEP_SIM
   // hwkim modified for separated simulation
@@ -768,12 +791,6 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps
 	  // hwkim modified for padding
 //	  stream<ap_uint<64>> inter2_pad("DoCompute.inter2_pad");
 //	  insert_pad<L2_IFM_DIM, L2_IFM_HEIGHT, 64, 0, 1, 0, 1>(inter2, inter2_pad);
-#ifdef FPGA_DEBUG
-	  if(targetLayer==2)
-		  log_en=1;
-	  else
-		  log_en=0;
-#endif
 	  ConvLayer_Batch<L2_K, L2_IFM_CH, L2_IFM_DIM, L2_OFM_CH, L2_OFM_DIM,
 	  	  L2_IFM_HEIGHT, L2_OFM_HEIGHT, 2, 0, 1, 0, 1,
 #ifdef ACTIVATION_LOG
@@ -787,15 +804,8 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps
 		  (inter2, inter3,
 #ifdef FPGA_DEBUG
 			inter3_log,
-			log_en,
 #endif
 			weights2, threshs2, numReps, ap_resource_lut());
-
-//#ifdef FPGA_DEBUG
-//	  if(targetLayer!=2)
-//		  while(!inter3_log.empty())
-//			  inter3_log.read();
-//#endif
 
 #ifdef SEP_SIM
   // hwkim modified for separated simulation
@@ -822,12 +832,6 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps
 	  // hwkim modified for padding
 //	  stream<ap_uint<128>> inter3_pad("DoCompute.inter3_pad");
 //	  insert_pad<L3_IFM_DIM, L3_IFM_HEIGHT, 128, 1, 1, 1, 1>(inter3, inter3_pad);
-#ifdef FPGA_DEBUG
-	  if(targetLayer==3)
-		  log_en=1;
-	  else
-		  log_en=0;
-#endif
 	  ConvLayer_Batch<L3_K, L3_IFM_CH, L3_IFM_DIM, L3_OFM_CH, L3_OFM_DIM, L3_IFM_HEIGHT, L3_OFM_HEIGHT,
 	  	  1, 1, 1, 1, 1,
 #ifdef ACTIVATION_LOG
@@ -840,15 +844,8 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps
 		  Recast<XnorMul>>(inter3, inter4,
 #ifdef FPGA_DEBUG
 	  	  inter4_log,
-		  log_en,
 #endif
 		  weights3, threshs3, numReps, ap_resource_lut());
-
-//#ifdef FPGA_DEBUG
-//	  if(targetLayer!=3)
-//		  while(!inter4_log.empty())
-//			  inter4_log.read();
-//#endif
 
 #ifdef SEP_SIM
   // hwkim modified for separated simulation
@@ -875,12 +872,6 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps
 		// hwkim modified for padding
 //	  stream<ap_uint<128>> inter4_pad("DoCompute.inter4_pad");
 //	  insert_pad<L4_IFM_DIM, L4_IFM_HEIGHT, 128, 0, 1, 0, 1>(inter4, inter4_pad);
-#ifdef FPGA_DEBUG
-	  if(targetLayer==4)
-		  log_en=1;
-	  else
-		  log_en=0;
-#endif
 	  ConvLayer_Batch<L4_K, L4_IFM_CH, L4_IFM_DIM, L4_OFM_CH, L4_OFM_DIM,
 		  L4_IFM_HEIGHT, L4_OFM_HEIGHT, 2, 0, 1, 0, 1,
 #ifdef ACTIVATION_LOG
@@ -894,15 +885,8 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps
 		  (inter4, inter5,
 #ifdef FPGA_DEBUG
 		  inter5_log,
-		  log_en,
 #endif
 		  weights4, threshs4, numReps, ap_resource_lut());
-
-//#ifdef FPGA_DEBUG
-//	  if(targetLayer!=4)
-//		  while(!inter5_log.empty())
-//			  inter5_log.read();
-//#endif
 
 #ifdef SEP_SIM
 	// hwkim modified for separated simulation
@@ -929,12 +913,6 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps
 		// hwkim modified for padding
 //	  stream<ap_uint<256>> inter5_pad("DoCompute.inter5_pad");
 //	  insert_pad<L5_IFM_DIM, L5_IFM_HEIGHT, 256, 1, 1, 1, 1>(inter5, inter5_pad);
-#ifdef FPGA_DEBUG
-	  if(targetLayer==5)
-		  log_en=1;
-	  else
-		  log_en=0;
-#endif
 	  ConvLayer_Batch<L5_K, L5_IFM_CH, L5_IFM_DIM, L5_OFM_CH, L5_OFM_DIM,
 		  L5_IFM_HEIGHT, L5_OFM_HEIGHT, 1, 1, 1, 1, 1,
 #ifdef ACTIVATION_LOG
@@ -948,15 +926,8 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps
 		  (inter5, inter6,
 #ifdef FPGA_DEBUG
 		  inter6_log,
-		  log_en,
 #endif
 		  weights5, threshs5, numReps, ap_resource_lut());
-
-//#ifdef FPGA_DEBUG
-//	  if(targetLayer!=5)
-//		  while(!inter6_log.empty())
-//			  inter6_log.read();
-//#endif
 
 #ifdef SEP_SIM
 	// hwkim modified for separated simulation
@@ -982,12 +953,6 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps
 #endif
 //	  stream<ap_uint<256>> inter6_pad("DoCompute.inter6_pad");
 //	  insert_pad<L6_IFM_DIM, L6_IFM_HEIGHT, 256, 1, 1, 1, 1>(inter6, inter6_pad);
-#ifdef FPGA_DEBUG
-	  if(targetLayer==6)
-		  log_en=1;
-	  else
-		  log_en=0;
-#endif
 	  UpConvLayer_Batch<L6_K, L6_IFM_CH, L6_IFM_DIM, L6_OFM_CH, L6_OFM_DIM,
 		  L6_IFM_HEIGHT, L6_OFM_HEIGHT, 1, 0, 1, 0, 1,
 #ifdef ACTIVATION_LOG
@@ -997,16 +962,12 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps
 		  (inter6, inter7,
 #ifdef FPGA_DEBUG
 		  inter7_log,
-		  log_en,
 #endif
 		  weights6, threshs6, numReps, ap_resource_lut());
 
 //#ifdef FPGA_DEBUG
-////	  StreamingDataWidthConverter_Batch<L6_OFM_CH, 64, (L6_OFM_DIM*L6_OFM_HEIGHT)>(inter7_log, inter7_1_log, 1);
-////	  Stream2Mem_Batch<64, (L6_OFM_DIM*L6_OFM_HEIGHT*L6_OFM_CH)/8>(inter7_1_log, &out[ACT_BASE+6*ACT_OFFSET], 1);
-//	  if(targetLayer!=6)
-//		  while(!inter7_log.empty())
-//			  inter7_log.read();
+//	  StreamingDataWidthConverter_Batch<L6_OFM_CH, 64, (L6_OFM_DIM*L6_OFM_HEIGHT)>(inter7_log, inter7_1_log, 1);
+//	  Stream2Mem_Batch<64, (L6_OFM_DIM*L6_OFM_HEIGHT*L6_OFM_CH)/8>(inter7_1_log, &out[ACT_BASE+6*ACT_OFFSET], 1);
 //#endif
 
 #ifdef SEP_SIM
@@ -1033,12 +994,6 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps
 #endif
 //	  stream<ap_uint<128>> inter7_pad("DoCompute.inter3_pad");
 //	  insert_pad<L7_IFM_DIM, L7_IFM_HEIGHT, 128, 1, 1, 1, 1>(inter7, inter7_pad);
-#ifdef FPGA_DEBUG
-	  if(targetLayer==7)
-		  log_en=1;
-	  else
-		  log_en=0;
-#endif
 	  ConvLayer_Batch<L7_K, L7_IFM_CH, L7_IFM_DIM, L7_OFM_CH, L7_OFM_DIM,
 		  L7_IFM_HEIGHT, L7_OFM_HEIGHT, 1, 1, 1, 1, 1,
 #ifdef ACTIVATION_LOG
@@ -1052,15 +1007,8 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps
 		  (inter7, inter8,
 #ifdef FPGA_DEBUG
 		  inter8_log,
-		  log_en,
 #endif
 		  weights7, threshs7, numReps, ap_resource_lut());
-
-//#ifdef FPGA_DEBUG
-//	  if(targetLayer!=7)
-//		  while(!inter8_log.empty())
-//			  inter8_log.read();
-//#endif
 
 #ifdef SEP_SIM
 	// hwkim modified for separated simulation
@@ -1086,12 +1034,6 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps
 #endif
 //	  stream<ap_uint<128>> inter8_pad("DoCompute.inter8_pad");
 //	  insert_pad<L8_IFM_DIM, L8_IFM_HEIGHT, 128, 0, 1, 0, 1>(inter8, inter8_pad);
-#ifdef FPGA_DEBUG
-	  if(targetLayer==8)
-		  log_en=1;
-	  else
-		  log_en=0;
-#endif
 		UpConvLayer_Batch<L8_K, L8_IFM_CH, L8_IFM_DIM, L8_OFM_CH, L8_OFM_DIM,
 		  L8_IFM_HEIGHT, L8_OFM_HEIGHT, 1, 0, 1, 0, 1,
 #ifdef ACTIVATION_LOG
@@ -1101,15 +1043,8 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps
 		  (inter8, inter9,
 #ifdef FPGA_DEBUG
 		  inter9_log,
-		  log_en,
 #endif
 		  weights8, threshs8, numReps, ap_resource_lut());
-
-//#ifdef FPGA_DEBUG
-//		  if(targetLayer!=8)
-//			  while(!inter9_log.empty())
-//				  inter9_log.read();
-//#endif
 
 #ifdef SEP_SIM
 	// hwkim modified for separated simulation
@@ -1134,12 +1069,6 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps
 	//if(start_layer < 10){
 	if(sep_sim_layer10_en){
 #endif
-#ifdef FPGA_DEBUG
-	  if(targetLayer==9)
-		  log_en=1;
-	  else
-		  log_en=0;
-#endif
 	  ConvLayer_Batch<L9_K, L9_IFM_CH, L9_IFM_DIM, L9_OFM_CH, L9_OFM_DIM,
 		  L9_IFM_HEIGHT, L9_OFM_HEIGHT, 1, 1, 1, 1, 1,
 #ifdef ACTIVATION_LOG
@@ -1153,15 +1082,8 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps
 		  (inter9, inter10,
 #ifdef FPGA_DEBUG
 		  inter10_log,
-		  log_en,
 #endif
 		  weights9, threshs9, numReps, ap_resource_lut());
-
-//#ifdef FPGA_DEBUG
-//	  if(targetLayer!=9)
-//		  while(!inter10_log.empty())
-//			  inter10_log.read();
-//#endif
 
 #ifdef SEP_SIM
 	// hwkim modified for separated simulation
@@ -1186,12 +1108,6 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps
 	//if(start_layer < 11){
 	if(sep_sim_layer11_en){
 #endif
-#ifdef FPGA_DEBUG
-	  if(targetLayer==10)
-		  log_en=1;
-	  else
-		  log_en=0;
-#endif
 	  ConvLayer_Batch<L10_K, L10_IFM_CH, L10_IFM_DIM, L10_OFM_CH, L10_OFM_DIM,
 		  L10_IFM_HEIGHT, L10_OFM_HEIGHT, 1, 1, 1, 1, 1,
 #ifdef ACTIVATION_LOG
@@ -1208,15 +1124,8 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps
 		  (inter10, inter11,
 #ifdef FPGA_DEBUG
 		  inter11_log,
-		  log_en,
 #endif
 		  weights10, threshs10, numReps, ap_resource_lut());
-
-//#ifdef FPGA_DEBUG
-//	  if(targetLayer!=10)
-//		  while(!inter11_log.empty())
-//			  inter11_log.read();
-//#endif
 
 //#ifdef ACTIVATION_LOG
 //	  activation_log<L10_OFM_DIM, L10_OFM_HEIGHT, L10_OFM_CH*16, 1>(inter11_log, 10);
@@ -1251,97 +1160,115 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps
 //	{
 //		WidthAdjustedOutputStream<16, 64, L10_OFM_DIM*L10_OFM_HEIGHT>  wa_out(memOutStrm, numReps);
 //	}	// region for calling destructor of wa_out
-#ifdef FPGA_DEBUG
-	if(targetLayer==11)
-		log_en=1;
-	else
-		log_en=0;
-#endif
-	infer_category<(11*24), 64>(inter11, memOutStrm
-#ifdef FPGA_DEBUG
-			, log_en
-#endif
-			);
+	// hwkim modified for FPGA debug
+	//infer_category<(11*24), 64>(inter11, memOutStrm);
+	infer_category<(11*24), 64>(inter11, category_out);
 
 	// hwkim modified for FPGA debug
 	//Stream2Mem_Batch<64, outBits/8>(memOutStrm, out, numReps);
 #ifdef FPGA_DEBUG
+	StreamingDataWidthConverter_Batch<L0_OFM_CH, 64, (L0_OFM_DIM*L0_OFM_HEIGHT)>(inter1_log, inter1_1_log, 1);
+	StreamingDataWidthConverter_Batch<L1_OFM_CH, 64, (L1_OFM_DIM*L1_OFM_HEIGHT)>(inter2_log, inter2_1_log, 1);
+	StreamingDataWidthConverter_Batch<L2_OFM_CH, 64, (L2_OFM_DIM*L2_OFM_HEIGHT)>(inter3_log, inter3_1_log, 1);
+	StreamingDataWidthConverter_Batch<L3_OFM_CH, 64, (L3_OFM_DIM*L3_OFM_HEIGHT)>(inter4_log, inter4_1_log, 1);
+	StreamingDataWidthConverter_Batch<L4_OFM_CH, 64, (L4_OFM_DIM*L4_OFM_HEIGHT)>(inter5_log, inter5_1_log, 1);
+	StreamingDataWidthConverter_Batch<L5_OFM_CH, 64, (L5_OFM_DIM*L5_OFM_HEIGHT)>(inter6_log, inter6_1_log, 1);
+	StreamingDataWidthConverter_Batch<L6_OFM_CH, 64, (L6_OFM_DIM*L6_OFM_HEIGHT)>(inter7_log, inter7_1_log, 1);
+	StreamingDataWidthConverter_Batch<L7_OFM_CH, 64, (L7_OFM_DIM*L7_OFM_HEIGHT)>(inter8_log, inter8_1_log, 1);
+	StreamingDataWidthConverter_Batch<L8_OFM_CH, 64, (L8_OFM_DIM*L8_OFM_HEIGHT)>(inter9_log, inter9_1_log, 1);
+	StreamingDataWidthConverter_Batch<L9_OFM_CH, 64, (L9_OFM_DIM*L9_OFM_HEIGHT)>(inter10_log, inter10_1_log, 1);
+	StreamingDataWidthConverter_Batch<(L10_OFM_CH*24), 64, (L10_OFM_DIM*L10_OFM_HEIGHT)>(inter11_log, inter11_1_log, 1);
+	integrate_stream(
+			inter1_1_log,
+			inter2_1_log,
+			inter3_1_log,
+			inter4_1_log,
+			inter5_1_log,
+			inter6_1_log,
+			inter7_1_log,
+			inter8_1_log,
+			inter9_1_log,
+			inter10_1_log,
+			inter11_1_log,
+			category_out,
+			out);
+
 //	if(targetLayer!=11)
 //		while(!memOutStrm.empty())
 //			memOutStrm.read();
-	switch(targetLayer){
-		case 0:
-//			StreamingDataWidthConverter_Batch<L0_OFM_CH, 64, (L0_OFM_DIM*L0_OFM_HEIGHT)>(inter1_log, inter1_1_log, 1);
-//			Stream2Mem_Batch<64, (L0_OFM_DIM*L0_OFM_HEIGHT*L0_OFM_CH)/8>(inter1_1_log, &out[ACT_BASE+0*ACT_OFFSET], 1);
-			StreamingDataWidthConvert_Stream2Mem<L0_OFM_CH, 64, (L0_OFM_DIM*L0_OFM_HEIGHT)>(inter1_log, out, 1);
-//			while(!inter1_log.empty())	inter1_log.read();
-//			while(!inter2_log.empty())	inter2_log.read();
-//			while(!inter3_log.empty())	inter3_log.read();
-//			while(!inter4_log.empty())	inter4_log.read();
-//			while(!inter5_log.empty())	inter5_log.read();
-//			while(!inter6_log.empty())	inter6_log.read();
-//			while(!inter7_log.empty())	inter7_log.read();
-//			while(!inter8_log.empty())	inter8_log.read();
-//			while(!inter9_log.empty())	inter9_log.read();
-//			while(!inter10_log.empty())	inter10_log.read();
-//			while(!inter11_log.empty())	inter11_log.read();
-//			while(!memOutStrm.empty())	memOutStrm.read();
-			break;
-		case 1:
-//			StreamingDataWidthConverter_Batch<L1_OFM_CH, 64, (L1_OFM_DIM*L1_OFM_HEIGHT)>(inter2_log, inter2_1_log, 1);
-//			Stream2Mem_Batch<64, (L1_OFM_DIM*L1_OFM_HEIGHT*L1_OFM_CH)/8>(inter2_1_log, &out[ACT_BASE+1*ACT_OFFSET], 1);
-			StreamingDataWidthConvert_Stream2Mem<L1_OFM_CH, 64, (L1_OFM_DIM*L1_OFM_HEIGHT)>(inter2_log, out, 1);
-			break;
-		case 2:
-//			StreamingDataWidthConverter_Batch<L2_OFM_CH, 64, (L2_OFM_DIM*L2_OFM_HEIGHT)>(inter3_log, inter3_1_log, 1);
-//			Stream2Mem_Batch<64, (L2_OFM_DIM*L2_OFM_HEIGHT*L2_OFM_CH)/8>(inter3_1_log, &out[ACT_BASE+2*ACT_OFFSET], 1);
-			StreamingDataWidthConvert_Stream2Mem<L2_OFM_CH, 64, (L2_OFM_DIM*L2_OFM_HEIGHT)>(inter3_log, out, 1);
-			break;
-		case 3:
-//			StreamingDataWidthConverter_Batch<L3_OFM_CH, 64, (L3_OFM_DIM*L3_OFM_HEIGHT)>(inter4_log, inter4_1_log, 1);
-//			Stream2Mem_Batch<64, (L3_OFM_DIM*L3_OFM_HEIGHT*L3_OFM_CH)/8>(inter4_1_log, &out[ACT_BASE+3*ACT_OFFSET], 1);
-			StreamingDataWidthConvert_Stream2Mem<L3_OFM_CH, 64, (L3_OFM_DIM*L3_OFM_HEIGHT)>(inter4_log, out, 1);
-			break;
-		case 4:
-//			StreamingDataWidthConverter_Batch<L4_OFM_CH, 64, (L4_OFM_DIM*L4_OFM_HEIGHT)>(inter5_log, inter5_1_log, 1);
-//			Stream2Mem_Batch<64, (L4_OFM_DIM*L4_OFM_HEIGHT*L4_OFM_CH)/8>(inter5_1_log, &out[ACT_BASE+4*ACT_OFFSET], 1);
-			StreamingDataWidthConvert_Stream2Mem<L4_OFM_CH, 64, (L4_OFM_DIM*L4_OFM_HEIGHT)>(inter5_log, out, 1);
-			break;
-		case 5:
-//			StreamingDataWidthConverter_Batch<L5_OFM_CH, 64, (L5_OFM_DIM*L5_OFM_HEIGHT)>(inter6_log, inter6_1_log, 1);
-//			Stream2Mem_Batch<64, (L5_OFM_DIM*L5_OFM_HEIGHT*L5_OFM_CH)/8>(inter6_1_log, &out[ACT_BASE+5*ACT_OFFSET], 1);
-			StreamingDataWidthConvert_Stream2Mem<L5_OFM_CH, 64, (L5_OFM_DIM*L5_OFM_HEIGHT)>(inter6_log, out, 1);
-			break;
-		case 6:
-//			StreamingDataWidthConverter_Batch<L6_OFM_CH, 64, (L6_OFM_DIM*L6_OFM_HEIGHT)>(inter7_log, inter7_1_log, 1);
-//			Stream2Mem_Batch<64, (L6_OFM_DIM*L6_OFM_HEIGHT*L6_OFM_CH)/8>(inter7_1_log, &out[ACT_BASE+6*ACT_OFFSET], 1);
-			StreamingDataWidthConvert_Stream2Mem<L6_OFM_CH, 64, (L6_OFM_DIM*L6_OFM_HEIGHT)>(inter7_log, out, 1);
-			break;
-		case 7:
-//			StreamingDataWidthConverter_Batch<L7_OFM_CH, 64, (L7_OFM_DIM*L7_OFM_HEIGHT)>(inter8_log, inter8_1_log, 1);
-//			Stream2Mem_Batch<64, (L7_OFM_DIM*L7_OFM_HEIGHT*L7_OFM_CH)/8>(inter8_1_log, &out[ACT_BASE+7*ACT_OFFSET], 1);
-			StreamingDataWidthConvert_Stream2Mem<L7_OFM_CH, 64, (L7_OFM_DIM*L7_OFM_HEIGHT)>(inter8_log, out, 1);
-			break;
-		case 8:
-//			StreamingDataWidthConverter_Batch<L8_OFM_CH, 64, (L8_OFM_DIM*L8_OFM_HEIGHT)>(inter9_log, inter9_1_log, 1);
-//			Stream2Mem_Batch<64, (L8_OFM_DIM*L8_OFM_HEIGHT*L8_OFM_CH)/8>(inter9_1_log, &out[ACT_BASE+8*ACT_OFFSET], 1);
-			StreamingDataWidthConvert_Stream2Mem<L8_OFM_CH, 64, (L8_OFM_DIM*L8_OFM_HEIGHT)>(inter9_log, out, 1);
-			break;
-		case 9:
-//			StreamingDataWidthConverter_Batch<L9_OFM_CH, 64, (L9_OFM_DIM*L9_OFM_HEIGHT)>(inter10_log, inter10_1_log, 1);
-//			Stream2Mem_Batch<64, (L9_OFM_DIM*L9_OFM_HEIGHT*L9_OFM_CH)/8>(inter10_1_log, &out[ACT_BASE+9*ACT_OFFSET], 1);
-			StreamingDataWidthConvert_Stream2Mem<L9_OFM_CH, 64, (L9_OFM_DIM*L9_OFM_HEIGHT)>(inter10_log, out, 1);
-			break;
-		case 10:
-//			StreamingDataWidthConverter_Batch<(L10_OFM_CH*24), 64, (L10_OFM_DIM*L10_OFM_HEIGHT)>(inter11_log, inter11_1_log, 1);
-//			Stream2Mem_Batch<64, (L10_OFM_DIM*L10_OFM_HEIGHT*(L10_OFM_CH*24 + 64 - (L10_OFM_CH*24 % 64)))/8>(inter11_1_log, &out[ACT_BASE+10*ACT_OFFSET], 1);
-				// (L10_OFM_CH*24 + 64 - (L10_OFM_CH*24 % 64)) for 64-bit align
-				// L10_OFM_CH*24=264 is not 64-bit aligned
-			StreamingDataWidthConvert_Stream2Mem<(L10_OFM_CH*24), 64, (L10_OFM_DIM*L10_OFM_HEIGHT)>(inter11_log, out, 1);
-			break;
-		case 11:
-			Stream2Mem_Batch<64, outBits/8>(memOutStrm, out, numReps);
-	}
+//	switch(targetLayer){
+//		case 0:
+////			StreamingDataWidthConverter_Batch<L0_OFM_CH, 64, (L0_OFM_DIM*L0_OFM_HEIGHT)>(inter1_log, inter1_1_log, 1);
+////			Stream2Mem_Batch<64, (L0_OFM_DIM*L0_OFM_HEIGHT*L0_OFM_CH)/8>(inter1_1_log, &out[ACT_BASE+0*ACT_OFFSET], 1);
+//			StreamingDataWidthConvert_Stream2Mem<L0_OFM_CH, 64, (L0_OFM_DIM*L0_OFM_HEIGHT)>(inter1_log, out, 1);
+////			while(!inter1_log.empty())	inter1_log.read();
+////			while(!inter2_log.empty())	inter2_log.read();
+////			while(!inter3_log.empty())	inter3_log.read();
+////			while(!inter4_log.empty())	inter4_log.read();
+////			while(!inter5_log.empty())	inter5_log.read();
+////			while(!inter6_log.empty())	inter6_log.read();
+////			while(!inter7_log.empty())	inter7_log.read();
+////			while(!inter8_log.empty())	inter8_log.read();
+////			while(!inter9_log.empty())	inter9_log.read();
+////			while(!inter10_log.empty())	inter10_log.read();
+////			while(!inter11_log.empty())	inter11_log.read();
+////			while(!memOutStrm.empty())	memOutStrm.read();
+//			break;
+//		case 1:
+////			StreamingDataWidthConverter_Batch<L1_OFM_CH, 64, (L1_OFM_DIM*L1_OFM_HEIGHT)>(inter2_log, inter2_1_log, 1);
+////			Stream2Mem_Batch<64, (L1_OFM_DIM*L1_OFM_HEIGHT*L1_OFM_CH)/8>(inter2_1_log, &out[ACT_BASE+1*ACT_OFFSET], 1);
+//			StreamingDataWidthConvert_Stream2Mem<L1_OFM_CH, 64, (L1_OFM_DIM*L1_OFM_HEIGHT)>(inter2_log, out, 1);
+//			break;
+//		case 2:
+////			StreamingDataWidthConverter_Batch<L2_OFM_CH, 64, (L2_OFM_DIM*L2_OFM_HEIGHT)>(inter3_log, inter3_1_log, 1);
+////			Stream2Mem_Batch<64, (L2_OFM_DIM*L2_OFM_HEIGHT*L2_OFM_CH)/8>(inter3_1_log, &out[ACT_BASE+2*ACT_OFFSET], 1);
+//			StreamingDataWidthConvert_Stream2Mem<L2_OFM_CH, 64, (L2_OFM_DIM*L2_OFM_HEIGHT)>(inter3_log, out, 1);
+//			break;
+//		case 3:
+////			StreamingDataWidthConverter_Batch<L3_OFM_CH, 64, (L3_OFM_DIM*L3_OFM_HEIGHT)>(inter4_log, inter4_1_log, 1);
+////			Stream2Mem_Batch<64, (L3_OFM_DIM*L3_OFM_HEIGHT*L3_OFM_CH)/8>(inter4_1_log, &out[ACT_BASE+3*ACT_OFFSET], 1);
+//			StreamingDataWidthConvert_Stream2Mem<L3_OFM_CH, 64, (L3_OFM_DIM*L3_OFM_HEIGHT)>(inter4_log, out, 1);
+//			break;
+//		case 4:
+////			StreamingDataWidthConverter_Batch<L4_OFM_CH, 64, (L4_OFM_DIM*L4_OFM_HEIGHT)>(inter5_log, inter5_1_log, 1);
+////			Stream2Mem_Batch<64, (L4_OFM_DIM*L4_OFM_HEIGHT*L4_OFM_CH)/8>(inter5_1_log, &out[ACT_BASE+4*ACT_OFFSET], 1);
+//			StreamingDataWidthConvert_Stream2Mem<L4_OFM_CH, 64, (L4_OFM_DIM*L4_OFM_HEIGHT)>(inter5_log, out, 1);
+//			break;
+//		case 5:
+////			StreamingDataWidthConverter_Batch<L5_OFM_CH, 64, (L5_OFM_DIM*L5_OFM_HEIGHT)>(inter6_log, inter6_1_log, 1);
+////			Stream2Mem_Batch<64, (L5_OFM_DIM*L5_OFM_HEIGHT*L5_OFM_CH)/8>(inter6_1_log, &out[ACT_BASE+5*ACT_OFFSET], 1);
+//			StreamingDataWidthConvert_Stream2Mem<L5_OFM_CH, 64, (L5_OFM_DIM*L5_OFM_HEIGHT)>(inter6_log, out, 1);
+//			break;
+//		case 6:
+////			StreamingDataWidthConverter_Batch<L6_OFM_CH, 64, (L6_OFM_DIM*L6_OFM_HEIGHT)>(inter7_log, inter7_1_log, 1);
+////			Stream2Mem_Batch<64, (L6_OFM_DIM*L6_OFM_HEIGHT*L6_OFM_CH)/8>(inter7_1_log, &out[ACT_BASE+6*ACT_OFFSET], 1);
+//			StreamingDataWidthConvert_Stream2Mem<L6_OFM_CH, 64, (L6_OFM_DIM*L6_OFM_HEIGHT)>(inter7_log, out, 1);
+//			break;
+//		case 7:
+////			StreamingDataWidthConverter_Batch<L7_OFM_CH, 64, (L7_OFM_DIM*L7_OFM_HEIGHT)>(inter8_log, inter8_1_log, 1);
+////			Stream2Mem_Batch<64, (L7_OFM_DIM*L7_OFM_HEIGHT*L7_OFM_CH)/8>(inter8_1_log, &out[ACT_BASE+7*ACT_OFFSET], 1);
+//			StreamingDataWidthConvert_Stream2Mem<L7_OFM_CH, 64, (L7_OFM_DIM*L7_OFM_HEIGHT)>(inter8_log, out, 1);
+//			break;
+//		case 8:
+////			StreamingDataWidthConverter_Batch<L8_OFM_CH, 64, (L8_OFM_DIM*L8_OFM_HEIGHT)>(inter9_log, inter9_1_log, 1);
+////			Stream2Mem_Batch<64, (L8_OFM_DIM*L8_OFM_HEIGHT*L8_OFM_CH)/8>(inter9_1_log, &out[ACT_BASE+8*ACT_OFFSET], 1);
+//			StreamingDataWidthConvert_Stream2Mem<L8_OFM_CH, 64, (L8_OFM_DIM*L8_OFM_HEIGHT)>(inter9_log, out, 1);
+//			break;
+//		case 9:
+////			StreamingDataWidthConverter_Batch<L9_OFM_CH, 64, (L9_OFM_DIM*L9_OFM_HEIGHT)>(inter10_log, inter10_1_log, 1);
+////			Stream2Mem_Batch<64, (L9_OFM_DIM*L9_OFM_HEIGHT*L9_OFM_CH)/8>(inter10_1_log, &out[ACT_BASE+9*ACT_OFFSET], 1);
+//			StreamingDataWidthConvert_Stream2Mem<L9_OFM_CH, 64, (L9_OFM_DIM*L9_OFM_HEIGHT)>(inter10_log, out, 1);
+//			break;
+//		case 10:
+////			StreamingDataWidthConverter_Batch<(L10_OFM_CH*24), 64, (L10_OFM_DIM*L10_OFM_HEIGHT)>(inter11_log, inter11_1_log, 1);
+////			Stream2Mem_Batch<64, (L10_OFM_DIM*L10_OFM_HEIGHT*(L10_OFM_CH*24 + 64 - (L10_OFM_CH*24 % 64)))/8>(inter11_1_log, &out[ACT_BASE+10*ACT_OFFSET], 1);
+//				// (L10_OFM_CH*24 + 64 - (L10_OFM_CH*24 % 64)) for 64-bit align
+//				// L10_OFM_CH*24=264 is not 64-bit aligned
+//			StreamingDataWidthConvert_Stream2Mem<(L10_OFM_CH*24), 64, (L10_OFM_DIM*L10_OFM_HEIGHT)>(inter11_log, out, 1);
+//			break;
+//		case 11:
+//			Stream2Mem_Batch<64, outBits/8>(memOutStrm, out, numReps);
+//	}
 //	cout << "inter1: " << inter1_log.size() << endl;
 //	cout << "inter2: " << inter2_log.size() << endl;
 //	cout << "inter3: " << inter3_log.size() << endl;
@@ -1354,6 +1281,8 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps
 //	cout << "inter10: " << inter10_log.size() << endl;
 //	cout << "inter11: " << inter11_log.size() << endl;
 #endif
+
+//	Stream2Mem_Batch<64, outBits/8>(memOutStrm, out, numReps);
 
 }
 
@@ -1429,11 +1358,6 @@ void BlackBoxJam(ap_uint<64> *in, ap_uint<64> *out, bool doInit,
     DoMemInit(targetLayer, targetMem, targetInd, targetThresh, val);
   } else {
     //DoCompute(in, out, numReps);
-	  DoCompute(in, out, 1
-			  // hwkim added for FPGA debug
-#ifdef FPGA_DEBUG
-			  , targetLayer
-#endif
-			  );
+	  DoCompute(in, out, 1);
   }
 }

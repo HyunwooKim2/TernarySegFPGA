@@ -388,10 +388,8 @@ template<
 >
 void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
 				  hls::stream<TO> &out,
-				  // hwkim modified for debug
 #ifdef FPGA_DEBUG
 				  hls::stream<TO> &out_log,
-				  unsigned char log_en,
 #endif
 				  TW  const &weights,
 				  TA  const &activation,
@@ -642,8 +640,7 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
 		  	}
 		  	out.write(outElem);
 #ifdef FPGA_DEBUG
-		  	if(log_en)
-		  		out_log.write(outElem);
+			out_log.write(outElem);
 #endif
 		  	// hwkim modified for positive only accumulation
 	  		fan_in=0;
@@ -753,10 +750,8 @@ template<
 >
 void Matrix_Vector_Activate_Batch_Skipping(hls::stream<TI> & in,
 				  hls::stream<TO> &out,
-				  // hwkim modified for debug
 #ifdef FPGA_DEBUG
 				  hls::stream<TO> &out_log,
-				  unsigned char log_en,
 #endif
 				  TW  const &weights,
 				  TA  const &activation,
@@ -964,8 +959,7 @@ void Matrix_Vector_Activate_Batch_Skipping(hls::stream<TI> & in,
       }
      out.write(outElem);
 #ifdef FPGA_DEBUG
-     if(log_en)
-    	 out_log.write(outElem);
+	 out_log.write(outElem);
 #endif
       // hwkim modified for debug
 #ifdef ACTIVATION_LOG

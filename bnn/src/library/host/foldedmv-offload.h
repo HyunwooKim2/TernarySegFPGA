@@ -357,8 +357,21 @@ void testPrebuiltCIFAR10(std::vector<tiny_cnn::vec_t> & imgs, std::vector<tiny_c
 // hwkim added for FPGA debug
 #ifdef FPGA_DEBUG
 
-#define ACT_BASE		49152		//49152*8=0x60000
-#define ACT_OFFSET	180224		//180224*8=0x160000
+#include "config.h"
+//#define ACT_BASE		49152		//49152*8=0x60000
+//#define ACT_OFFSET	180224		//180224*8=0x160000
+
+//#define L0_WORD_OFFSET		(L10_OFM_DIM*L10_OFM_HEIGHT*16)/64
+//#define L1_WORD_OFFSET		(L0_WORD_OFFSET + (L0_OFM_DIM*L0_OFM_HEIGHT*L0_OFM_CH)/64)
+//#define L2_WORD_OFFSET		(L1_WORD_OFFSET + (L1_OFM_DIM*L1_OFM_HEIGHT*L1_OFM_CH)/64)
+//#define L3_WORD_OFFSET		(L2_WORD_OFFSET + (L2_OFM_DIM*L2_OFM_HEIGHT*L2_OFM_CH)/64)
+//#define L4_WORD_OFFSET		(L3_WORD_OFFSET + (L3_OFM_DIM*L3_OFM_HEIGHT*L3_OFM_CH)/64)
+//#define L5_WORD_OFFSET		(L4_WORD_OFFSET + (L4_OFM_DIM*L4_OFM_HEIGHT*L4_OFM_CH)/64)
+//#define L6_WORD_OFFSET		(L5_WORD_OFFSET + (L5_OFM_DIM*L5_OFM_HEIGHT*L5_OFM_CH)/64)
+//#define L7_WORD_OFFSET		(L6_WORD_OFFSET + (L6_OFM_DIM*L6_OFM_HEIGHT*L6_OFM_CH)/64)
+//#define L8_WORD_OFFSET		(L7_WORD_OFFSET + (L7_OFM_DIM*L7_OFM_HEIGHT*L7_OFM_CH)/64)
+//#define L9_WORD_OFFSET		(L8_WORD_OFFSET + (L8_OFM_DIM*L8_OFM_HEIGHT*L8_OFM_CH)/64)
+//#define L10_WORD_OFFSET		(L9_WORD_OFFSET + (L9_OFM_DIM*L9_OFM_HEIGHT*L9_OFM_CH)/64)
 
 template<unsigned int CH, unsigned int WIDTH, unsigned int HEIGHT>
 void confirm_activation_for_fpga_debug(int layer_cnt, ExtMemWord * packedOut){
@@ -369,6 +382,19 @@ void confirm_activation_for_fpga_debug(int layer_cnt, ExtMemWord * packedOut){
 	char act_ch_arr[CH/4];
 	unsigned char act_int;
 	int word_cnt_max;
+	unsigned int dram_offset[11] = {
+			0,
+			L1_WORD_OFFSET,
+			L2_WORD_OFFSET,
+			L3_WORD_OFFSET,
+			L4_WORD_OFFSET,
+			L5_WORD_OFFSET,
+			L6_WORD_OFFSET,
+			L7_WORD_OFFSET,
+			L8_WORD_OFFSET,
+			L9_WORD_OFFSET,
+			L10_WORD_OFFSET
+	};
 
 	activation_log_file_name = snapshot_dir + "activation_" + to_string(layer_cnt+1) + "_log.txt";
 	activation_log_file.open(activation_log_file_name);
@@ -395,9 +421,9 @@ void confirm_activation_for_fpga_debug(int layer_cnt, ExtMemWord * packedOut){
 		  log_for_fpga = 0;
 		  for(int word_cnt=0; word_cnt<word_cnt_max; word_cnt++){
 //			  log_for_fpga = log_for_fpga | ((ap_uint<CH>)packedOut[ACT_BASE + (layer_cnt*ACT_OFFSET) + y*(WIDTH*word_cnt_max) + (x*word_cnt_max) + word_cnt] << (word_cnt*64));
-			  log_for_fpga = log_for_fpga | ((ap_uint<CH>)packedOut[y*(WIDTH*word_cnt_max) + (x*word_cnt_max) + word_cnt] << (word_cnt*64));
+			  log_for_fpga = log_for_fpga | ((ap_uint<CH>)packedOut[dram_offset[layer_cnt] + y*(WIDTH*word_cnt_max) + (x*word_cnt_max) + word_cnt] << (word_cnt*64));
 		  }
-//		  cout << hex << &packedOut[ACT_BASE + (layer_cnt*ACT_OFFSET) + y*(WIDTH*word_cnt_max) + (x*word_cnt_max)] << ": ";
+		  cout << hex << &packedOut[dram_offset[layer_cnt] + y*(WIDTH*word_cnt_max) + (x*word_cnt_max)] << ": ";
 		  cout << hex << log_for_fpga << endl;
 		  if(golden_act_buf!=log_for_fpga){
 			  cout << "act differ @ (" << y << "," << x <<")" << endl;
@@ -451,7 +477,18 @@ std::vector<int>  testPrebuiltCIFAR10_from_image(std::vector<tiny_cnn::vec_t> & 
   ExtMemWord * packedImages = new ExtMemWord[(count * psi)];
   // hwkim modified for fpga debug (temp)
   //ExtMemWord * packedOut = new ExtMemWord[(count * pso)];
-  ExtMemWord * packedOut = new ExtMemWord[(count * pso) + ACT_BASE + 10*ACT_OFFSET + (480*360*5)];	//480*360*5 -> # of 64-bit word of last layer
+  ExtMemWord * packedOut = new ExtMemWord[(count * pso) +	/* output categories */
+										  L0_ACT_SIZE_IN_64B +	/* layer 0 activation size */
+										  L1_ACT_SIZE_IN_64B +	/* layer 1 activation size */
+										  L2_ACT_SIZE_IN_64B +	/* layer 2 activation size */
+										  L3_ACT_SIZE_IN_64B +	/* layer 3 activation size */
+										  L4_ACT_SIZE_IN_64B +	/* layer 4 activation size */
+										  L5_ACT_SIZE_IN_64B +	/* layer 5 activation size */
+										  L6_ACT_SIZE_IN_64B +	/* layer 6 activation size */
+										  L7_ACT_SIZE_IN_64B +	/* layer 7 activation size */
+										  L8_ACT_SIZE_IN_64B +	/* layer 8 activation size */
+										  L9_ACT_SIZE_IN_64B +	/* layer 9 activation size */
+										  L10_ACT_SIZE_IN_64B];		//480*360*5 -> # of 64-bit word of last layer activation
   
   // hwkim fixed bug of padding & modified for segmentation
   //tiny_cnn::chaninterleave_layer<tiny_cnn::activation::identity> interleaver(3, 32 * 32, false);
@@ -477,8 +514,6 @@ std::vector<int>  testPrebuiltCIFAR10_from_image(std::vector<tiny_cnn::vec_t> & 
 
   auto t1 = chrono::high_resolution_clock::now();
   // call the accelerator in compute mode
-  // hkim modified for FPGA debug
-  //BlackBoxJam((ap_uint<64> *)packedImages, (ap_uint<64> *)packedOut, false, 0, 0, 0, 0, 0, count);
   BlackBoxJam((ap_uint<64> *)packedImages, (ap_uint<64> *)packedOut, false, 0, 0, 0, 0, 0, count);
   /* hwkim commented
    * input, output array의 주소만 전달 -> DRAM 주소
@@ -499,16 +534,16 @@ std::vector<int>  testPrebuiltCIFAR10_from_image(std::vector<tiny_cnn::vec_t> & 
   // hwkim added for FPGA debug
 #ifdef FPGA_DEBUG
   confirm_activation_for_fpga_debug<64,480,360>(0,packedOut);
-//  confirm_activation_for_fpga_debug<64,480,360>(1,packedOut);
-//  confirm_activation_for_fpga_debug<128,240,180>(2,packedOut);
-//  confirm_activation_for_fpga_debug<128,240,180>(3,packedOut);
-//  confirm_activation_for_fpga_debug<256,120,90>(4,packedOut);
-//  confirm_activation_for_fpga_debug<256,120,90>(5,packedOut);
-//  confirm_activation_for_fpga_debug<128,240,180>(6,packedOut);
-//  confirm_activation_for_fpga_debug<128,240,180>(7,packedOut);
-//  confirm_activation_for_fpga_debug<64,480,360>(8,packedOut);
-//  confirm_activation_for_fpga_debug<64,480,360>(9,packedOut);
-//  confirm_activation_for_fpga_debug<11*24,480,360>(10,packedOut);
+  confirm_activation_for_fpga_debug<64,480,360>(1,packedOut);
+  confirm_activation_for_fpga_debug<128,240,180>(2,packedOut);
+  confirm_activation_for_fpga_debug<128,240,180>(3,packedOut);
+  confirm_activation_for_fpga_debug<256,120,90>(4,packedOut);
+  confirm_activation_for_fpga_debug<256,120,90>(5,packedOut);
+  confirm_activation_for_fpga_debug<128,240,180>(6,packedOut);
+  confirm_activation_for_fpga_debug<128,240,180>(7,packedOut);
+  confirm_activation_for_fpga_debug<64,480,360>(8,packedOut);
+  confirm_activation_for_fpga_debug<64,480,360>(9,packedOut);
+  confirm_activation_for_fpga_debug<11*24,480,360>(10,packedOut);
   cout << dec;
 #endif
 
