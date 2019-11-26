@@ -107,7 +107,7 @@ void infer_category(
 		stream<ap_uint<InStreamW>>& in,
 		stream<ap_uint<OutStreamW>>& out
 #ifdef FPGA_DEBUG
-		, unsigned char log_en
+		, stream<ap_uint<OutStreamW>>& out_log, unsigned char log_en
 #endif
 		)
 {
@@ -178,10 +178,10 @@ void infer_category(
 				out_buf = out_buf >> 16;
 				out_buf(63,48) = label;
 				if(x%4==3){
-//					out.write(out_buf);
+					out.write(out_buf);
 #ifdef FPGA_DEBUG
 					if(log_en)
-						out.write(out_buf);
+						out_log.write(out_buf);
 #endif
 					out_buf=0;
 				}
@@ -417,12 +417,14 @@ void read_activation_file(
 	unsigned long act_snap_long;
 	char act_snap_ch_arr[OutWidth/4];
 	unsigned char act_snap_int;
-	char act_snap_ch64[17];
+//	char act_snap_ch64[17];
 	int stream_cnt=0;
-	while(!feof(act_snapshot_file)){
+	while(1){
 		act_snap_buf = 0;
-		act_snap_ch64[16] = 0;
+//		act_snap_ch64[16] = 0;
 		fscanf(act_snapshot_file, "%s", act_snap_ch_arr);
+		if(feof(act_snapshot_file))
+			break;
 //		for(int word_cnt=0; word_cnt<OutWidth/64; word_cnt++){
 //			for(int i=0; i<64/4; i++){
 //				act_snap_ch64[i] = act_snap_ch[word_cnt*16+i];
@@ -441,9 +443,9 @@ void read_activation_file(
 		}
 		out_stream.write(act_snap_buf);
 		stream_cnt++;
-		//cout << dec << stream_cnt << " : " << hex << out_stream.read() << endl;
+//		cout << dec << stream_cnt << " : " << hex << out_stream.read() << endl;
 	}
-
+//	cout << out_stream.size() << endl;
 	fclose(act_snapshot_file);
 }
 
@@ -611,6 +613,8 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps
   stream<ap_uint<64>> memOutStrm("DoCompute.memOutStrm");
 #ifdef FPGA_DEBUG
 #pragma HLS STREAM variable=memOutStrm //depth=512
+  stream<ap_uint<64>> memOutStrm_log("DoCompute.memOutStrm_log");
+#pragma HLS STREAM variable=memOutStrm_log
 #endif
 
   // hwkim modified for padding & segmentation
@@ -686,7 +690,6 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps
 //		  while(!inter1_log.empty())
 //			  inter1_log.read();
 //#endif
-
 
 #ifdef SEP_SIM
   // hwkim modified for separated simulation
@@ -1259,7 +1262,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps
 #endif
 	infer_category<(11*24), 64>(inter11, memOutStrm
 #ifdef FPGA_DEBUG
-			, log_en
+			, memOutStrm_log, log_en
 #endif
 			);
 
@@ -1340,8 +1343,9 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps
 			StreamingDataWidthConvert_Stream2Mem<(L10_OFM_CH*24), 64, (L10_OFM_DIM*L10_OFM_HEIGHT)>(inter11_log, out, 1);
 			break;
 		case 11:
-			Stream2Mem_Batch<64, outBits/8>(memOutStrm, out, numReps);
+			Stream2Mem_Batch<64, outBits/8>(memOutStrm_log, out, numReps);
 	}
+
 //	cout << "inter1: " << inter1_log.size() << endl;
 //	cout << "inter2: " << inter2_log.size() << endl;
 //	cout << "inter3: " << inter3_log.size() << endl;
@@ -1353,7 +1357,14 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps
 //	cout << "inter9: " << inter9_log.size() << endl;
 //	cout << "inter10: " << inter10_log.size() << endl;
 //	cout << "inter11: " << inter11_log.size() << endl;
+
+	for(int word_cnt=0; word_cnt<(480*360/4); word_cnt++)
+		memOutStrm.read();
+#else
+	Stream2Mem_Batch<64, outBits/8>(memOutStrm, out, numReps);
 #endif
+
+
 
 }
 

@@ -116,20 +116,13 @@ void ConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
   WidthAdjustedOutputStream <PE*TDstI::width, OutStreamW,
   // hwkim modified for segmentation
   	  //OFMDim * OFMDim * (OFMChannels / PE)> mvOut (out,  reps);
-  	  OFMDim * OFMHeight * (OFMChannels / PE)> mvOut (out,  reps
+  	  OFMDim * OFMHeight * (OFMChannels / PE)> mvOut (out,  reps);
+
 #ifdef FPGA_DEBUG
-  			  , (unsigned char)1	//log_en
-#endif
-  			  );
-#ifdef FPGA_DEBUG
-  WidthAdjustedOutputStream <PE*TDstI::width, OutStreamW, OFMDim * OFMHeight * (OFMChannels / PE)> mvOut_log (out_log,  reps, log_en);
+  WidthAdjustedLogStream <PE*TDstI::width, OutStreamW, OFMDim * OFMHeight * (OFMChannels / PE)> mvOut_log (out_log,  reps, log_en);
 #endif
 
   hls::stream<ap_uint<SIMD*TSrcI::width> > convInp("StreamingConvLayer_Batch.convInp");
-  // hwkim added for FPGA debug
-//#ifdef FPGA_DEBUG
-//#pragma HLS STREAM variable=convInp depth=256
-//#endif
 
   ConvolutionInputGenerator<ConvKernelDim, IFMChannels, TSrcI::width, IFMDim, OFMDim,
 	  IFMHeight, OFMHeight, Top, Bottom, Left, Right,	// hwkim added for segmentation
@@ -207,19 +200,12 @@ void UpConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
   unsigned const InpPerImage = (float)(IFMDim*IFMHeight*IFMChannels)/InStreamW * TSrcI::width;
 
   WidthAdjustedInputStream <InStreamW, SIMD*TSrcI::width, InpPerImage>  wa_in (in,  reps);
-  WidthAdjustedOutputStream <PE*TDstI::width, OutStreamW, OFMDim * OFMHeight * (OFMChannels / PE)> mvOut (out,  reps
+  WidthAdjustedOutputStream <PE*TDstI::width, OutStreamW, OFMDim * OFMHeight * (OFMChannels / PE)> mvOut (out,  reps);
 #ifdef FPGA_DEBUG
-		  , (unsigned char)1	//log_en
-#endif
-		  );
-#ifdef FPGA_DEBUG
-  WidthAdjustedOutputStream <PE*TDstI::width, OutStreamW, OFMDim * OFMHeight * (OFMChannels / PE)> mvOut_log (out_log,  reps, log_en);
+  WidthAdjustedLogStream <PE*TDstI::width, OutStreamW, OFMDim * OFMHeight * (OFMChannels / PE)> mvOut_log (out_log,  reps, log_en);
 #endif
 
   hls::stream<ap_uint<SIMD*TSrcI::width> > convInp("StreamingConvLayer_Batch.convInp");
-//#ifdef FPGA_DEBUG
-//#pragma HLS STREAM variable=convInp depth=256
-//#endif
 
   TConvolutionInputGenerator<ConvKernelDim, IFMChannels, TSrcI::width, IFMDim, OFMDim, IFMHeight, OFMHeight,
   	  //Top, Bottom, Left, Right,

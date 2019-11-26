@@ -479,7 +479,7 @@ std::vector<int>  testPrebuiltCIFAR10_from_image(std::vector<tiny_cnn::vec_t> & 
   // call the accelerator in compute mode
   // hkim modified for FPGA debug
   //BlackBoxJam((ap_uint<64> *)packedImages, (ap_uint<64> *)packedOut, false, 0, 0, 0, 0, 0, count);
-  BlackBoxJam((ap_uint<64> *)packedImages, (ap_uint<64> *)packedOut, false, 0, 0, 0, 0, 0, count);
+  BlackBoxJam((ap_uint<64> *)packedImages, (ap_uint<64> *)packedOut, false, 1, 0, 0, 0, 0, count);
   /* hwkim commented
    * input, output array의 주소만 전달 -> DRAM 주소
    */
