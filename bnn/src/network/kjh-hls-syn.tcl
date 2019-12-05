@@ -68,16 +68,23 @@ open_project $config_proj_name
 
 # hwkim modified for activation log for csim
 add_files $config_hwsrcdir/top.cpp -cflags "-std=c++0x -I$config_bnnlibdir -DACTIVATION_LOG -DSEP_SIM -DFPGA_DEBUG"
-#add_files $config_hwsrcdir/top.cpp -cflags "-std=c++0x -I$config_bnnlibdir -DFPGA_DEBUG"
+# for synthesis
+#add_files $config_hwsrcdir/top.cpp -cflags "-std=c++0x -I$config_bnnlibdir -DFPGA_DEBUG"	#for FPGA debug
+#add_files $config_hwsrcdir/top.cpp -cflags "-std=c++0x -I$config_bnnlibdir"
 
 # hwkim modified for activation log for csim
 add_files -tb $config_hwsrcdir/../sw/main_python.cpp -cflags "-DOFFLOAD -DRAWHLS -DACTIVATION_LOG -DSEP_SIM -DFPGA_DEBUG -std=c++0x -I$config_bnnhostlibdir -I$config_bnnlibdir -I$config_tinycnn -I$config_hwsrcdir"
 add_files -tb $config_bnnhostlibdir/foldedmv-offload.cpp -cflags "-DOFFLOAD -DRAWHLS -DACTIVATION_LOG -DSEP_SIM -DFPGA_DEBUG -std=c++0x -I$config_bnnhostlibdir -I$config_bnnlibdir -I$config_tinycnn"
 add_files -tb $config_bnnhostlibdir/rawhls-offload.cpp -cflags "-DOFFLOAD -DRAWHLS -DACTIVATION_LOG -DSEP_SIM -DFPGA_DEBUG -std=c++0x -I$config_bnnhostlibdir -I$config_bnnlibdir -I$config_tinycnn"
 # for synthesis
+# 	for FPGA debug
 #add_files -tb $config_hwsrcdir/../sw/main_python.cpp -cflags "-DOFFLOAD -DRAWHLS -DFPGA_DEBUG -std=c++0x -I$config_bnnhostlibdir -I$config_bnnlibdir -I$config_tinycnn -I$config_hwsrcdir"
 #add_files -tb $config_bnnhostlibdir/foldedmv-offload.cpp -cflags "-DOFFLOAD -DRAWHLS -DFPGA_DEBUG -std=c++0x -I$config_bnnhostlibdir -I$config_bnnlibdir -I$config_tinycnn"
 #add_files -tb $config_bnnhostlibdir/rawhls-offload.cpp -cflags "-DOFFLOAD -DRAWHLS -DFPGA_DEBUG -std=c++0x -I$config_bnnhostlibdir -I$config_bnnlibdir -I$config_tinycnn"
+#	for normal operation
+#add_files -tb $config_hwsrcdir/../sw/main_python.cpp -cflags "-DOFFLOAD -DRAWHLS -std=c++0x -I$config_bnnhostlibdir -I$config_bnnlibdir -I$config_tinycnn -I$config_hwsrcdir"
+#add_files -tb $config_bnnhostlibdir/foldedmv-offload.cpp -cflags "-DOFFLOAD -DRAWHLS -std=c++0x -I$config_bnnhostlibdir -I$config_bnnlibdir -I$config_tinycnn"
+#add_files -tb $config_bnnhostlibdir/rawhls-offload.cpp -cflags "-DOFFLOAD -DRAWHLS -std=c++0x -I$config_bnnhostlibdir -I$config_bnnlibdir -I$config_tinycnn"
 
 set_top $config_toplevelfxn
 open_solution sol1

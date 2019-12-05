@@ -1246,7 +1246,7 @@ void BlackBoxJam(ap_uint<64> *in, ap_uint<64> *out, bool doInit,
   if (doInit) {
     DoMemInit(targetLayer, targetMem, targetInd, targetThresh, val);
   } else {
-    //DoCompute(in, out, numReps);
+//    DoCompute(in, out, numReps);
 	  DoCompute(in, out, 1);
   }
 }
