@@ -1,0 +1,2768 @@
+/*
+
+Xilinx Vivado v2019.1.1 (64-bit) [Major: 2019, Minor: 1]
+SW Build: 2580384 on Sat Jun 29 08:04:45 MDT 2019
+IP Build: 2579722 on Sat Jun 29 11:35:40 MDT 2019
+
+Process ID (PID): 12010
+License: Customer
+
+Current time: 	Thu Nov 28 08:46:52 KST 2019
+Time zone: 	Korean Standard Time (Asia/Seoul)
+
+OS: Ubuntu
+OS Version: 5.0.0-36-generic
+OS Architecture: amd64
+Available processors (cores): 12
+
+Display: :1
+Screen size: 1920x1080
+Screen resolution (DPI): 100
+Available screens: 2
+Available disk space: 22 GB
+Default font: family=Dialog,name=Dialog,style=plain,size=12
+
+Java version: 	9.0.4 64-bit
+Java home: 	/home/hwkim/Xilinx/Vivado/2019.1/tps/lnx64/jre9.0.4
+Java executable location: 	/home/hwkim/Xilinx/Vivado/2019.1/tps/lnx64/jre9.0.4/bin/java
+Java initial memory (-Xms): 	128 MB
+Java maximum memory (-Xmx):	 3 GB
+
+
+User name: 	hwkim
+User home directory: /home/hwkim
+User working directory: /home/hwkim/work/pynq-bnn/BNN-PYNQ
+User country: 	KR
+User language: 	ko
+User locale: 	ko_KR
+
+RDI_BASEROOT: /home/hwkim/Xilinx/Vivado
+HDI_APPROOT: /home/hwkim/Xilinx/Vivado/2019.1
+RDI_DATADIR: /home/hwkim/Xilinx/Vivado/2019.1/data
+RDI_BINDIR: /home/hwkim/Xilinx/Vivado/2019.1/bin
+
+Vivado preferences file location: /home/hwkim/.Xilinx/Vivado/2019.1/vivado.xml
+Vivado preferences directory: /home/hwkim/.Xilinx/Vivado/2019.1/
+Vivado layouts directory: /home/hwkim/.Xilinx/Vivado/2019.1/layouts
+PlanAhead jar file location: 	/home/hwkim/Xilinx/Vivado/2019.1/lib/classes/planAhead.jar
+Vivado log file location: 	/home/hwkim/work/pynq-bnn/BNN-PYNQ/vivado.log
+Vivado journal file location: 	/home/hwkim/work/pynq-bnn/BNN-PYNQ/vivado.jou
+Engine tmp dir: 	./.Xil/Vivado-12010-hwkim-MS-7B86
+
+Xilinx Environment Variables
+----------------------------
+XILINX: /home/hwkim/Xilinx/Vivado/2019.1/ids_lite/ISE
+XILINX_DSP: /home/hwkim/Xilinx/Vivado/2019.1/ids_lite/ISE
+XILINX_PLANAHEAD: /home/hwkim/Xilinx/Vivado/2019.1
+XILINX_SDK: /home/hwkim/Xilinx/SDK/2019.1
+XILINX_VIVADO: /home/hwkim/Xilinx/Vivado/2019.1
+XILINX_VIVADO_HLS: /home/hwkim/Xilinx/Vivado/2019.1
+
+
+GUI allocated memory:	154 MB
+GUI max memory:		3,072 MB
+Engine allocated memory: 853 MB
+
+Copyright 1986-2019 Xilinx, Inc. All Rights Reserved.
+
+*/
+
+// TclEventType: START_GUI
+// Tcl Message: start_gui 
+// WARNING: HEventQueue.dispatchEvent() is taking  1001 ms.
+// HMemoryUtils.trashcanNow. Engine heap size: 853 MB. GUI used memory: 48 MB. Current time: 11/28/19, 8:46:55 AM KST
+selectList(PAResourceQtoS.SyntheticaGettingStartedView_RECENT_PROJECTS, "/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.xpr", 0); // q (O, cl)
+// [GUI Memory]: 104 MB (+106290kb) [00:00:18]
+// [Engine Memory]: 896 MB (+787597kb) [00:00:18]
+// by (cl):  Open Project : addNotify
+// Opening Vivado Project: /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.xpr. Version: Vivado v2019.1.1 
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// Tcl Message: open_project /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.xpr 
+// TclEventType: MSGMGR_MOVEMSG
+// TclEventType: FILESET_TARGET_UCF_CHANGE
+// TclEventType: FILE_SET_NEW
+// TclEventType: RUN_COMPLETED
+// TclEventType: RUN_STATUS_CHANGE
+// TclEventType: FILESET_TARGET_UCF_CHANGE
+// TclEventType: RUN_COMPLETED
+// TclEventType: RUN_STATUS_CHANGE
+// TclEventType: RUN_COMPLETED
+// TclEventType: RUN_STATUS_CHANGE
+// TclEventType: RUN_COMPLETED
+// TclEventType: RUN_STATUS_CHANGE
+// TclEventType: RUN_COMPLETED
+// TclEventType: RUN_STATUS_CHANGE
+// TclEventType: RUN_COMPLETED
+// TclEventType: RUN_STATUS_CHANGE
+// TclEventType: RUN_COMPLETED
+// TclEventType: RUN_STATUS_CHANGE
+// TclEventType: RUN_COMPLETED
+// TclEventType: RUN_STATUS_CHANGE
+// TclEventType: FILESET_TARGET_UCF_CHANGE
+// TclEventType: RUN_CURRENT
+// TclEventType: PROJECT_DASHBOARD_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// HMemoryUtils.trashcanNow. Engine heap size: 958 MB. GUI used memory: 47 MB. Current time: 11/28/19, 8:47:10 AM KST
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: PROJECT_NEW
+// [Engine Memory]: 1,048 MB (+113263kb) [00:00:29]
+// [GUI Memory]: 110 MB (+1482kb) [00:00:30]
+// [GUI Memory]: 117 MB (+1001kb) [00:00:30]
+// [GUI Memory]: 124 MB (+1713kb) [00:00:31]
+// WARNING: HEventQueue.dispatchEvent() is taking  2482 ms.
+// Tcl Message: open_project /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.xpr 
+// Tcl Message: Scanning sources... Finished scanning sources 
+// Tcl Message: INFO: [IP_Flow 19-234] Refreshing IP repositories INFO: [IP_Flow 19-1700] Loaded user IP repository '/data_drive/bnn_seg_hls_project_backup/bnn_fpga_dbg_no_log_test_1127/sol1/impl/ip'. INFO: [IP_Flow 19-2313] Loaded Vivado IP repository '/home/hwkim/Xilinx/Vivado/2019.1/data/ip'. 
+// [Engine Memory]: 1,132 MB (+32961kb) [00:00:31]
+// WARNING: HEventQueue.dispatchEvent() is taking  1080 ms.
+// Tcl Message: open_project: Time (s): cpu = 00:00:20 ; elapsed = 00:00:13 . Memory (MB): peak = 6651.703 ; gain = 242.141 ; free physical = 10370 ; free virtual = 15313 
+// Project name: project_1; location: /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1; part: xczu7ev-ffvc1156-2-e
+// Elapsed time: 14 seconds
+dismissDialog("Open Project"); // by (cl)
+// [Engine Memory]: 1,191 MB (+2201kb) [00:00:35]
+// [Engine Memory]: 1,291 MB (+42441kb) [00:00:39]
+// Tcl Message: update_compile_order -fileset sources_1 
+// Elapsed time: 170 seconds
+selectTree(PAResourceEtoH.FlowNavigatorTreePanel_FLOW_NAVIGATOR_TREE, "[, IP Integrator, Open Block Design]", 7, false); // u (O, cl)
+// Run Command: PAResourceCommand.PACommandNames_OPEN_BLOCK_DESIGN
+// by (cl):  Open Block Design : addNotify
+// Tcl Message: open_bd_design {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/design_1.bd} 
+// TclEventType: LOAD_FEATURE
+// TclEventType: RSB_CHANGE_CURRENT_DIAGRAM
+// TclEventType: RSB_PROPERTY_CHANGE
+// TclEventType: LOAD_FEATURE
+// TclEventType: RSB_PROPERTY_CHANGE
+// TclEventType: RSB_OPEN_DIAGRAM
+// Tcl Message: Adding component instance block -- xilinx.com:ip:zynq_ultra_ps_e:3.3 - zynq_ultra_ps_e_0 
+// TclEventType: RSB_OPEN_DIAGRAM
+// TclEventType: RSB_CONNECTION_CHANGE
+closeView(PAResourceOtoP.PAViews_PROJECT_SUMMARY, "Project Summary"); // v
+// TclEventType: RSB_LOCK_CHANGE
+// TclEventType: RSB_CHANGE_CURRENT_DIAGRAM
+// TclEventType: RSB_LOCK_CHANGE
+// HMemoryUtils.trashcanNow. Engine heap size: 1,339 MB. GUI used memory: 74 MB. Current time: 11/28/19, 8:50:15 AM KST
+// TclEventType: RSB_CHANGE_CURRENT_DIAGRAM
+// TclEventType: RSB_LOCK_CHANGE
+// TclEventType: RSB_CHANGE_CURRENT_DIAGRAM
+// Tcl Message: open_bd_design: Time (s): cpu = 00:00:07 ; elapsed = 00:00:05 . Memory (MB): peak = 6911.695 ; gain = 0.000 ; free physical = 9845 ; free virtual = 14942 
+// 'bB' command handler elapsed time: 5 seconds
+dismissDialog("Open Block Design"); // by (cl)
+// [GUI Memory]: 132 MB (+1224kb) [00:03:30]
+// Elapsed time: 25 seconds
+selectCodeEditor(RDIResource.TclConsoleView_TCL_CONSOLE_CODE_EDITOR, 503, 68); // dt (af, cl)
+selectView(PAResourceOtoP.PAViews_SYSTEM, "System", 735, 337, 1155, 601, false, false, false, true, false); // gl (k, cl) - Popup Trigger
+selectMenu(PAResourceQtoS.SystemBuilderMenu_IP_DOCUMENTATION, "IP Documentation"); // ae (an, cl)
+selectMenu(PAResourceQtoS.SystemBuilderView_ORIENTATION, "Orientation"); // ae (an, cl)
+selectMenu(PAResourceQtoS.SystemBuilderView_PINNING, "Pinning"); // ae (an, cl)
+selectMenu(PAResourceQtoS.SystemBuilderView_PINNING, "Pinning"); // ae (an, cl)
+selectMenu(PAResourceQtoS.SystemBuilderMenu_IP_DOCUMENTATION, "IP Documentation"); // ae (an, cl)
+selectMenuItem(PAResourceCommand.PACommandNames_EDIT_IN_IP_PACKAGER, "Edit in IP Packager"); // ah (an, cl)
+// Run Command: PAResourceCommand.PACommandNames_EDIT_IN_IP_PACKAGER
+// k (cl): Edit in IP Packager: addNotify
+selectButton(RDIResource.BaseDialog_OK, "OK"); // a (k)
+// by (cl):  Edit in IP Packager : addNotify
+selectButton("OptionPane.button", "OK"); // JButton (A, H)
+// TclEventType: FILE_SET_NEW
+// TclEventType: RUN_ADD
+// TclEventType: RUN_CURRENT
+// TclEventType: PROJECT_DASHBOARD_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// TclEventType: PROJECT_NEW
+// Tcl Message: ipx::edit_ip_in_project -upgrade true -name BlackBoxJam_v1_0_project -directory /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.tmp/BlackBoxJam_v1_0_project /data_drive/bnn_seg_hls_project_backup/bnn_fpga_dbg_no_log_test_1127/sol1/impl/ip/component.xml 
+// TclEventType: PROJECT_NEW
+// WARNING: HEventQueue.dispatchEvent() is taking  1971 ms.
+// Tcl Message: INFO: [IP_Flow 19-234] Refreshing IP repositories INFO: [IP_Flow 19-1704] No user IP repositories specified INFO: [IP_Flow 19-2313] Loaded Vivado IP repository '/home/hwkim/Xilinx/Vivado/2019.1/data/ip'. 
+// TclEventType: FILE_SET_OPTIONS_CHANGE
+// [Engine Memory]: 1,357 MB (+1384kb) [00:04:08]
+// TclEventType: FILE_SET_OPTIONS_CHANGE
+// [GUI Memory]: 139 MB (+911kb) [00:04:08]
+// TclEventType: FILE_SET_OPTIONS_CHANGE
+// TclEventType: RSB_BITABEN_IPREPODATA_REFRESH
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: FILE_SET_CHANGE
+// Tcl Message: INFO: [IP_Flow 19-234] Refreshing IP repositories INFO: [IP_Flow 19-1700] Loaded user IP repository '/data_drive/bnn_seg_hls_project_backup/bnn_fpga_dbg_no_log_test_1127/sol1/impl/ip'. INFO: [IP_Flow 19-795] Syncing license key meta-data 
+// TclEventType: FILE_SET_CHANGE
+// [GUI Memory]: 147 MB (+632kb) [00:04:11]
+// TclEventType: FILE_SET_CHANGE
+// Tcl Message: INFO: [Common 17-14] Message 'filemgmt 56-99' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings. 
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: PACKAGER_CURRENT_CORE
+// Run Command: PAResourceCommand.PACommandNames_IP_PACKAGER
+// WARNING: HEventQueue.dispatchEvent() is taking  1142 ms.
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_MESSAGE_UPDATE
+// Tcl Message: ipx::edit_ip_in_project: Time (s): cpu = 00:00:27 ; elapsed = 00:00:11 . Memory (MB): peak = 6911.695 ; gain = 0.000 ; free physical = 9781 ; free virtual = 14884 
+// 'i' command handler elapsed time: 14 seconds
+// [Engine Memory]: 1,434 MB (+10123kb) [00:04:16]
+// Elapsed time: 11 seconds
+dismissDialog("Edit in IP Packager"); // by (cl)
+// HMemoryUtils.trashcanNow. Engine heap size: 1,451 MB. GUI used memory: 100 MB. Current time: 11/28/19, 8:51:05 AM KST
+// TclEventType: DG_GRAPH_STALE
+// TclEventType: FILE_SET_CHANGE
+// Tcl Message: update_compile_order -fileset sources_1 
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: DG_GRAPH_STALE
+// [GUI Memory]: 156 MB (+2235kb) [00:04:31]
+// Elapsed time: 80 seconds
+selectList(PAResourceOtoP.PackagerStepsPanel_PACKAGER_STEPS_LIST, "Review and Package", 7); // ar (O, cl)
+expandTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v)]", 2); // B (F, cl)
+expandTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v)]", 496); // B (F, cl)
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), Matrix_Vector_Activa_5_U0 : Matrix_Vector_Activa_5 (Matrix_Vector_Activa_5.v)]", 501, true); // B (F, cl) - Node
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), DoCompute_Block_pro_U0 : DoCompute_Block_pro (DoCompute_Block_pro.v)]", 503, true); // B (F, cl) - Node
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), StreamingDataWidthCo_8_U0 : StreamingDataWidthCo_8 (StreamingDataWidthCo_8.v)]", 502, false); // B (F, cl)
+// [GUI Memory]: 166 MB (+1780kb) [00:05:51]
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), Matrix_Vector_Activa_5_U0 : Matrix_Vector_Activa_5 (Matrix_Vector_Activa_5.v)]", 501, true); // B (F, cl) - Node
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), Matrix_Vector_Activa_5_U0 : Matrix_Vector_Activa_5 (Matrix_Vector_Activa_5.v)]", 501, true, false, false, false, false, true); // B (F, cl) - Double Click - Node
+selectCodeEditor("Matrix_Vector_Activa_5.v", 312, 174); // cl (w, cl)
+selectCodeEditor("Matrix_Vector_Activa_5.v", 90, 148); // cl (w, cl)
+selectCodeEditor("Matrix_Vector_Activa_5.v", 90, 148, false, false, false, false, true); // cl (w, cl) - Double Click
+selectCodeEditor("Matrix_Vector_Activa_5.v", 140, 160); // cl (w, cl)
+selectCodeEditor("Matrix_Vector_Activa_5.v", 140, 160, false, false, false, false, true); // cl (w, cl) - Double Click
+typeControlKey((HResource) null, "Matrix_Vector_Activa_5.v", 'c'); // cl (w, cl)
+// [Engine Memory]: 1,540 MB (+35259kb) [00:05:56]
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v)]", 496, true); // B (F, cl) - Node
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v)]", 496, true, false, false, false, false, true); // B (F, cl) - Double Click - Node
+selectCodeEditor("DoCompute.v", 302, 169); // cl (w, cl)
+selectCodeEditor("DoCompute.v", 170, 139); // cl (w, cl)
+// HMemoryUtils.trashcanNow. Engine heap size: 1,600 MB. GUI used memory: 121 MB. Current time: 11/28/19, 8:52:45 AM KST
+setText(RDIResource.HCodeEditor_SEARCH_TEXT_COMBO_BOX, "Matrix_Vector_Activa_5", true); // l (aT, cl)
+selectCodeEditor("DoCompute.v", 224, 86); // cl (w, cl)
+selectCodeEditor("DoCompute.v", 224, 86, false, false, false, false, true); // cl (w, cl) - Double Click
+selectCodeEditor("DoCompute.v", 264, 69); // cl (w, cl)
+selectCodeEditor("DoCompute.v", 264, 69, false, false, false, false, true); // cl (w, cl) - Double Click
+applyEnter(RDIResource.HCodeEditor_SEARCH_TEXT_COMBO_BOX, "Matrix_Vector_Activa_5_U0_out_V_V_din"); // l (aT, cl)
+selectCodeEditor("DoCompute.v", 197, 330); // cl (w, cl)
+selectCodeEditor("DoCompute.v", 197, 330, false, false, false, false, true); // cl (w, cl) - Double Click
+applyEnter(RDIResource.HCodeEditor_SEARCH_TEXT_COMBO_BOX, "mvOut_m_buffer_V_V_dout"); // l (aT, cl)
+applyEnter(RDIResource.HCodeEditor_SEARCH_TEXT_COMBO_BOX, "mvOut_m_buffer_V_V_dout"); // l (aT, cl)
+selectCodeEditor("DoCompute.v", 224, 277); // cl (w, cl)
+selectCodeEditor("DoCompute.v", 224, 277, false, false, false, false, true); // cl (w, cl) - Double Click
+applyEnter(RDIResource.HCodeEditor_SEARCH_TEXT_COMBO_BOX, "StreamingDataWidthCo_8_U0_out_V_V_din"); // l (aT, cl)
+selectCodeEditor("DoCompute.v", 166, 379); // cl (w, cl)
+selectCodeEditor("DoCompute.v", 166, 379, false, false, false, false, true); // cl (w, cl) - Double Click
+applyEnter(RDIResource.HCodeEditor_SEARCH_TEXT_COMBO_BOX, "inter1_V_V_dout"); // l (aT, cl)
+applyEnter(RDIResource.HCodeEditor_SEARCH_TEXT_COMBO_BOX, "inter1_V_V_dout"); // l (aT, cl)
+applyEnter(RDIResource.HCodeEditor_SEARCH_TEXT_COMBO_BOX, "inter1_V_V_dout"); // l (aT, cl)
+// [GUI Memory]: 182 MB (+7899kb) [00:06:35]
+expandTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v)]", 496); // B (F, cl)
+collapseTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), Matrix_Vector_Activa_5_U0 : Matrix_Vector_Activa_5 (Matrix_Vector_Activa_5.v)]", 501); // B (F, cl)
+selectCodeEditor("DoCompute.v", 237, 205); // cl (w, cl)
+selectCodeEditor("DoCompute.v", 247, 279); // cl (w, cl)
+selectCodeEditor("DoCompute.v", 247, 279, false, false, false, false, true); // cl (w, cl) - Double Click
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), DoCompute_Block_pro_U0 : DoCompute_Block_pro (DoCompute_Block_pro.v)]", 503, true); // B (F, cl) - Node
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), DoCompute_Block_pro_U0 : DoCompute_Block_pro (DoCompute_Block_pro.v)]", 503, true); // B (F, cl) - Node
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), DoCompute_Block_pro_U0 : DoCompute_Block_pro (DoCompute_Block_pro.v), Matrix_Vector_Activa_3_U0 : Matrix_Vector_Activa_3 (Matrix_Vector_Activa_3.v)]", 510, true, false, false, false, false, true); // B (F, cl) - Double Click - Node
+selectCodeEditor("DoCompute_Block_pro.v", 376, 243); // cl (w, cl)
+selectCodeEditor("DoCompute_Block_pro.v", 378, 216); // cl (w, cl)
+// Elapsed time: 17 seconds
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), DoCompute_Block_pro_U0 : DoCompute_Block_pro (DoCompute_Block_pro.v), Matrix_Vector_Activa_3_U0 : Matrix_Vector_Activa_3 (Matrix_Vector_Activa_3.v)]", 510, true); // B (F, cl) - Node
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), DoCompute_Block_pro_U0 : DoCompute_Block_pro (DoCompute_Block_pro.v)]", 503, true); // B (F, cl) - Node
+selectCodeEditor("DoCompute_Block_pro.v", 167, 166); // cl (w, cl)
+selectCodeEditor("DoCompute_Block_pro.v", 167, 166, false, false, false, false, true); // cl (w, cl) - Double Click
+selectCodeEditor("DoCompute_Block_pro.v", 144, 232); // cl (w, cl)
+selectCodeEditor("DoCompute_Block_pro.v", 144, 232, false, false, false, false, true); // cl (w, cl) - Double Click
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), DoCompute_Block_pro_U0 : DoCompute_Block_pro (DoCompute_Block_pro.v)]", 503, true); // B (F, cl) - Node
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), StreamingDataWidthCo_8_U0 : StreamingDataWidthCo_8 (StreamingDataWidthCo_8.v)]", 502, false); // B (F, cl)
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), Matrix_Vector_Activa_5_U0 : Matrix_Vector_Activa_5 (Matrix_Vector_Activa_5.v)]", 501, true); // B (F, cl) - Node
+collapseTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), DoCompute_Block_pro_U0 : DoCompute_Block_pro (DoCompute_Block_pro.v)]", 503); // B (F, cl)
+expandTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), DoCompute_Block_pro_U0 : DoCompute_Block_pro (DoCompute_Block_pro.v)]", 503); // B (F, cl)
+// Elapsed time: 11 seconds
+selectCodeEditor("DoCompute_Block_pro.v", 131, 223); // cl (w, cl)
+selectCodeEditor("DoCompute_Block_pro.v", 131, 223, false, false, false, false, true); // cl (w, cl) - Double Click
+applyEnter(RDIResource.HCodeEditor_SEARCH_TEXT_COMBO_BOX, "inter1_V_V_dout"); // l (aT, cl)
+applyEnter(RDIResource.HCodeEditor_SEARCH_TEXT_COMBO_BOX, "inter1_V_V_dout"); // l (aT, cl)
+applyEnter(RDIResource.HCodeEditor_SEARCH_TEXT_COMBO_BOX, "inter1_V_V_dout"); // l (aT, cl)
+applyEnter(RDIResource.HCodeEditor_SEARCH_TEXT_COMBO_BOX, "inter1_V_V_dout"); // l (aT, cl)
+applyEnter(RDIResource.HCodeEditor_SEARCH_TEXT_COMBO_BOX, "inter1_V_V_dout"); // l (aT, cl)
+applyEnter(RDIResource.HCodeEditor_SEARCH_TEXT_COMBO_BOX, "inter1_V_V_dout"); // l (aT, cl)
+applyEnter(RDIResource.HCodeEditor_SEARCH_TEXT_COMBO_BOX, "inter1_V_V_dout"); // l (aT, cl)
+// Elapsed time: 32 seconds
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), DoCompute_Block_pro_U0 : DoCompute_Block_pro (DoCompute_Block_pro.v)]", 503, true); // B (F, cl) - Node
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), DoCompute_Block_pro_U0 : DoCompute_Block_pro (DoCompute_Block_pro.v), StreamingDataWidthCo_13_U0 : StreamingDataWidthCo_13 (StreamingDataWidthCo_13.v)]", 504, false); // B (F, cl)
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), DoCompute_Block_pro_U0 : DoCompute_Block_pro (DoCompute_Block_pro.v), StreamingDataWidthCo_13_U0 : StreamingDataWidthCo_13 (StreamingDataWidthCo_13.v)]", 504, false); // B (F, cl)
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), DoCompute_Block_pro_U0 : DoCompute_Block_pro (DoCompute_Block_pro.v), StreamingDataWidthCo_13_U0 : StreamingDataWidthCo_13 (StreamingDataWidthCo_13.v)]", 504, false, false, false, false, false, true); // B (F, cl) - Double Click
+selectCodeEditor("StreamingDataWidthCo_13.v", 157, 387); // cl (w, cl)
+selectCodeEditor("StreamingDataWidthCo_13.v", 146, 352); // cl (w, cl)
+selectCodeEditor("StreamingDataWidthCo_13.v", 174, 390); // cl (w, cl)
+typeControlKey((HResource) null, "StreamingDataWidthCo_13.v", 'c'); // cl (w, cl)
+typeControlKey((HResource) null, "StreamingDataWidthCo_13.v", 'v'); // cl (w, cl)
+typeControlKey((HResource) null, "StreamingDataWidthCo_13.v", 'v'); // cl (w, cl)
+// TclEventType: DG_GRAPH_STALE
+// TclEventType: FILE_SET_CHANGE
+// [GUI Memory]: 191 MB (+130kb) [00:09:01]
+// [Engine Memory]: 1,635 MB (+18716kb) [00:09:03]
+// HMemoryUtils.trashcanNow. Engine heap size: 1,635 MB. GUI used memory: 135 MB. Current time: 11/28/19, 8:55:50 AM KST
+// Elapsed time: 10 seconds
+selectTab("PlanAheadTabBaseWorkspace_JideTabbedPane", (HResource) null, "DoCompute_Block_pro.v", 4); // k (j, cl)
+selectCodeEditor("DoCompute_Block_pro.v", 210, 283); // cl (w, cl)
+selectCodeEditor("DoCompute_Block_pro.v", 210, 283, false, false, false, false, true); // cl (w, cl) - Double Click
+selectCodeEditor("DoCompute_Block_pro.v", 200, 390); // cl (w, cl)
+selectCodeEditor("DoCompute_Block_pro.v", 200, 390, false, false, false, false, true); // cl (w, cl) - Double Click
+selectCodeEditor("DoCompute_Block_pro.v", 296, 401); // cl (w, cl)
+selectCodeEditor("DoCompute_Block_pro.v", 296, 401, false, false, false, false, true); // cl (w, cl) - Double Click
+applyEnter(RDIResource.HCodeEditor_SEARCH_TEXT_COMBO_BOX, "StreamingDataWidthCo_13_U0_out_V_offset_out_din"); // l (aT, cl)
+selectCodeEditor("DoCompute_Block_pro.v", 215, 285); // cl (w, cl)
+selectCodeEditor("DoCompute_Block_pro.v", 215, 285, false, false, false, false, true); // cl (w, cl) - Double Click
+applyEnter(RDIResource.HCodeEditor_SEARCH_TEXT_COMBO_BOX, "out_V_offset_c_i_dout"); // l (aT, cl)
+applyEnter(RDIResource.HCodeEditor_SEARCH_TEXT_COMBO_BOX, "out_V_offset_c_i_dout"); // l (aT, cl)
+// Elapsed time: 22 seconds
+selectCodeEditor("DoCompute_Block_pro.v", 84, 199); // cl (w, cl)
+selectCodeEditor("DoCompute_Block_pro.v", 84, 199, false, false, false, false, true); // cl (w, cl) - Double Click
+// Elapsed time: 18 seconds
+selectCodeEditor("DoCompute_Block_pro.v", 116, 163); // cl (w, cl)
+selectCodeEditor("DoCompute_Block_pro.v", 116, 163, false, false, false, false, true); // cl (w, cl) - Double Click
+maximizeFrame(PAResourceOtoP.PAViews_SOURCES, "Sources"); // az (aK, cl)
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), DoCompute_Block_pro_U0 : DoCompute_Block_pro (DoCompute_Block_pro.v), StreamingDataWidthCo_3_U0 : StreamingDataWidthCo_3 (StreamingDataWidthCo_3.v)]", 507, false); // B (F, cl)
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), DoCompute_Block_pro_U0 : DoCompute_Block_pro (DoCompute_Block_pro.v), Stream2Mem_Batch_1_U0 : Stream2Mem_Batch_1 (Stream2Mem_Batch_1.v)]", 545, true); // B (F, cl) - Node
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), DoCompute_Block_pro_U0 : DoCompute_Block_pro (DoCompute_Block_pro.v), Stream2Mem_Batch_U0 : Stream2Mem_Batch (Stream2Mem_Batch.v)]", 544, true); // B (F, cl) - Node
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), DoCompute_Block_pro_U0 : DoCompute_Block_pro (DoCompute_Block_pro.v), Stream2Mem_Batch_U0 : Stream2Mem_Batch (Stream2Mem_Batch.v)]", 544, true); // B (F, cl) - Node
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), DoCompute_Block_pro_U0 : DoCompute_Block_pro (DoCompute_Block_pro.v), Stream2Mem_Batch_U0 : Stream2Mem_Batch (Stream2Mem_Batch.v)]", 544, true, false, false, false, false, true); // B (F, cl) - Double Click - Node
+closeView(PAResourceOtoP.PAViews_CODE, "Code"); // B
+selectCodeEditor("StreamingDataWidthCo_13.v", 705, 53); // cl (w, cl)
+selectTab("PlanAheadTabBaseWorkspace_JideTabbedPane", (HResource) null, "DoCompute_Block_pro.v", 4); // k (j, cl)
+selectCodeEditor("DoCompute_Block_pro.v", 297, 159); // cl (w, cl)
+selectCodeEditor("DoCompute_Block_pro.v", 297, 159, false, false, false, false, true); // cl (w, cl) - Double Click
+selectCodeEditor("DoCompute_Block_pro.v", 375, 181); // cl (w, cl)
+selectCodeEditor("DoCompute_Block_pro.v", 375, 181, false, false, false, false, true); // cl (w, cl) - Double Click
+selectCodeEditor("DoCompute_Block_pro.v", 372, 198); // cl (w, cl)
+selectCodeEditor("DoCompute_Block_pro.v", 372, 198, false, false, false, false, true); // cl (w, cl) - Double Click
+selectCodeEditor("DoCompute_Block_pro.v", 215, 177); // cl (w, cl)
+selectCodeEditor("DoCompute_Block_pro.v", 207, 130); // cl (w, cl)
+selectCodeEditor("DoCompute_Block_pro.v", 207, 130, false, false, false, false, true); // cl (w, cl) - Double Click
+selectCodeEditor("DoCompute_Block_pro.v", 198, 147); // cl (w, cl)
+selectCodeEditor("DoCompute_Block_pro.v", 198, 147, false, false, false, false, true); // cl (w, cl) - Double Click
+selectCodeEditor("DoCompute_Block_pro.v", 228, 277); // cl (w, cl)
+selectCodeEditor("DoCompute_Block_pro.v", 228, 277, false, false, false, false, true); // cl (w, cl) - Double Click
+// Elapsed time: 10 seconds
+collapseTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), DoCompute_Block_pro_U0 : DoCompute_Block_pro (DoCompute_Block_pro.v), Stream2Mem_Batch_U0 : Stream2Mem_Batch (Stream2Mem_Batch.v)]", 544); // B (F, cl)
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), DoCompute_Block_pro_U0 : DoCompute_Block_pro (DoCompute_Block_pro.v), Stream2Mem_Batch_1_U0 : Stream2Mem_Batch_1 (Stream2Mem_Batch_1.v)]", 545, true); // B (F, cl) - Node
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), DoCompute_Block_pro_U0 : DoCompute_Block_pro (DoCompute_Block_pro.v), Stream2Mem_Batch_1_U0 : Stream2Mem_Batch_1 (Stream2Mem_Batch_1.v)]", 545, true); // B (F, cl) - Node
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), DoCompute_Block_pro_U0 : DoCompute_Block_pro (DoCompute_Block_pro.v), Stream2Mem_Batch_1_U0 : Stream2Mem_Batch_1 (Stream2Mem_Batch_1.v)]", 545, true, false, false, false, false, true); // B (F, cl) - Double Click - Node
+selectCodeEditor("Stream2Mem_Batch_1.v", 248, 239); // cl (w, cl)
+selectCodeEditor("Stream2Mem_Batch_1.v", 199, 97); // cl (w, cl)
+typeControlKey((HResource) null, "Stream2Mem_Batch_1.v", 'v'); // cl (w, cl)
+typeControlKey((HResource) null, "Stream2Mem_Batch_1.v", 'v'); // cl (w, cl)
+typeControlKey((HResource) null, "Stream2Mem_Batch_1.v", 'v'); // cl (w, cl)
+// TclEventType: DG_GRAPH_STALE
+// TclEventType: FILE_SET_CHANGE
+selectTab("PlanAheadTabBaseWorkspace_JideTabbedPane", (HResource) null, "DoCompute_Block_pro.v", 4); // k (j, cl)
+// HMemoryUtils.trashcanNow. Engine heap size: 1,673 MB. GUI used memory: 137 MB. Current time: 11/28/19, 8:58:10 AM KST
+selectTab("PlanAheadTabBaseWorkspace_JideTabbedPane", (HResource) null, "StreamingDataWidthCo_13.v", 5); // k (j, cl)
+selectCodeEditor("StreamingDataWidthCo_13.v", 619, 172); // cl (w, cl)
+// Elapsed time: 17 seconds
+selectTab("PlanAheadTabBaseWorkspace_JideTabbedPane", (HResource) null, "Matrix_Vector_Activa_5.v", 2); // k (j, cl)
+selectTab("PlanAheadTabBaseWorkspace_JideTabbedPane", (HResource) null, "Package IP - BlackBoxJam", 1); // k (j, cl)
+selectButton(PAResourceQtoS.ReviewContentPanel_RE_PACKAGE_IP, "Re-Package IP"); // a (c, cl)
+// TclEventType: PACKAGER_OBJECT_CHANGE
+// Tcl Message: set_property core_revision 1911271625 [ipx::current_core] 
+// Tcl Message: ipx::update_source_project_archive -component [ipx::current_core] 
+// Tcl Message: ipx::create_xgui_files [ipx::current_core] 
+// by (cl):  Package IP : addNotify
+// Tcl Message: ipx::update_checksums [ipx::current_core] 
+// Tcl Message: ipx::save_core [ipx::current_core] 
+// ax (cl): Package IP: addNotify
+// a (cl): Critical Messages: addNotify
+dismissDialog("Package IP"); // by (cl)
+// TclEventType: FILE_SET_CHANGE
+selectButton(PAResourceAtoD.CmdMsgDialog_OK, "OK"); // f (a)
+dismissDialog("Critical Messages"); // a (cl)
+selectButton(PAResourceAtoD.CmdMsgDialog_OK, "OK"); // f (ax)
+dismissDialog("Package IP"); // ax (cl)
+// by (cl):  Package IP : addNotify
+selectButton("OptionPane.button", "Yes"); // JButton (A, G)
+// Tcl Message: ipx::move_temp_component_back -component [ipx::current_core] 
+// TclEventType: PROJECT_CLOSE
+// HMemoryUtils.trashcanNow. Engine heap size: 1,651 MB. GUI used memory: 129 MB. Current time: 11/28/19, 8:58:42 AM KST
+// Tcl Message: close_project -delete 
+dismissDialog("Package IP"); // by (cl)
+// TclEventType: CREATE_IP_CATALOG
+// TclEventType: IP_LOCK_CHANGE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: BDCELL_LOCK_CHANGE
+// TclEventType: RSB_LOCK_CHANGE
+// TclEventType: IP_LOCK_CHANGE
+// TclEventType: RSB_BITABEN_IPREPODATA_REFRESH
+// TclEventType: BDCELL_LOCK_CHANGE
+// TclEventType: CREATE_IP_CATALOG
+// Tcl Message: update_ip_catalog -rebuild -repo_path /data_drive/bnn_seg_hls_project_backup/bnn_fpga_dbg_no_log_test_1127/sol1/impl/ip 
+// Tcl Message: INFO: [IP_Flow 19-725] Reloaded user IP repository '/data_drive/bnn_seg_hls_project_backup/bnn_fpga_dbg_no_log_test_1127/sol1/impl/ip' 
+// Elapsed time: 20 seconds
+selectButton(PAResourceQtoS.SystemTab_REPORT_IP_STATUS, "Report IP Status"); // h (cS, cl)
+// Run Command: PAResourceCommand.PACommandNames_REPORT_IP_STATUS
+// Tcl Command: 'report_ip_status -name ip_status '
+// TclEventType: IP_SUMMARY_RESULTS
+// by (cl):  Report IP Status : addNotify
+// Tcl Message: report_ip_status -name ip_status  
+dismissDialog("Report IP Status"); // by (cl)
+selectButton(PAResourceItoN.IPStatusSectionPanel_UPGRADE_SELECTED, "Upgrade Selected"); // a (g, cl)
+// Run Command: PAResourceCommand.PACommandNames_UPGRADE_IP
+// TclEventType: RSB_OPEN_DIAGRAM
+// TclEventType: RUN_MODIFY
+// TclEventType: RUN_RESET
+// TclEventType: RUN_STATUS_CHANGE
+// TclEventType: RUN_RESET
+// TclEventType: RUN_MODIFY
+// TclEventType: RUN_DELETE
+// TclEventType: DG_GRAPH_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: FILE_SET_DELETE
+// TclEventType: RSB_SCRIPT_TASK
+// by (cl):  Upgrade IP : addNotify
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: RSB_REMOVE_OBJECT
+// TclEventType: FILE_SET_CHANGE
+// Tcl Message: upgrade_ip -vlnv xilinx.com:hls:BlackBoxJam:1.0 [get_ips  design_1_BlackBoxJam_0_0] -log ip_upgrade.log 
+// Tcl Message: Upgrading '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/design_1.bd' 
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: RSB_REMOVE_OBJECT
+// TclEventType: RSB_SCRIPT_TASK
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: RSB_SAVE_DIAGRAM
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: RSB_SAVE_DIAGRAM
+// TclEventType: FILESET_UPDATE_IP
+// TclEventType: IP_UPGRADE_COMPLETE
+// Tcl Message: INFO: [IP_Flow 19-3422] Upgraded design_1_BlackBoxJam_0_0 (Blackboxjam 1.0) from revision 1911271624 to revision 1911271625 
+// Tcl Message: Excluding </zynq_ultra_ps_e_0/SAXIGP2/HP0_LPS_OCM> from </BlackBoxJam_0/Data_m_axi_hostmem> Excluding </zynq_ultra_ps_e_0/SAXIGP2/HP0_QSPI> from </BlackBoxJam_0/Data_m_axi_hostmem> Wrote  : </home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/design_1.bd>  
+// Tcl Message: INFO: [Coretcl 2-1525] Wrote upgrade log to '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/ip_upgrade.log'. 
+// Tcl Message: export_ip_user_files -of_objects [get_ips design_1_BlackBoxJam_0_0] -no_script -sync -force -quiet 
+// aI (cl): Generate Output Products: addNotify
+selectButton("OptionPane.button", "OK"); // JButton (A, G)
+selectButton(PAResourceQtoS.SimpleOutputProductDialog_GENERATE_OUTPUT_PRODUCTS_IMMEDIATELY, "Generate"); // a (aI)
+// by (cl):  Managing Output Products : addNotify
+// TclEventType: RSB_SCRIPT_TASK
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: RSB_SCRIPT_TASK
+// TclEventType: RSB_REMOVE_OBJECT
+// TclEventType: RSB_SCRIPT_TASK
+// TclEventType: RSB_REMOVE_OBJECT
+// TclEventType: RSB_SCRIPT_TASK
+// TclEventType: RSB_REMOVE_OBJECT
+// TclEventType: DG_GRAPH_STALE
+// TclEventType: FILE_SET_CHANGE
+// Tcl Message: generate_target all [get_files  /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/design_1.bd] 
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: RSB_REMOVE_OBJECT
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: RSB_REMOVE_OBJECT
+// TclEventType: RSB_SCRIPT_TASK
+// TclEventType: FILE_SET_CHANGE
+// HMemoryUtils.trashcanNow. Engine heap size: 1,667 MB. GUI used memory: 118 MB. Current time: 11/28/19, 8:59:15 AM KST
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: RSB_REMOVE_OBJECT
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: RSB_REMOVE_OBJECT
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: RSB_REMOVE_OBJECT
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: RSB_REMOVE_OBJECT
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: RSB_CLOSE_DIAGRAM
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: RSB_CLOSE_DIAGRAM
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: RSB_SCRIPT_TASK
+// TclEventType: RSB_SAVE_DIAGRAM
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: RSB_SAVE_DIAGRAM
+// Tcl Message: Wrote  : </home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/design_1.bd>  
+// [Engine Memory]: 1,795 MB (+82481kb) [00:12:41]
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: RSB_SAVE_DIAGRAM
+// TclEventType: RSB_SCRIPT_TASK
+// TclEventType: FILE_SET_CHANGE
+// Tcl Message: VHDL Output written to : /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/synth/design_1.v 
+// Tcl Message: VHDL Output written to : /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/sim/design_1.v VHDL Output written to : /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/hdl/design_1_wrapper.v 
+// Tcl Message: INFO: [BD 41-1029] Generation completed for the IP Integrator block zynq_ultra_ps_e_0 . INFO: [BD 41-1029] Generation completed for the IP Integrator block BlackBoxJam_0 . INFO: [BD 41-1029] Generation completed for the IP Integrator block ps8_0_axi_periph/xbar . INFO: [BD 41-1029] Generation completed for the IP Integrator block rst_ps8_0_100M . 
+// TclEventType: FILE_SET_CHANGE
+// Tcl Message: Exporting to file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_axi_smc_0/bd_0/hw_handoff/design_1_axi_smc_0.hwh Generated Block Design Tcl file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_axi_smc_0/bd_0/hw_handoff/design_1_axi_smc_0_bd.tcl Generated Hardware Definition File /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_axi_smc_0/bd_0/synth/design_1_axi_smc_0.hwdef 
+// Tcl Message: INFO: [BD 41-1029] Generation completed for the IP Integrator block axi_smc . 
+// TclEventType: FILE_SET_CHANGE
+// [Engine Memory]: 1,934 MB (+51378kb) [00:12:48]
+// TclEventType: FILE_SET_CHANGE
+// Tcl Message: Exporting to file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_system_ila_0_1/bd_0/hw_handoff/design_1_system_ila_0_1.hwh Generated Block Design Tcl file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_system_ila_0_1/bd_0/hw_handoff/design_1_system_ila_0_1_bd.tcl Generated Hardware Definition File /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_system_ila_0_1/bd_0/synth/design_1_system_ila_0_1.hwdef 
+// Tcl Message: INFO: [BD 41-1029] Generation completed for the IP Integrator block system_ila_0 . 
+// Tcl Message: INFO: [BD 41-1029] Generation completed for the IP Integrator block ps8_0_axi_periph/s00_couplers/auto_ds . 
+// Tcl Message: INFO: [BD 41-1029] Generation completed for the IP Integrator block ps8_0_axi_periph/s00_couplers/auto_pc . 
+// Tcl Message: INFO: [BD 41-1029] Generation completed for the IP Integrator block ps8_0_axi_periph/s01_couplers/auto_ds . 
+// Tcl Message: INFO: [BD 41-1029] Generation completed for the IP Integrator block ps8_0_axi_periph/s01_couplers/auto_pc . 
+// Tcl Message: Exporting to file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/hw_handoff/design_1.hwh Generated Block Design Tcl file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/hw_handoff/design_1_bd.tcl Generated Hardware Definition File /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/synth/design_1.hwdef 
+// Tcl Message: generate_target: Time (s): cpu = 00:00:22 ; elapsed = 00:00:20 . Memory (MB): peak = 7291.684 ; gain = 105.637 ; free physical = 9360 ; free virtual = 14581 
+// Tcl Message: catch { config_ip_cache -export [get_ips -all design_1_BlackBoxJam_0_0] } 
+// TclEventType: FILE_SET_CHANGE
+// Tcl Message: catch { config_ip_cache -export [get_ips -all design_1_auto_ds_0] } 
+// TclEventType: OOC_IP_CACHE_USED
+// Tcl Message: INFO: [IP_Flow 19-4993] Using cached IP synthesis design for IP design_1_auto_ds_0, cache-ID = 30ff942aacf18660; cache size = 3901.209 MB. 
+// TclEventType: FILE_SET_CHANGE
+// Tcl Message: catch { config_ip_cache -export [get_ips -all design_1_auto_pc_0] } 
+// TclEventType: OOC_IP_CACHE_USED
+// Tcl Message: INFO: [IP_Flow 19-4993] Using cached IP synthesis design for IP design_1_auto_pc_0, cache-ID = dbc4c1421a76552b; cache size = 3901.209 MB. 
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: OOC_IP_CACHE_USED
+// Tcl Message: catch { config_ip_cache -export [get_ips -all design_1_auto_ds_1] } 
+// Tcl Message: INFO: [IP_Flow 19-4993] Using cached IP synthesis design for IP design_1_auto_ds_1, cache-ID = 30ff942aacf18660; cache size = 3901.209 MB. 
+// TclEventType: FILE_SET_CHANGE
+// Tcl Message: catch { config_ip_cache -export [get_ips -all design_1_auto_pc_1] } 
+// TclEventType: OOC_IP_CACHE_USED
+// TclEventType: PROJ_DESIGN_MODE_SET
+// Tcl Message: INFO: [IP_Flow 19-4993] Using cached IP synthesis design for IP design_1_auto_pc_1, cache-ID = dbc4c1421a76552b; cache size = 3901.209 MB. 
+// TclEventType: PROJ_DESIGN_MODE_SET
+// TclEventType: FILE_SET_CHANGE
+// Tcl Message: export_ip_user_files -of_objects [get_files /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/design_1.bd] -no_script -sync -force -quiet 
+// TclEventType: FILE_SET_NEW
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: RUN_ADD
+// Tcl Message: create_ip_run [get_files -of_objects [get_fileset sources_1] /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/design_1.bd] 
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: RUN_LAUNCH
+// TclEventType: RUN_MODIFY
+// Tcl Message: launch_runs -jobs 12 design_1_BlackBoxJam_0_0_synth_1 
+// Tcl Message: [Thu Nov 28 08:59:36 2019] Launched design_1_BlackBoxJam_0_0_synth_1... Run output will be captured here: /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/design_1_BlackBoxJam_0_0_synth_1/runme.log 
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: PROJECT_CHANGE
+// TclEventType: RUN_STATUS_CHANGE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: PROJECT_CHANGE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: PROJECT_CHANGE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: PROJECT_CHANGE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: RUN_STATUS_CHANGE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: PROJECT_CHANGE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: PROJECT_CHANGE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: PROJECT_CHANGE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: PROJECT_CHANGE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// HMemoryUtils.trashcanNow. Engine heap size: 1,960 MB. GUI used memory: 119 MB. Current time: 11/28/19, 8:59:45 AM KST
+// Elapsed time: 83 seconds
+selectButton("OptionPane.button", "OK"); // JButton (A, G)
+selectButton(RDIResource.BaseReportTab_RERUN, "Rerun"); // h (cS, cl)
+// Tcl Command: 'report_ip_status -name ip_status '
+// TclEventType: IP_SUMMARY_RESULTS
+// Tcl Message: report_ip_status -name ip_status  
+selectTab((HResource) null, (HResource) null, "Design Runs", 5); // aK (aH, cl)
+selectTab((HResource) null, (HResource) null, "Messages", 1); // aK (aH, cl)
+selectTree(PAResourceItoN.MsgTreePanel_MESSAGE_VIEW_TREE, "[, Vivado Commands, General Messages, [IP_Flow 19-234] Refreshing IP repositories. ]", 2, false, false, false, false, true, false); // ah (O, cl) - Popup Trigger
+selectMenu(PAResourceItoN.MsgTreePanel_MESSAGE_SEVERITY, "Message Severity"); // ae (K, cl)
+selectMenuItem(PAResourceItoN.MsgTreePanel_DISCARD_USER_CREATED_MESSAGES, "Discard User Created Messages"); // ah (K, cl)
+// HMemoryUtils.trashcanNow. Engine heap size: 1,975 MB. GUI used memory: 120 MB. Current time: 11/28/19, 9:00:45 AM KST
+selectTab((HResource) null, (HResource) null, "Design Runs", 5); // aK (aH, cl)
+// [Engine Memory]: 2,323 MB (+306955kb) [00:15:48]
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: RUN_COMPLETED
+// TclEventType: RUN_STATUS_CHANGE
+// TclEventType: RUN_STEP_COMPLETED
+// WARNING: HTimer (ExpRunMgr Pending Runs Timer) is taking 603ms to process. Increasing delay to 3000 ms.
+// Elapsed time: 600 seconds
+selectTab((HResource) null, (HResource) null, "Sources", 0); // aK (aH, cl)
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Constraints]", 2, true); // B (F, cl) - Node
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Constraints]", 2, true, false, false, false, false, true); // B (F, cl) - Double Click - Node
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Constraints, constrs_1, design_1_consts.xdc]", 4, false); // B (F, cl)
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Constraints, constrs_1, design_1_consts.xdc]", 4, false, false, false, false, false, true); // B (F, cl) - Double Click
+selectCodeEditor("design_1_consts.xdc", 357, 294); // cl (w, cl)
+selectCodeEditor("design_1_consts.xdc", 325, 112); // cl (w, cl)
+// TclEventType: FILE_SET_CHANGE
+closeView(PAResourceOtoP.PAViews_CODE, "Code"); // B
+selectTree(PAResourceEtoH.FlowNavigatorTreePanel_FLOW_NAVIGATOR_TREE, "[, Synthesis, Run Synthesis]", 14, false); // u (O, cl)
+// Run Command: PAResourceCommand.PACommandNames_RUN_SYNTHESIS
+// A (cl): Run Synthesis: addNotify
+selectButton(RDIResource.BaseDialog_OK, "OK"); // a (A)
+// by (cl):  Resetting Runs : addNotify
+dismissDialog("Run Synthesis"); // A (cl)
+// TclEventType: RUN_MODIFY
+// TclEventType: RUN_RESET
+// TclEventType: RUN_STATUS_CHANGE
+// TclEventType: RUN_RESET
+// TclEventType: RUN_STATUS_CHANGE
+// TclEventType: RUN_RESET
+// TclEventType: RUN_MODIFY
+// Tcl Message: reset_run synth_1 
+// f (cl): Launch Runs: addNotify
+selectButton(RDIResource.BaseDialog_OK, "OK"); // a (f)
+// by (cl):  Starting Design Runs : addNotify
+dismissDialog("Launch Runs"); // f (cl)
+// TclEventType: FILESET_TARGET_UCF_CHANGE
+// TclEventType: RUN_LAUNCH
+// TclEventType: RUN_MODIFY
+// TclEventType: RUN_STATUS_CHANGE
+// Tcl Message: launch_runs synth_1 -jobs 12 
+// Tcl Message: [Thu Nov 28 09:10:59 2019] Launched synth_1... Run output will be captured here: /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/synth_1/runme.log 
+// 'k' command handler elapsed time: 5 seconds
+dismissDialog("Starting Design Runs"); // by (cl)
+// TclEventType: RUN_STATUS_CHANGE
+// TclEventType: RUN_COMPLETED
+// TclEventType: RUN_STATUS_CHANGE
+// TclEventType: RUN_STEP_COMPLETED
+// ah (cl): Synthesis Completed: addNotify
+// Elapsed time: 88 seconds
+selectRadioButton(PAResourceCommand.PACommandNames_GOTO_NETLIST_DESIGN, "Open Synthesized Design"); // a (Q, ah)
+selectButton(RDIResource.BaseDialog_OK, "OK"); // a (ah)
+// Run Command: PAResourceCommand.PACommandNames_GOTO_NETLIST_DESIGN
+// by (cl):  Open Synthesized Design : addNotify
+// Tcl Message: open_run synth_1 -name synth_1 
+// Tcl Message: Design is defaulting to impl run constrset: constrs_1 Design is defaulting to synth run part: xczu7ev-ffvc1156-2-e 
+// HMemoryUtils.trashcanNow. Engine heap size: 3,003 MB. GUI used memory: 133 MB. Current time: 11/28/19, 9:12:40 AM KST
+// TclEventType: DEBUG_PORT_ADD
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: READ_XDC_FILE_START
+// TclEventType: POWER_CNS_STALE
+// TclEventType: POWER_REPORT_STALE
+// TclEventType: SDC_CONSTRAINT_ADD
+// TclEventType: READ_XDC_FILE_END
+// TclEventType: READ_XDC_FILE_START
+// TclEventType: READ_XDC_FILE_END
+// TclEventType: READ_XDC_FILE_START
+// TclEventType: SDC_CONSTRAINT_ADD
+// TclEventType: READ_XDC_FILE_END
+// TclEventType: READ_XDC_FILE_START
+// TclEventType: READ_XDC_FILE_END
+// TclEventType: READ_XDC_FILE_START
+// TclEventType: SDC_CONSTRAINT_ADD
+// TclEventType: READ_XDC_FILE_END
+// TclEventType: READ_XDC_FILE_START
+// TclEventType: SDC_CONSTRAINT_ADD
+// TclEventType: READ_XDC_FILE_END
+// TclEventType: READ_XDC_FILE_START
+// TclEventType: SDC_CONSTRAINT_ADD
+// TclEventType: READ_XDC_FILE_END
+// TclEventType: READ_XDC_FILE_START
+// TclEventType: READ_XDC_FILE_END
+// TclEventType: READ_XDC_FILE_START
+// TclEventType: READ_XDC_FILE_END
+// TclEventType: READ_XDC_FILE_START
+// TclEventType: READ_XDC_FILE_END
+// TclEventType: READ_XDC_FILE_START
+// HMemoryUtils.trashcanNow. Engine heap size: 3,670 MB. GUI used memory: 133 MB. Current time: 11/28/19, 9:13:20 AM KST
+// [Engine Memory]: 3,670 MB (+1289667kb) [00:26:35]
+// TclEventType: SDC_CONSTRAINT_ADD
+// TclEventType: READ_XDC_FILE_END
+// TclEventType: READ_XDC_FILE_START
+// TclEventType: READ_XDC_FILE_END
+// TclEventType: FLOORPLAN_MODIFY
+// TclEventType: DESIGN_NEW
+// HMemoryUtils.trashcanNow. Engine heap size: 3,681 MB. GUI used memory: 133 MB. Current time: 11/28/19, 9:13:22 AM KST
+// Xgd.load filename: /home/hwkim/Xilinx/Vivado/2019.1/data/parts/xilinx/zynquplus/devint/zynquplus/xczu7ev/xczu7ev.xgd; ZipEntry: xczu7ev_floorplan.xgd elapsed time: 0.5s
+// TclEventType: DESIGN_NEW
+// [GUI Memory]: 269 MB (+72225kb) [00:26:40]
+// [GUI Memory]: 283 MB (+313kb) [00:26:40]
+// Schematic: addNotify
+// Xgd.load filename: /home/hwkim/Xilinx/Vivado/2019.1/data/parts/xilinx/zynquplus/devint/zynquplus/xczu7ev/xczu7ev.xgd; ZipEntry: xczu7ev_detail.xgd elapsed time: 2.4s
+// WARNING: HEventQueue.dispatchEvent() is taking  1864 ms.
+// TclEventType: CURR_DESIGN_SET
+// Tcl Message: INFO: [Timing 38-35] Done setting XDC timing constraints. [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl:2] 
+// Tcl Message: all_registers: Time (s): cpu = 00:00:17 ; elapsed = 00:00:10 . Memory (MB): peak = 8976.758 ; gain = 550.777 ; free physical = 8842 ; free virtual = 13122 
+// Tcl Message: INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s). 
+// Tcl Message: Netlist sorting complete. Time (s): cpu = 00:00:00.02 ; elapsed = 00:00:00.02 . Memory (MB): peak = 8976.758 ; gain = 0.000 ; free physical = 9025 ; free virtual = 13305 
+// Tcl Message: INFO: [Project 1-111] Unisim Transformation Summary:   A total of 4621 instances were transformed.   CFGLUT5 => CFGLUT5 (SRLC32E, SRL16E): 272 instances   DSP48E2 => DSP48E2 (DSP_ALU, DSP_A_B_DATA, DSP_C_DATA, DSP_MULTIPLIER, DSP_M_DATA, DSP_OUTPUT, DSP_PREADD_DATA, DSP_PREADD): 24 instances   RAM16X1S => RAM32X1S (RAMS32): 4032 instances   RAM32M16 => RAM32M16 (RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMS32, RAMS32): 69 instances   RAM32X1S => RAM32X1S (RAMS32): 224 instances  
+// ExpRunCommands.openSynthResults elapsed time: 57.8s
+// Tcl Message: open_run: Time (s): cpu = 00:01:14 ; elapsed = 00:00:58 . Memory (MB): peak = 9104.574 ; gain = 1618.793 ; free physical = 8768 ; free virtual = 13053 
+// [Engine Memory]: 3,899 MB (+48209kb) [00:26:41]
+// 'dR' command handler elapsed time: 58 seconds
+// Elapsed time: 58 seconds
+dismissDialog("Open Synthesized Design"); // by (cl)
+// TclEventType: HFED_INIT_ROUTE_STORAGE_COMPLETED
+// RouteApi::loadEngineXgd elapsed time: 7.6s
+// Elapsed time: 60 seconds
+selectTab((HResource) null, (HResource) null, "Messages", 1); // aK (aH, cl)
+selectTree(PAResourceItoN.MsgTreePanel_MESSAGE_VIEW_TREE, "[, Synthesis, synth_1, [IP_Flow 19-1700] Loaded user IP repository '/data_drive/bnn_seg_hls_project_backup/bnn_fpga_dbg_no_log_test_1127/sol1/impl/ip'.. ]", 3, false, false, false, false, true, false); // ah (O, cl) - Popup Trigger
+selectMenu(PAResourceItoN.MsgTreePanel_MESSAGE_SEVERITY, "Message Severity"); // ae (K, cl)
+selectMenu(PAResourceItoN.MsgTreePanel_MESSAGE_SEVERITY, "Message Severity"); // ae (K, cl)
+selectMenuItem(PAResourceItoN.MsgTreePanel_DISCARD_USER_CREATED_MESSAGES, "Discard User Created Messages"); // ah (K, cl)
+// [GUI Memory]: 305 MB (+8471kb) [00:27:44]
+selectCheckBox(PAResourceItoN.MsgView_WARNING_MESSAGES, (String) null, false); // g (aR, cl): FALSE
+// [Engine Memory]: 4,157 MB (+65743kb) [00:27:45]
+selectCheckBox(PAResourceItoN.MsgView_INFORMATION_MESSAGES, (String) null, false); // g (aR, cl): FALSE
+// HMemoryUtils.trashcanNow. Engine heap size: 4,157 MB. GUI used memory: 239 MB. Current time: 11/28/19, 9:14:35 AM KST
+// [Engine Memory]: 4,423 MB (+61519kb) [00:27:53]
+selectTree(PAResourceEtoH.FlowNavigatorTreePanel_FLOW_NAVIGATOR_TREE, "[, Synthesis, Open Synthesized Design, Set Up Debug]", 18, false); // u (O, cl)
+// Run Command: PAResourceCommand.PACommandNames_DEBUG_WIZARD
+// N (cl): Set Up Debug: addNotify
+// by (N):  Filtering Net and Tracing Clock Domain : addNotify
+selectButton("NEXT", "Next >"); // JButton (j, N)
+dismissDialog("Filtering Net and Tracing Clock Domain"); // by (N)
+selectTreeTable(PAResourceAtoD.DebugWizard_CHIPSCOPE_TREE_TABLE, "design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_5_U0/in_V_V_dout (24) ; design_1_i/zynq_ultra_ps_e_0/inst/pl_clk0 ; LUT4 ; Data and Trigger", 4, "design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_5_U0/in_V_V_dout (24)", 0, true); // ap (O, N) - Node
+typeControlKey(PAResourceAtoD.DebugWizard_CHIPSCOPE_TREE_TABLE, (String) null, 'a'); // ap (O, N)
+// PAPropertyPanels.initPanels (in_V_V_dout[0]) elapsed time: 0.2s
+selectTreeTable(PAResourceAtoD.DebugWizard_CHIPSCOPE_TREE_TABLE, "design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/StreamingDataWidthCo_13_U0/in_V_V_dout (64) ; design_1_i/zynq_ultra_ps_e_0/inst/pl_clk0 ; LUT4 ; Data and Trigger", 2, "design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/StreamingDataWidthCo_13_U0/in_V_V_dout (64)", 0, true, false, false, false, true, false); // ap (O, N) - Popup Trigger - Node
+selectMenuItem(PAResourceAtoD.DebugWizard_SELECT_CLOCK_DOMAIN, "Select Clock Domain..."); // U (an, N)
+// Tcl Command: 'show_objects -name CLK_NET0.21135256161986793 [get_nets -hierarchical -filter {TYPE == "GLOBAL_CLOCK"}]'
+// aV (cl): Select Clock Domain: addNotify
+// by (aV):  Find Nets as Clock Domains : addNotify
+// TclEventType: SHOW_OBJECTS
+dismissDialog("Find Nets as Clock Domains"); // by (aV)
+selectButton(RDIResource.BaseDialog_OK, "OK"); // a (aV)
+dismissDialog("Select Clock Domain"); // aV (cl)
+selectButton("NEXT", "Next >"); // JButton (j, N)
+selectButton("NEXT", "Next >"); // JButton (j, N)
+selectButton("FINISH", "Finish"); // JButton (j, N)
+// TclEventType: NETLIST_UPDATE
+// TclEventType: DEBUG_PORT_ADD
+// TclEventType: DEBUG_CORE_ADD
+// TclEventType: DEBUG_GRAPH_STALE
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: create_debug_core u_ila_0 ila 
+// by (N):  Set Up Debug : addNotify
+// Tcl Message: set_property C_DATA_DEPTH 1024 [get_debug_cores u_ila_0] 
+// TclEventType: DEBUG_CORE_CONFIG_CHANGE
+// Tcl Message: set_property C_TRIGIN_EN false [get_debug_cores u_ila_0] 
+// TclEventType: DEBUG_CORE_CONFIG_CHANGE
+// Tcl Message: set_property C_TRIGOUT_EN false [get_debug_cores u_ila_0] 
+// TclEventType: DEBUG_CORE_CONFIG_CHANGE
+// Tcl Message: set_property C_ADV_TRIGGER false [get_debug_cores u_ila_0] 
+// TclEventType: DEBUG_CORE_CONFIG_CHANGE
+// Tcl Message: set_property C_INPUT_PIPE_STAGES 0 [get_debug_cores u_ila_0] 
+// TclEventType: DEBUG_CORE_CONFIG_CHANGE
+// Tcl Message: set_property C_EN_STRG_QUAL false [get_debug_cores u_ila_0] 
+// TclEventType: DEBUG_CORE_CONFIG_CHANGE
+// Tcl Message: set_property ALL_PROBE_SAME_MU true [get_debug_cores u_ila_0] 
+// TclEventType: DEBUG_CORE_CONFIG_CHANGE
+// Tcl Message: set_property ALL_PROBE_SAME_MU_CNT 1 [get_debug_cores u_ila_0] 
+// TclEventType: DEBUG_CORE_CONFIG_CHANGE
+// Tcl Message: connect_debug_port u_ila_0/clk [get_nets [list design_1_i/zynq_ultra_ps_e_0/inst/pl_clk0 ]] 
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: set_property port_width 64 [get_debug_ports u_ila_0/probe0] 
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe0] 
+// TclEventType: DEBUG_PORT_CONFIG_CHANGE
+// TclEventType: NETLIST_UPDATE
+// TclEventType: DEBUG_PORT_ADD
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: create_debug_port u_ila_0 probe 
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: set_property port_width 64 [get_debug_ports u_ila_0/probe1] 
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe1] 
+// TclEventType: DEBUG_PORT_CONFIG_CHANGE
+// TclEventType: NETLIST_UPDATE
+// TclEventType: DEBUG_PORT_ADD
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: create_debug_port u_ila_0 probe 
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: set_property port_width 32 [get_debug_ports u_ila_0/probe2] 
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe2] 
+// TclEventType: DEBUG_PORT_CONFIG_CHANGE
+// TclEventType: NETLIST_UPDATE
+// TclEventType: DEBUG_PORT_ADD
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: create_debug_port u_ila_0 probe 
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: set_property port_width 32 [get_debug_ports u_ila_0/probe3] 
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe3] 
+// TclEventType: DEBUG_PORT_CONFIG_CHANGE
+// TclEventType: NETLIST_UPDATE
+// TclEventType: DEBUG_PORT_ADD
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: create_debug_port u_ila_0 probe 
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: set_property port_width 32 [get_debug_ports u_ila_0/probe4] 
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe4] 
+// TclEventType: DEBUG_PORT_CONFIG_CHANGE
+// TclEventType: NETLIST_UPDATE
+// TclEventType: DEBUG_PORT_ADD
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: create_debug_port u_ila_0 probe 
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: set_property port_width 32 [get_debug_ports u_ila_0/probe5] 
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe5] 
+// TclEventType: DEBUG_PORT_CONFIG_CHANGE
+// TclEventType: NETLIST_UPDATE
+// TclEventType: DEBUG_PORT_ADD
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: create_debug_port u_ila_0 probe 
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: set_property port_width 264 [get_debug_ports u_ila_0/probe6] 
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe6] 
+// TclEventType: DEBUG_PORT_CONFIG_CHANGE
+// TclEventType: NETLIST_UPDATE
+// TclEventType: DEBUG_PORT_ADD
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: create_debug_port u_ila_0 probe 
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: set_property port_width 64 [get_debug_ports u_ila_0/probe7] 
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe7] 
+// TclEventType: DEBUG_PORT_CONFIG_CHANGE
+// TclEventType: NETLIST_UPDATE
+// TclEventType: DEBUG_PORT_ADD
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: create_debug_port u_ila_0 probe 
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: set_property port_width 16 [get_debug_ports u_ila_0/probe8] 
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe8] 
+// TclEventType: DEBUG_PORT_CONFIG_CHANGE
+// TclEventType: NETLIST_UPDATE
+// TclEventType: DEBUG_PORT_ADD
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: create_debug_port u_ila_0 probe 
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: set_property port_width 24 [get_debug_ports u_ila_0/probe9] 
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe9] 
+// TclEventType: DEBUG_PORT_CONFIG_CHANGE
+// TclEventType: NETLIST_UPDATE
+// TclEventType: DEBUG_PORT_ADD
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: create_debug_port u_ila_0 probe 
+// Tcl Message: set_property port_width 1 [get_debug_ports u_ila_0/probe10] 
+// Tcl Message: set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe10] 
+// TclEventType: DEBUG_PORT_CONFIG_CHANGE
+// Tcl Message: connect_debug_port u_ila_0/probe10 [get_nets [list design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Stream2Mem_Batch_1_U0/in_V_V_empty_n ]] 
+// TclEventType: NETLIST_UPDATE
+// TclEventType: DEBUG_PORT_ADD
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: create_debug_port u_ila_0 probe 
+// Tcl Message: set_property port_width 1 [get_debug_ports u_ila_0/probe11] 
+// Tcl Message: set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe11] 
+// TclEventType: DEBUG_PORT_CONFIG_CHANGE
+// Tcl Message: connect_debug_port u_ila_0/probe11 [get_nets [list design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Matrix_Vector_Activa_2_U0/in_V_V_empty_n ]] 
+// TclEventType: NETLIST_UPDATE
+// TclEventType: DEBUG_PORT_ADD
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: create_debug_port u_ila_0 probe 
+// Tcl Message: set_property port_width 1 [get_debug_ports u_ila_0/probe12] 
+// Tcl Message: set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe12] 
+// TclEventType: DEBUG_PORT_CONFIG_CHANGE
+// Tcl Message: connect_debug_port u_ila_0/probe12 [get_nets [list design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/infer_category_U0/in_V_V_empty_n ]] 
+// TclEventType: NETLIST_UPDATE
+// TclEventType: DEBUG_PORT_ADD
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: create_debug_port u_ila_0 probe 
+// Tcl Message: set_property port_width 1 [get_debug_ports u_ila_0/probe13] 
+// Tcl Message: set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe13] 
+// TclEventType: DEBUG_PORT_CONFIG_CHANGE
+// Tcl Message: connect_debug_port u_ila_0/probe13 [get_nets [list design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/StreamingDataWidthCo_13_U0/in_V_V_empty_n ]] 
+// TclEventType: NETLIST_UPDATE
+// TclEventType: DEBUG_PORT_ADD
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: create_debug_port u_ila_0 probe 
+// Tcl Message: set_property port_width 1 [get_debug_ports u_ila_0/probe14] 
+// Tcl Message: set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe14] 
+// TclEventType: DEBUG_PORT_CONFIG_CHANGE
+// Tcl Message: connect_debug_port u_ila_0/probe14 [get_nets [list design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Matrix_Vector_Activa_2_U1_1/in_V_V_empty_n ]] 
+// TclEventType: NETLIST_UPDATE
+// TclEventType: DEBUG_PORT_ADD
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: create_debug_port u_ila_0 probe 
+// Tcl Message: set_property port_width 1 [get_debug_ports u_ila_0/probe15] 
+// Tcl Message: set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe15] 
+// TclEventType: DEBUG_PORT_CONFIG_CHANGE
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: connect_debug_port u_ila_0/probe15 [get_nets [list design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_5_U0/in_V_V_empty_n ]] 
+// TclEventType: NETLIST_UPDATE
+// TclEventType: DEBUG_PORT_ADD
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: create_debug_port u_ila_0 probe 
+// Tcl Message: set_property port_width 1 [get_debug_ports u_ila_0/probe16] 
+// Tcl Message: set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe16] 
+// TclEventType: DEBUG_PORT_CONFIG_CHANGE
+// Tcl Message: connect_debug_port u_ila_0/probe16 [get_nets [list design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/infer_category_U0/in_V_V_read ]] 
+// TclEventType: NETLIST_UPDATE
+// TclEventType: DEBUG_PORT_ADD
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: create_debug_port u_ila_0 probe 
+// Tcl Message: set_property port_width 1 [get_debug_ports u_ila_0/probe17] 
+// Tcl Message: set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe17] 
+// TclEventType: DEBUG_PORT_CONFIG_CHANGE
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: connect_debug_port u_ila_0/probe17 [get_nets [list design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Matrix_Vector_Activa_2_U1_1/in_V_V_read ]] 
+// TclEventType: NETLIST_UPDATE
+// TclEventType: DEBUG_PORT_ADD
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: create_debug_port u_ila_0 probe 
+// Tcl Message: set_property port_width 1 [get_debug_ports u_ila_0/probe18] 
+// Tcl Message: set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe18] 
+// TclEventType: DEBUG_PORT_CONFIG_CHANGE
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: connect_debug_port u_ila_0/probe18 [get_nets [list design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/StreamingDataWidthCo_13_U0/in_V_V_read ]] 
+// TclEventType: NETLIST_UPDATE
+// TclEventType: DEBUG_PORT_ADD
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: create_debug_port u_ila_0 probe 
+// Tcl Message: set_property port_width 1 [get_debug_ports u_ila_0/probe19] 
+// Tcl Message: set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe19] 
+// TclEventType: DEBUG_PORT_CONFIG_CHANGE
+// Tcl Message: connect_debug_port u_ila_0/probe19 [get_nets [list design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_5_U0/in_V_V_read ]] 
+// TclEventType: NETLIST_UPDATE
+// TclEventType: DEBUG_PORT_ADD
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: create_debug_port u_ila_0 probe 
+// Tcl Message: set_property port_width 1 [get_debug_ports u_ila_0/probe20] 
+// Tcl Message: set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe20] 
+// TclEventType: DEBUG_PORT_CONFIG_CHANGE
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: connect_debug_port u_ila_0/probe20 [get_nets [list design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Matrix_Vector_Activa_2_U0/in_V_V_read ]] 
+// TclEventType: NETLIST_UPDATE
+// TclEventType: DEBUG_PORT_ADD
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: create_debug_port u_ila_0 probe 
+// Tcl Message: set_property port_width 1 [get_debug_ports u_ila_0/probe21] 
+// Tcl Message: set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe21] 
+// TclEventType: DEBUG_PORT_CONFIG_CHANGE
+// Tcl Message: connect_debug_port u_ila_0/probe21 [get_nets [list design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Stream2Mem_Batch_1_U0/in_V_V_read ]] 
+// TclEventType: NETLIST_UPDATE
+// TclEventType: DEBUG_PORT_ADD
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: create_debug_port u_ila_0 probe 
+// Tcl Message: set_property port_width 1 [get_debug_ports u_ila_0/probe22] 
+// Tcl Message: set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe22] 
+// TclEventType: DEBUG_PORT_CONFIG_CHANGE
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: connect_debug_port u_ila_0/probe22 [get_nets [list design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_5_U0/out_V_V_full_n ]] 
+// TclEventType: NETLIST_UPDATE
+// TclEventType: DEBUG_PORT_ADD
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: create_debug_port u_ila_0 probe 
+// Tcl Message: set_property port_width 1 [get_debug_ports u_ila_0/probe23] 
+// Tcl Message: set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe23] 
+// TclEventType: DEBUG_PORT_CONFIG_CHANGE
+// Tcl Message: connect_debug_port u_ila_0/probe23 [get_nets [list design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Matrix_Vector_Activa_2_U1_1/out_V_V_full_n ]] 
+// TclEventType: NETLIST_UPDATE
+// TclEventType: DEBUG_PORT_ADD
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: create_debug_port u_ila_0 probe 
+// Tcl Message: set_property port_width 1 [get_debug_ports u_ila_0/probe24] 
+// Tcl Message: set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe24] 
+// TclEventType: DEBUG_PORT_CONFIG_CHANGE
+// Tcl Message: connect_debug_port u_ila_0/probe24 [get_nets [list design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Matrix_Vector_Activa_2_U0/out_V_V_full_n ]] 
+// TclEventType: NETLIST_UPDATE
+// TclEventType: DEBUG_PORT_ADD
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: create_debug_port u_ila_0 probe 
+// Tcl Message: set_property port_width 1 [get_debug_ports u_ila_0/probe25] 
+// Tcl Message: set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe25] 
+// TclEventType: DEBUG_PORT_CONFIG_CHANGE
+// Tcl Message: connect_debug_port u_ila_0/probe25 [get_nets [list design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/infer_category_U0/out_V_V_full_n ]] 
+// TclEventType: NETLIST_UPDATE
+// TclEventType: DEBUG_PORT_ADD
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: create_debug_port u_ila_0 probe 
+// Tcl Message: set_property port_width 1 [get_debug_ports u_ila_0/probe26] 
+// Tcl Message: set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe26] 
+// TclEventType: DEBUG_PORT_CONFIG_CHANGE
+// Tcl Message: connect_debug_port u_ila_0/probe26 [get_nets [list design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Matrix_Vector_Activa_2_U0/out_V_V_write ]] 
+// TclEventType: NETLIST_UPDATE
+// TclEventType: DEBUG_PORT_ADD
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: create_debug_port u_ila_0 probe 
+// Tcl Message: set_property port_width 1 [get_debug_ports u_ila_0/probe27] 
+// Tcl Message: set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe27] 
+// TclEventType: DEBUG_PORT_CONFIG_CHANGE
+// Tcl Message: connect_debug_port u_ila_0/probe27 [get_nets [list design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_5_U0/out_V_V_write ]] 
+// TclEventType: NETLIST_UPDATE
+// TclEventType: DEBUG_PORT_ADD
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: create_debug_port u_ila_0 probe 
+// Tcl Message: set_property port_width 1 [get_debug_ports u_ila_0/probe28] 
+// Tcl Message: set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe28] 
+// TclEventType: DEBUG_PORT_CONFIG_CHANGE
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: connect_debug_port u_ila_0/probe28 [get_nets [list design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/infer_category_U0/out_V_V_write ]] 
+// TclEventType: NETLIST_UPDATE
+// TclEventType: DEBUG_PORT_ADD
+// TclEventType: NETLIST_UPDATE
+// Tcl Message: create_debug_port u_ila_0 probe 
+// Tcl Message: set_property port_width 1 [get_debug_ports u_ila_0/probe29] 
+// Tcl Message: set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe29] 
+// TclEventType: DEBUG_PORT_CONFIG_CHANGE
+// TclEventType: NETLIST_UPDATE
+// HMemoryUtils.trashcanNow. Engine heap size: 4,207 MB. GUI used memory: 238 MB. Current time: 11/28/19, 9:15:19 AM KST
+// Tcl Message: connect_debug_port u_ila_0/probe29 [get_nets [list design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Matrix_Vector_Activa_2_U1_1/out_V_V_write ]] 
+// TclEventType: DEBUG_GRAPH_STALE
+// Elapsed time: 28 seconds
+dismissDialog("Set Up Debug"); // by (N)
+dismissDialog("Set Up Debug"); // N (cl)
+// Elapsed time: 144 seconds
+selectTab((HResource) null, (HResource) null, "Design Runs", 4); // aK (aH, cl)
+selectTab((HResource) null, (HResource) null, "Messages", 1); // aK (aH, cl)
+selectTree(PAResourceItoN.MsgTreePanel_MESSAGE_VIEW_TREE, null, -1, false, false, false, true, false); // ah (O, cl) - Popup Trigger
+selectMenu(PAResourceItoN.MsgTreePanel_MESSAGE_SEVERITY, "Message Severity"); // ae (K, cl)
+selectMenuItem(PAResourceItoN.MsgTreePanel_DISCARD_USER_CREATED_MESSAGES, "Discard User Created Messages"); // ah (K, cl)
+selectTab((HResource) null, (HResource) null, "Design Runs", 4); // aK (aH, cl)
+selectTreeTableHeader(PAResourceEtoH.ExpRunTreePanel_EXP_RUN_TREE_TABLE, "Progress", 3); // ay (O, cl)
+// Elapsed time: 12 seconds
+selectTreeTable(PAResourceEtoH.ExpRunTreePanel_EXP_RUN_TREE_TABLE, "impl_1 ; constrs_1 ; Not started ; 0 ;  ;  ;  ;  ;  ;  ;  ;  ;  ;  ;  ;  ;  ;  ; Vivado Implementation Defaults (Vivado Implementation 2019) ; Vivado Implementation Default Reports (Vivado Implementation 2019) ; xczu7ev-ffvc1156-2-e ;  ; Default settings for Implementation.", 1, "Not started", 2, false); // ay (O, cl)
+// PAPropertyPanels.initPanels (impl_1) elapsed time: 0.3s
+expandTree(PAResourceEtoH.FlowNavigatorTreePanel_FLOW_NAVIGATOR_TREE, "[, Synthesis, Open Synthesized Design]", 15); // u (O, cl)
+collapseTree(PAResourceEtoH.FlowNavigatorTreePanel_FLOW_NAVIGATOR_TREE, "[, Synthesis, Open Synthesized Design]", 15); // u (O, cl)
+selectTree(PAResourceEtoH.FlowNavigatorTreePanel_FLOW_NAVIGATOR_TREE, "[, Program and Debug, Generate Bitstream]", 20, false); // u (O, cl)
+// Run Command: PAResourceCommand.PACommandNames_RUN_BITGEN
+// al (cl): Save Project: addNotify
+selectButton(PAResourceQtoS.SaveProjectUtils_SAVE, "Save"); // a (al)
+// A (cl): Out of Date Design: addNotify
+dismissDialog("Save Project"); // al (cl)
+selectButton(RDIResource.BaseDialog_OK, "OK"); // a (A)
+// by (cl):  Save Constraints : addNotify
+dismissDialog("Out of Date Design"); // A (cl)
+// Tcl Message: save_constraints 
+// TclEventType: DESIGN_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: DESIGN_SAVE
+// TclEventType: FILESET_TARGET_UCF_CHANGE
+// A (cl): No Implementation Results Available: addNotify
+selectButton("OptionPane.button", "OK"); // JButton (A, G)
+selectButton(RDIResource.BaseDialog_YES, "Yes"); // a (A)
+// by (cl):  Resetting Runs : addNotify
+// f (cl): Launch Runs: addNotify
+dismissDialog("No Implementation Results Available"); // A (cl)
+selectButton(RDIResource.BaseDialog_OK, "OK"); // a (f)
+// 'cx' command handler elapsed time: 8 seconds
+// TclEventType: FILESET_TARGET_UCF_CHANGE
+dismissDialog("Launch Runs"); // f (cl)
+// Tcl Message: launch_runs impl_1 -to_step write_bitstream -jobs 12 
+// by (cl):  Generate Bitstream : addNotify
+// Tcl Message: Netlist sorting complete. Time (s): cpu = 00:00:00.15 ; elapsed = 00:00:00.11 . Memory (MB): peak = 9203.598 ; gain = 0.000 ; free physical = 8543 ; free virtual = 12831 
+// Tcl Message: INFO: [Timing 38-480] Writing timing data to binary archive. 
+// TclEventType: RUN_LAUNCH
+// TclEventType: RUN_MODIFY
+// TclEventType: RUN_STATUS_CHANGE
+// Tcl Message: [Thu Nov 28 09:18:41 2019] Launched impl_1... Run output will be captured here: /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/impl_1/runme.log 
+// Tcl Message: launch_runs: Time (s): cpu = 00:00:28 ; elapsed = 00:00:23 . Memory (MB): peak = 9203.598 ; gain = 0.000 ; free physical = 8493 ; free virtual = 12808 
+// Elapsed time: 22 seconds
+dismissDialog("Generate Bitstream"); // by (cl)
+// TclEventType: RUN_STATUS_CHANGE
+// TclEventType: RUN_STEP_COMPLETED
+// TclEventType: RUN_COMPLETED
+// TclEventType: RUN_STATUS_CHANGE
+// ah (cl): Bitstream Generation Completed: addNotify
+// Elapsed time: 1328 seconds
+selectButton(RDIResource.BaseDialog_OK, "OK"); // a (ah)
+// Run Command: PAResourceCommand.PACommandNames_GOTO_IMPLEMENTED_DESIGN
+// g (cl): Close Design: addNotify
+// Elapsed time: 90 seconds
+selectButton(PAResourceAtoD.ClosePlanner_YES, "Yes"); // a (g)
+// TclEventType: DESIGN_CLOSE
+// HMemoryUtils.trashcanNow. Engine heap size: 4,215 MB. GUI used memory: 243 MB. Current time: 11/28/19, 9:42:21 AM KST
+// Engine heap size: 4,215 MB. GUI used memory: 244 MB. Current time: 11/28/19, 9:42:21 AM KST
+// TclEventType: CURR_DESIGN_SET
+// TclEventType: DESIGN_CLOSE
+// by (cl):  Open Implemented Design : addNotify
+// WARNING: HEventQueue.dispatchEvent() is taking  2163 ms.
+// Tcl Message: close_design 
+dismissDialog("Close Design"); // g (cl)
+// Tcl Message: open_run impl_1 
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: SDC_CONSTRAINT_ADD
+// TclEventType: POWER_CNS_STALE
+// TclEventType: SDC_CONSTRAINT_ADD
+// TclEventType: POWER_REPORT_STALE
+// TclEventType: SDC_CONSTRAINT_ADD
+// TclEventType: FLOORPLAN_MODIFY
+// TclEventType: DESIGN_NEW
+// HMemoryUtils.trashcanNow. Engine heap size: 4,011 MB. GUI used memory: 132 MB. Current time: 11/28/19, 9:43:01 AM KST
+// TclEventType: DESIGN_NEW
+// Xgd.load filename: /home/hwkim/Xilinx/Vivado/2019.1/data/parts/xilinx/zynquplus/devint/zynquplus/xczu7ev/xczu7ev.xgd; ZipEntry: xczu7ev_detail.xgd elapsed time: 2s
+// Device: addNotify
+// DeviceView Instantiated
+// WARNING: HEventQueue.dispatchEvent() is taking  1422 ms.
+// Tcl Message: INFO: [Netlist 29-17] Analyzing 10702 Unisim elements for replacement INFO: [Netlist 29-28] Unisim Transformation completed in 1 CPU seconds INFO: [Project 1-479] Netlist was created with Vivado 2019.1.1 INFO: [Project 1-570] Preparing netlist for logic optimization INFO: [Timing 38-478] Restoring timing data from binary archive. INFO: [Timing 38-479] Binary timing data restore complete. INFO: [Project 1-856] Restoring constraints from binary archive. INFO: [Project 1-853] Binary constraint restore complete. 
+// Tcl Message: Reading XDEF placement. Reading placer database... Reading XDEF routing. 
+// TclEventType: CURR_DESIGN_SET
+// Tcl Message: Read XDEF File: Time (s): cpu = 00:00:09 ; elapsed = 00:00:09 . Memory (MB): peak = 9297.488 ; gain = 93.891 ; free physical = 7857 ; free virtual = 12576 
+// Tcl Message: Restored from archive | CPU: 9.630000 secs | Memory: 135.181404 MB | 
+// Tcl Message: Finished XDEF File Restore: Time (s): cpu = 00:00:10 ; elapsed = 00:00:09 . Memory (MB): peak = 9297.488 ; gain = 93.891 ; free physical = 7857 ; free virtual = 12576 Netlist sorting complete. Time (s): cpu = 00:00:00.02 ; elapsed = 00:00:00.02 . Memory (MB): peak = 9297.488 ; gain = 0.000 ; free physical = 7875 ; free virtual = 12594 
+// Tcl Message: INFO: [Project 1-111] Unisim Transformation Summary:   A total of 4978 instances were transformed.   CFGLUT5 => CFGLUT5 (SRLC32E, SRL16E): 704 instances   DSP48E2 => DSP48E2 (DSP_ALU, DSP_A_B_DATA, DSP_C_DATA, DSP_MULTIPLIER, DSP_M_DATA, DSP_OUTPUT, DSP_PREADD_DATA, DSP_PREADD): 24 instances   RAM16X1S => RAM32X1S (RAMS32): 3968 instances   RAM32M16 => RAM32M16 (RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMS32, RAMS32): 58 instances   RAM32X1S => RAM32X1S (RAMS32): 224 instances  
+// ExpRunCommands.openImplResults elapsed time: 41.7s
+// TclEventType: DRC_ADDED
+// Device view-level: 0.0
+// Tcl Message: open_run: Time (s): cpu = 00:00:46 ; elapsed = 00:00:41 . Memory (MB): peak = 9584.246 ; gain = 380.648 ; free physical = 7864 ; free virtual = 12584 
+// TclEventType: DRC_ADDED
+// TclEventType: METHODOLOGY_ADDED
+// TclEventType: POWER_UPDATED
+// [GUI Memory]: 324 MB (+3605kb) [00:56:26]
+// [GUI Memory]: 341 MB (+131kb) [00:56:27]
+// WARNING: HEventQueue.dispatchEvent() is taking  6566 ms.
+// TclEventType: TIMING_SUMMARY_UPDATED
+// 'dR' command handler elapsed time: 144 seconds
+// Elapsed time: 51 seconds
+dismissDialog("Open Implemented Design"); // by (cl)
+// HMemoryUtils.trashcanNow. Engine heap size: 4,906 MB. GUI used memory: 274 MB. Current time: 11/28/19, 9:43:20 AM KST
+// TclEventType: HFED_INIT_ROUTE_STORAGE_COMPLETED
+// RouteApi::loadEngineXgd elapsed time: 20.6s
+// Device view-level: 0.1
+// [Engine Memory]: 5,097 MB (+474697kb) [00:56:37]
+// [Engine Memory]: 5,512 MB (+167817kb) [00:56:49]
+// HMemoryUtils.trashcanNow. Engine heap size: 5,512 MB. GUI used memory: 275 MB. Current time: 11/28/19, 9:43:35 AM KST
+// RouteApi::initDelayMediator elapsed time: 44.3s
+// RouteApi: Init Delay Mediator Swing Worker Finished
+// [Engine Memory]: 5,934 MB (+153084kb) [00:57:33]
+// Device view-level: 0.0
+// Device view-level: 0.7
+// HMemoryUtils.trashcanNow. Engine heap size: 5,934 MB. GUI used memory: 282 MB. Current time: 11/28/19, 10:10:25 AM KST
+// Elapsed time: 1637 seconds
+selectGraphicalView(PAResourceOtoP.PAViews_DEVICE, -1521796, 2021362); // D (I, cl)
+selectGraphicalView(PAResourceOtoP.PAViews_DEVICE, -470918, 1906511); // D (I, cl)
+expandTree(PAResourceEtoH.FlowNavigatorTreePanel_FLOW_NAVIGATOR_TREE, "[, Implementation, Open Implemented Design]", 18); // u (O, cl)
+collapseTree(PAResourceEtoH.FlowNavigatorTreePanel_FLOW_NAVIGATOR_TREE, "[, Implementation, Open Implemented Design]", 18); // u (O, cl)
+selectTab((HResource) null, (HResource) null, "Design Runs", 4); // aK (aH, cl)
+selectTab((HResource) null, (HResource) null, "Messages", 1); // aK (aH, cl)
+selectTree(PAResourceItoN.MsgTreePanel_MESSAGE_VIEW_TREE, null, -1, false, false, false, true, false); // ah (O, cl) - Popup Trigger
+selectMenuItem(PAResourceItoN.MsgTreePanel_DISCARD_USER_CREATED_MESSAGES, "Discard User Created Messages"); // ah (K, cl)
+selectGraphicalView(PAResourceOtoP.PAViews_DEVICE, -1303581, 1981164); // D (I, cl)
+selectGraphicalView(PAResourceOtoP.PAViews_DEVICE, -1033684, 2044332); // D (I, cl)
+selectMenu(PAResourceItoN.MainMenuMgr_FILE, "File"); // Z (q, cl)
+selectMenu(PAResourceItoN.MainMenuMgr_PROJECT, "Project"); // ae (cl)
+selectMenu(PAResourceItoN.MainMenuMgr_CONSTRAINTS, "Constraints"); // ae (cl)
+selectMenu(PAResourceItoN.MainMenuMgr_IP, "IP"); // ae (cl)
+selectMenu(PAResourceItoN.MainMenuMgr_EXPORT, "Export"); // ae (cl)
+selectMenu(PAResourceItoN.MainMenuMgr_EXPORT, "Export"); // ae (cl)
+selectMenuItem(PAResourceCommand.PACommandNames_EXPORT_HARDWARE, "Export Hardware..."); // ah (cl)
+dismissMenu(PAResourceItoN.MainMenuMgr_FILE, "File"); // Z (q, cl)
+// Run Command: PAResourceCommand.PACommandNames_EXPORT_HARDWARE
+// X (cl): Export Hardware: addNotify
+selectCheckBox(PAResourceItoN.NewExportHardwareDialog_INCLUDE_BITSTREAM, "Include bitstream", true); // g (Q, X): TRUE
+selectButton(RDIResource.BaseDialog_OK, "OK"); // a (X)
+// 'm' command handler elapsed time: 3 seconds
+selectButton("OptionPane.button", "Yes"); // JButton (A, H)
+dismissDialog("Export Hardware"); // X (cl)
+// Tcl Message: file copy -force /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/impl_1/design_1_wrapper.sysdef /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.sdk/design_1_wrapper.hdf  
+selectMenu(PAResourceItoN.MainMenuMgr_FILE, "File"); // Z (q, cl)
+selectMenu(PAResourceItoN.MainMenuMgr_PROJECT, "Project"); // ae (cl)
+selectMenu(PAResourceItoN.MainMenuMgr_CONSTRAINTS, "Constraints"); // ae (cl)
+selectMenu(PAResourceItoN.MainMenuMgr_CHECKPOINT, "Checkpoint"); // ae (cl)
+selectMenu(PAResourceItoN.MainMenuMgr_IP, "IP"); // ae (cl)
+selectMenu(PAResourceItoN.MainMenuMgr_TEXT_EDITOR, "Text Editor"); // ae (cl)
+selectMenu(PAResourceItoN.MainMenuMgr_IMPORT, "Import"); // ae (cl)
+selectMenu(PAResourceItoN.MainMenuMgr_EXPORT, "Export"); // ae (cl)
+selectMenuItem(PAResourceCommand.PACommandNames_LAUNCH_HARDWARE, "Launch SDK"); // ah (cl)
+dismissMenu(PAResourceItoN.MainMenuMgr_FILE, "File"); // Z (q, cl)
+// Run Command: PAResourceCommand.PACommandNames_LAUNCH_HARDWARE
+// aa (cl): Launch SDK: addNotify
+selectButton(RDIResource.BaseDialog_OK, "OK"); // a (aa)
+dismissDialog("Launch SDK"); // aa (cl)
+// Tcl Message: launch_sdk -workspace /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.sdk -hwspec /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.sdk/design_1_wrapper.hdf 
+// Tcl Message: INFO: [Vivado 12-393] Launching SDK... INFO: [Vivado 12-417] Running xsdk -workspace /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.sdk -hwspec /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.sdk/design_1_wrapper.hdf INFO: [Vivado 12-3157] SDK launch initiated. Please check console for any further messages. 
+// Elapsed time: 451 seconds
+selectTree(PAResourceEtoH.FlowNavigatorTreePanel_FLOW_NAVIGATOR_TREE, "[, Program and Debug, Open Hardware Manager]", 21, true); // u (O, cl) - Node
+// Run Command: PAResourceCommand.PACommandNames_OPEN_HARDWARE_MANAGER
+// Tcl Command: 'rdi::info_commands get_hw_probes'
+// Tcl Command: 'load_features labtools'
+// TclEventType: LOAD_FEATURE
+// by (cl):  Open Hardware Manager : addNotify
+// TclEventType: HW_SESSION_OPEN
+closeView(PAResourceOtoP.PAViews_PROJECT_SUMMARY, "Project Summary"); // v
+// Tcl Message: open_hw 
+dismissDialog("Open Hardware Manager"); // by (cl)
+selectButton(PAResourceOtoP.ProgramDebugTab_OPEN_TARGET, "Open target"); // h (cS, cl)
+// HMemoryUtils.trashcanNow. Engine heap size: 5,965 MB. GUI used memory: 275 MB. Current time: 11/28/19, 10:18:35 AM KST
+selectMenu(PAResourceOtoP.ProgramDebugTab_OPEN_RECENTLY_OPENED_TARGET, "Recent Targets"); // ae (an, cl)
+selectMenu(PAResourceOtoP.ProgramDebugTab_OPEN_RECENTLY_OPENED_TARGET, "Recent Targets"); // ae (an, cl)
+selectMenuItem((HResource) null, "121.155.128.106:3121,xilinx_tcf/Xilinx/88281A,PARAM.FREQUENCY:15000000"); // ah (cl)
+// by (cl):  Open Hardware Target : addNotify
+// Tcl Message: connect_hw_server -url 121.155.128.106:3121 
+// Tcl Message: INFO: [Labtools 27-2285] Connecting to hw_server url TCP:121.155.128.106:3121 
+// TclEventType: HW_SERVER_UPDATE
+// TclEventType: HW_TARGET_NEEDS_CLOSE
+// TclEventType: HW_SERVER_UPDATE
+// Tcl Message: current_hw_target [get_hw_targets */xilinx_tcf/Xilinx/88281A] 
+// TclEventType: HW_TARGET_CHANGE
+// Tcl Message: set_property PARAM.FREQUENCY 15000000 [get_hw_targets */xilinx_tcf/Xilinx/88281A] 
+// TclEventType: HW_TARGET_CHANGE
+// TclEventType: HW_TARGET_CLOSE
+// Tcl Message: open_hw_target 
+// Tcl Message: INFO: [Labtoolstcl 44-466] Opening hw_target 121.155.128.106:3121/xilinx_tcf/Xilinx/88281A 
+// TclEventType: HW_DEVICE_CHANGE
+// TclEventType: HW_SYSMON_ADD
+// TclEventType: HW_DEVICE_CHANGE
+// TclEventType: HW_SYSMON_ADD
+// TclEventType: HW_TARGET_UPDATE
+// WARNING: HEventQueue.dispatchEvent() is taking  1823 ms.
+// Tcl Message: open_hw_target: Time (s): cpu = 00:00:02 ; elapsed = 00:00:06 . Memory (MB): peak = 11888.055 ; gain = 857.035 ; free physical = 4037 ; free virtual = 9100 
+// TclEventType: HW_DEVICE_CHANGE
+// Tcl Message: set_property PROGRAM.FILE {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/impl_1/design_1_wrapper.bit} [get_hw_devices xczu7_0] 
+// TclEventType: HW_DEVICE_CHANGE
+// Tcl Message: set_property PROBES.FILE {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/impl_1/design_1_wrapper.ltx} [get_hw_devices xczu7_0] 
+// Tcl Message: set_property FULL_PROBES.FILE {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/impl_1/design_1_wrapper.ltx} [get_hw_devices xczu7_0] 
+// Tcl Message: current_hw_device [get_hw_devices xczu7_0] 
+// Tcl Message: refresh_hw_device [lindex [get_hw_devices xczu7_0] 0] 
+// TclEventType: HW_DEVICE_CHANGE
+// TclEventType: HW_SYSMON_CHANGE
+// TclEventType: HW_ILA_CHANGE
+// TclEventType: HW_DEVICE_UPDATE
+// [Engine Memory]: 6,854 MB (+653735kb) [01:32:03]
+// WARNING: HEventQueue.dispatchEvent() is taking  3222 ms.
+// TclEventType: HW_DEVICE_CHANGE
+// Tcl Message: INFO: [Labtools 27-2302] Device xczu7 (JTAG device index = 0) is programmed with a design that has 2 ILA core(s). 
+// HMemoryUtils.trashcanNow. Engine heap size: 6,854 MB. GUI used memory: 290 MB. Current time: 11/28/19, 10:18:50 AM KST
+// TclEventType: HW_DEVICE_CHANGE
+// TclEventType: HW_DEVICE_PROBES_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: HW_DEVICE_PROBES_CHANGE
+// TclEventType: HW_ILA_CHANGE
+// Tcl Message: refresh_hw_device: Time (s): cpu = 00:00:09 ; elapsed = 00:00:06 . Memory (MB): peak = 11940.961 ; gain = 49.906 ; free physical = 4015 ; free virtual = 9079 
+// TclEventType: WAVEFORM_UPDATE_TITLE
+// TclEventType: WAVEFORM_OPEN_WCFG
+// TclEventType: WAVEFORM_DELAYED_MODEL_EVENT
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// Waveform: addNotify
+// TclEventType: WAVEFORM_UPDATE_TITLE
+// Waveform: addNotify
+// TclEventType: WAVEFORM_UPDATE_TITLE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: DEBUG_PROBE_CHANGE
+// HMemoryUtils.trashcanNow. Engine heap size: 6,910 MB. GUI used memory: 298 MB. Current time: 11/28/19, 10:18:52 AM KST
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: WAVEFORM_UPDATE_TITLE
+// Tcl Message: display_hw_ila_data [ get_hw_ila_data hw_ila_data_1 -of_objects [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}]] 
+// Tcl Message: Processed interface BlackBoxJam_0_m_axi_hostmem_ila1_slot0 
+// TclEventType: WAVEFORM_UPDATE_TITLE
+// TclEventType: WAVEFORM_OPEN_WCFG
+// Waveform: addNotify
+// TclEventType: WAVEFORM_UPDATE_TITLE
+// Waveform: addNotify
+// TclEventType: WAVEFORM_UPDATE_TITLE
+// Tcl Message: display_hw_ila_data [ get_hw_ila_data hw_ila_data_2 -of_objects [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}]] 
+// Tcl Message: current_hw_device [get_hw_devices arm_dap_1] 
+// TclEventType: HW_DEVICE_CHANGE
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// Tcl Message: refresh_hw_device -update_hw_probes false [lindex [get_hw_devices arm_dap_1] 0] 
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: HW_SYSMON_CHANGE
+// TclEventType: HW_DEVICE_UPDATE
+// TclEventType: HW_DEVICE_CHANGE
+// Tcl Message: current_hw_device [get_hw_devices xczu7_0] 
+// Elapsed time: 17 seconds
+dismissDialog("Open Hardware Target"); // by (cl)
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+maximizeView(PAResourceOtoP.PAViews_BASE_WORKSPACE, "BaseWorkspace"); // L (aH, cl)
+selectTab("PlanAheadTabBaseWorkspace_JideTabbedPane", (HResource) null, "hw_ila_2", 1); // k (j, cl)
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Matrix_Vector_Activa_2_U0/in_V_V_read]", 9, false); // a (r, cl)
+// TclEventType: WAVEFORM_DELAYED_MODEL_EVENT
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// TclEventType: WAVEFORM_UPDATE_TITLE
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// HMemoryUtils.trashcanNow. Engine heap size: 6,946 MB. GUI used memory: 300 MB. Current time: 11/28/19, 10:19:02 AM KST
+selectButton(RDIResource.WaveformView_ADD, "Waveform Viewer_new"); // B (f, cl)
+selectTree(PAResourceOtoP.ProbesView_PROBES_TREE, "[root, design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/infer_category_U0/out_V_V_write]", 5, false); // N (O, ResizableWindow)
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_MODEL_EVENT
+typeControlKey(PAResourceOtoP.ProbesView_PROBES_TREE, (String) null, 'a'); // N (O, ResizableWindow)
+selectButton(PAResourceAtoD.AddIlaProbesPopup_OK, "OK"); // a (E, ResizableWindow)
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// TclEventType: WAVEFORM_UPDATE_TITLE
+// TclEventType: WAVEFORM_DELAYED_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, in_V_V_dout[263:0]]", 0, true, false, false, false, true, false); // a (r, cl) - Popup Trigger - Node
+selectMenu("Name"); // ae (an, cl)
+selectMenu("Waveform Style"); // ae (an, cl)
+selectMenu("Name"); // ae (an, cl)
+selectMenuItem((HResource) null, "Long"); // V (cl)
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// TclEventType: WAVEFORM_UPDATE_TITLE
+// TclEventType: DEBUG_PROBE_CHANGE
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Matrix_Vector_Activa_2_U0/out_V_V_din[31:0]]", 9, true); // a (r, cl) - Node
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Matrix_Vector_Activa_2_U0/in_V_V_dout[31:0]]", 6, true); // a (r, cl) - Node
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/infer_category_U0/out_V_V_write]", 5, false); // a (r, cl)
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/infer_category_U0/out_V_V_write]", 5, false, false, false, false, true, false); // a (r, cl) - Popup Trigger
+selectMenu("Name"); // ae (an, cl)
+selectMenu("Signal Color"); // ae (an, cl)
+selectMenuItem((HResource) null, "New Divider"); // ah (an, cl)
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// TclEventType: WAVEFORM_UPDATE_TITLE
+// TclEventType: WAVEFORM_DELAYED_MODEL_EVENT
+// TclEventType: WAVEFORM_RENAME_COMMAND
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Stream2Mem_Batch_1_U0/in_V_V_dout[63:0]]", 19, true); // a (r, cl) - Node
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// TclEventType: WAVEFORM_MODEL_EVENT
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Matrix_Vector_Activa_2_U1_1/in_V_V_dout[31:0]]", 13, true); // a (r, cl) - Node
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Matrix_Vector_Activa_2_U0/out_V_V_write]", 12, false); // a (r, cl)
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Matrix_Vector_Activa_2_U0/out_V_V_write]", 12, false, false, false, false, true, false); // a (r, cl) - Popup Trigger
+selectMenuItem((HResource) null, "New Divider"); // ah (an, cl)
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// TclEventType: WAVEFORM_UPDATE_TITLE
+// TclEventType: WAVEFORM_DELAYED_MODEL_EVENT
+// TclEventType: WAVEFORM_RENAME_COMMAND
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Matrix_Vector_Activa_2_U1_1/out_V_V_write]", 19, false); // a (r, cl)
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// HMemoryUtils.trashcanNow. Engine heap size: 6,949 MB. GUI used memory: 350 MB. Current time: 11/28/19, 10:19:29 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_MODEL_EVENT
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Matrix_Vector_Activa_2_U1_1/out_V_V_write]", 13, false, false, false, false, true, false); // a (r, cl) - Popup Trigger
+selectMenu("Signal Color"); // ae (an, cl)
+selectMenuItem((HResource) null, "New Divider"); // ah (an, cl)
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// TclEventType: WAVEFORM_UPDATE_TITLE
+// TclEventType: WAVEFORM_DELAYED_MODEL_EVENT
+// TclEventType: WAVEFORM_RENAME_COMMAND
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// HMemoryUtils.trashcanNow. Engine heap size: 6,949 MB. GUI used memory: 302 MB. Current time: 11/28/19, 10:19:33 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_MODEL_EVENT
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/StreamingDataWidthCo_13_U0/in_V_V_read]", 12, false); // a (r, cl)
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/StreamingDataWidthCo_13_U0/in_V_V_read]", 12, false, false, false, false, true, false); // a (r, cl) - Popup Trigger
+selectMenu("Name"); // ae (an, cl)
+selectMenu("Signal Color"); // ae (an, cl)
+selectMenuItem((HResource) null, "New Divider"); // ah (an, cl)
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// TclEventType: WAVEFORM_UPDATE_TITLE
+// TclEventType: WAVEFORM_DELAYED_MODEL_EVENT
+// TclEventType: WAVEFORM_RENAME_COMMAND
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_5_U0/out_V_V_din[15:0]]", 17, true); // a (r, cl) - Node
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// HMemoryUtils.trashcanNow. Engine heap size: 6,950 MB. GUI used memory: 303 MB. Current time: 11/28/19, 10:19:39 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// HMemoryUtils.trashcanNow. Engine heap size: 6,950 MB. GUI used memory: 354 MB. Current time: 11/28/19, 10:19:46 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// HMemoryUtils.trashcanNow. Engine heap size: 6,950 MB. GUI used memory: 314 MB. Current time: 11/28/19, 10:19:46 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// Elapsed time: 16 seconds
+selectTree(PAResourceEtoH.FlowNavigatorTreePanel_FLOW_NAVIGATOR_TREE, "[, IP Integrator, Open Block Design]", 7, false); // u (O, cl)
+expandTree(PAResourceEtoH.FlowNavigatorTreePanel_FLOW_NAVIGATOR_TREE, "[, Program and Debug]", 6); // u (O, cl)
+// Run Command: PAResourceCommand.PACommandNames_OPEN_BLOCK_DESIGN
+// by (cl):  Open Block Design : addNotify
+// TclEventType: RSB_OPEN_DIAGRAM
+// Tcl Message: open_bd_design {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/design_1.bd} 
+dismissDialog("Open Block Design"); // by (cl)
+selectTab("PlanAheadTabBaseWorkspace_JideTabbedPane", (HResource) null, "System", 0); // k (j, cl)
+selectView(PAResourceOtoP.PAViews_SYSTEM, "System", 714, 435, 1175, 601, false, false, false, true, false); // gl (k, cl) - Popup Trigger
+selectMenu(PAResourceQtoS.SystemBuilderView_ORIENTATION, "Orientation"); // ae (an, cl)
+selectMenu(PAResourceQtoS.SystemBuilderView_EXPAND_COLLAPSE, "Expand/Collapse"); // ae (an, cl)
+selectMenu(PAResourceQtoS.SystemBuilderView_EXPAND_COLLAPSE, "Expand/Collapse"); // ae (an, cl)
+selectMenu(PAResourceQtoS.SystemBuilderView_PINNING, "Pinning"); // ae (an, cl)
+selectMenu(PAResourceQtoS.SystemBuilderView_ORIENTATION, "Orientation"); // ae (an, cl)
+selectMenu(PAResourceQtoS.SystemBuilderMenu_IP_DOCUMENTATION, "IP Documentation"); // ae (an, cl)
+selectMenuItem(PAResourceCommand.PACommandNames_EDIT_IN_IP_PACKAGER, "Edit in IP Packager"); // ah (an, cl)
+// Run Command: PAResourceCommand.PACommandNames_EDIT_IN_IP_PACKAGER
+// k (cl): Edit in IP Packager: addNotify
+selectButton(RDIResource.BaseDialog_OK, "OK"); // a (k)
+// by (cl):  Edit in IP Packager : addNotify
+// TclEventType: FILE_SET_NEW
+// TclEventType: RUN_ADD
+// TclEventType: RUN_CURRENT
+// TclEventType: PROJECT_DASHBOARD_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// TclEventType: PROJECT_NEW
+// WARNING: HEventQueue.dispatchEvent() is taking  1761 ms.
+// Tcl Message: ipx::edit_ip_in_project -upgrade true -name BlackBoxJam_v1_0_project -directory /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.tmp/BlackBoxJam_v1_0_project /data_drive/bnn_seg_hls_project_backup/bnn_fpga_dbg_no_log_test_1127/sol1/impl/ip/component.xml 
+// Tcl Message: INFO: [IP_Flow 19-234] Refreshing IP repositories INFO: [IP_Flow 19-1704] No user IP repositories specified INFO: [IP_Flow 19-2313] Loaded Vivado IP repository '/home/hwkim/Xilinx/Vivado/2019.1/data/ip'. 
+// TclEventType: FILE_SET_OPTIONS_CHANGE
+// TclEventType: RSB_BITABEN_IPREPODATA_REFRESH
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: FILE_SET_CHANGE
+// [GUI Memory]: 360 MB (+2269kb) [01:33:24]
+// TclEventType: FILE_SET_CHANGE
+// Tcl Message: INFO: [IP_Flow 19-234] Refreshing IP repositories INFO: [IP_Flow 19-1700] Loaded user IP repository '/data_drive/bnn_seg_hls_project_backup/bnn_fpga_dbg_no_log_test_1127/sol1/impl/ip'. INFO: [IP_Flow 19-795] Syncing license key meta-data 
+// TclEventType: FILE_SET_CHANGE
+// Tcl Message: INFO: [Common 17-14] Message 'filemgmt 56-99' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings. 
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: PACKAGER_CURRENT_CORE
+// Run Command: PAResourceCommand.PACommandNames_IP_PACKAGER
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_MESSAGE_UPDATE
+// Tcl Message: ipx::edit_ip_in_project: Time (s): cpu = 00:00:18 ; elapsed = 00:00:09 . Memory (MB): peak = 12083.594 ; gain = 0.000 ; free physical = 3993 ; free virtual = 9059 
+// 'i' command handler elapsed time: 10 seconds
+dismissDialog("Edit in IP Packager"); // by (cl)
+// HMemoryUtils.trashcanNow. Engine heap size: 6,980 MB. GUI used memory: 312 MB. Current time: 11/28/19, 10:20:20 AM KST
+// TclEventType: DG_GRAPH_STALE
+// TclEventType: FILE_SET_CHANGE
+// Tcl Message: update_compile_order -fileset sources_1 
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: DG_GRAPH_STALE
+// HMemoryUtils.trashcanNow. Engine heap size: 7,159 MB. GUI used memory: 316 MB. Current time: 11/28/19, 10:20:35 AM KST
+// Elapsed time: 74 seconds
+expandTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v)]", 2); // B (F, cl)
+// Elapsed time: 43 seconds
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v)]", 496, true); // B (F, cl) - Node
+expandTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v)]", 496); // B (F, cl)
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), StreamingDataWidthCo_8_U0 : StreamingDataWidthCo_8 (StreamingDataWidthCo_8.v)]", 502, false); // B (F, cl)
+// Elapsed time: 59 seconds
+selectTreeTableHeader(PAResourceEtoH.ExpRunTreePanel_EXP_RUN_TREE_TABLE, "Progress", 3); // ay (O, cl)
+// Elapsed time: 38 seconds
+selectTree(PAResourceEtoH.FlowNavigatorTreePanel_FLOW_NAVIGATOR_TREE, "[, Program and Debug, Open Hardware Manager]", 21, true); // u (O, cl) - Node
+// Run Command: PAResourceCommand.PACommandNames_OPEN_HARDWARE_MANAGER
+// Tcl Command: 'rdi::info_commands get_hw_probes'
+// Waveform: addNotify
+// Waveform: addNotify
+// Waveform: addNotify
+// Waveform: addNotify
+// Waveform: addNotify
+// Waveform: addNotify
+// HMemoryUtils.trashcanNow. Engine heap size: 7,152 MB. GUI used memory: 317 MB. Current time: 11/28/19, 10:23:56 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// Waveform: addNotify
+// Waveform: addNotify
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+unmaximizeView(PAResourceOtoP.PAViews_BASE_WORKSPACE, "BaseWorkspace"); // L (aH, cl)
+// HMemoryUtils.trashcanNow. Engine heap size: 7,152 MB. GUI used memory: 318 MB. Current time: 11/28/19, 10:24:00 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+maximizeView(PAResourceOtoP.PAViews_BASE_WORKSPACE, "BaseWorkspace"); // L (aH, cl)
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_5_U0/out_V_V_write]", 18, false); // a (r, cl)
+// Tcl Message: current_project project_1 
+// [GUI Memory]: 380 MB (+2119kb) [01:37:18]
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Stream2Mem_Batch_1_U0/in_V_V_read]", 8, false); // a (r, cl)
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Stream2Mem_Batch_1_U0/in_V_V_read]", 8, false, false, false, false, true, false); // a (r, cl) - Popup Trigger
+selectMenuItem((HResource) null, "New Divider"); // ah (an, cl)
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// TclEventType: WAVEFORM_UPDATE_TITLE
+// TclEventType: WAVEFORM_DELAYED_MODEL_EVENT
+// TclEventType: WAVEFORM_RENAME_COMMAND
+// HMemoryUtils.trashcanNow. Engine heap size: 7,152 MB. GUI used memory: 321 MB. Current time: 11/28/19, 10:24:10 AM KST
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/StreamingDataWidthCo_13_U0/in_V_V_empty_n]", 11, false); // a (r, cl)
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// TclEventType: WAVEFORM_MODEL_EVENT
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Stream2Mem_Batch_1_U0/in_V_V_empty_n]", 7, false); // a (r, cl)
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Stream2Mem_Batch_1_U0/in_V_V_read]", 8, false); // a (r, cl)
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+maximizeFrame(PAResourceOtoP.PAViews_SOURCES, "Sources"); // az (aK, cl)
+expandTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), DoCompute_Block_pro_U0 : DoCompute_Block_pro (DoCompute_Block_pro.v)]", 503); // B (F, cl)
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), DoCompute_Block_pro_U0 : DoCompute_Block_pro (DoCompute_Block_pro.v), StreamingDataWidthCo_1_1_U0 : StreamingDataWidthCo_1_1 (StreamingDataWidthCo_1_1.v)]", 508, false); // B (F, cl)
+// Tcl Message: current_project BlackBoxJam_v1_0_project 
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), DoCompute_Block_pro_U0 : DoCompute_Block_pro (DoCompute_Block_pro.v)]", 503, true); // B (F, cl) - Node
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), DoCompute_Block_pro_U0 : DoCompute_Block_pro (DoCompute_Block_pro.v)]", 503, true, false, false, false, false, true); // B (F, cl) - Double Click - Node
+maximizeView(PAResourceOtoP.PAViews_BASE_WORKSPACE, "BaseWorkspace"); // O (aH, cl)
+selectCodeEditor("DoCompute_Block_pro.v", 389, 138); // cl (w, cl)
+// HMemoryUtils.trashcanNow. Engine heap size: 7,214 MB. GUI used memory: 332 MB. Current time: 11/28/19, 10:24:40 AM KST
+// [Engine Memory]: 7,214 MB (+18835kb) [01:38:04]
+// Elapsed time: 17 seconds
+setText(RDIResource.HCodeEditor_SEARCH_TEXT_COMBO_BOX, "stream2mem_batch_1_u0", true); // l (aT, cl)
+// [GUI Memory]: 399 MB (+250kb) [01:38:11]
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Stream2Mem_Batch_1_U0/in_V_V_empty_n]", 7, false); // a (r, cl)
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// Tcl Message: current_project project_1 
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Stream2Mem_Batch_1_U0/in_V_V_dout[63:0]]", 6, true); // a (r, cl) - Node
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Stream2Mem_Batch_1_U0/in_V_V_empty_n]", 7, false); // a (r, cl)
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Stream2Mem_Batch_1_U0/in_V_V_read]", 8, false); // a (r, cl)
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+selectTable(PAResourceTtoZ.TriggerSetupPanel_TABLE, "design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Matrix_Vector_Activa_2_U0/in_V_V_read ; ==   ; [B]   ; R ; probe20[0] ; 1 of 1", 0, "design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Matrix_Vector_Activa_2_U0/in_V_V_read", 0); // A (O, cl)
+selectButton(PAResourceItoN.IlaProbeTablePanel_REMOVE_SELECTED_PROBE, "IlaProbeTablePanel_remove"); // B (f, cl)
+// TclEventType: DEBUG_PROBE_CHANGE
+// Tcl Message: set_property TRIGGER_COMPARE_VALUE eq1'bX [get_hw_probes design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Matrix_Vector_Activa_2_U0/in_V_V_read -of_objects [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}]] 
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Stream2Mem_Batch_1_U0/in_V_V_empty_n]", 7, false); // a (r, cl)
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Stream2Mem_Batch_1_U0/in_V_V_read]", 8, false); // a (r, cl)
+selectButton(PAResourceItoN.IlaProbeTablePanel_ADD_PROBE, "IlaProbeTablePanel_new"); // B (f, cl)
+selectButton(PAResourceAtoD.AddIlaProbesPopup_OK, "OK"); // a (E, ResizableWindow)
+selectTableHeader(PAResourceTtoZ.TriggerSetupPanel_TABLE, "Name", 0); // A (O, cl)
+selectTable(PAResourceTtoZ.TriggerSetupPanel_TABLE, "design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Stream2Mem_Batch_1_U0/in_V_V_read ; ==   ; [B]   ; X ; probe21[0] ; ", 0, "X", 3); // A (O, cl)
+editTable(PAResourceTtoZ.TriggerSetupPanel_TABLE, "X", 0, "Value", 3); // A (O, cl)
+// TclEventType: DEBUG_PROBE_CHANGE
+// Tcl Message: set_property TRIGGER_COMPARE_VALUE eq1'bR [get_hw_probes design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Stream2Mem_Batch_1_U0/in_V_V_read -of_objects [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}]] 
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+selectButton(PAResourceTtoZ.TriggerStatusPanel_RUN_TRIGGER_FOR_THIS_ILA_CORE, "ILA_run_trigger"); // B (f, cl)
+selectButton(PAResourceTtoZ.TriggerStatusPanel_RUN_TRIGGER_FOR_THIS_ILA_CORE, "ILA_run_trigger"); // B (f, cl)
+// Run Command: PAResourceCommand.PACommandNames_RUN_TRIGGER
+// TclEventType: HW_ILA_CHANGE
+// Tcl Message: run_hw_ila [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}] 
+// Tcl Message: INFO: [Labtools 27-1964] The ILA core 'hw_ila_2' trigger was armed at 2019-Nov-28 10:25:25 
+// TclEventType: HW_ILA_CHANGE
+// Tcl Message: wait_on_hw_ila [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}] 
+// TclEventType: HW_ILA_CHANGE
+// TclEventType: WAVEFORM_GLASSPANE
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// Tcl Message: display_hw_ila_data [upload_hw_ila_data [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}]] 
+// Tcl Message: INFO: [Labtools 27-1966] The ILA core 'hw_ila_2' triggered at 2019-Nov-28 10:25:28 
+// TclEventType: WAVEFORM_DELAYED_MODEL_EVENT
+// HMemoryUtils.trashcanNow. Engine heap size: 7,245 MB. GUI used memory: 330 MB. Current time: 11/28/19, 10:25:30 AM KST
+// TclEventType: WAVEFORM_DELAYED_MODEL_EVENT
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// TclEventType: WAVEFORM_UPDATE_TITLE
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// HMemoryUtils.trashcanNow. Engine heap size: 7,237 MB. GUI used memory: 337 MB. Current time: 11/28/19, 10:25:30 AM KST
+// TclEventType: WAVEFORM_UPDATE_TITLE
+// TclEventType: HW_WAVE_ZIP_EXPORT_DONE
+// TclEventType: WAVEFORM_GLASSPANE
+// Tcl Message: INFO: [Labtools 27-3304] ILA Waveform data saved to file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.hw/backup/hw_ila_data_2.ila. Use Tcl command 'read_hw_ila_data' or Vivado File->Import->Import ILA Data menu item to import the previously saved data. 
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_MODEL_EVENT
+// Elapsed time: 12 seconds
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Stream2Mem_Batch_1_U0/in_V_V_dout[63:0]]", 6, true); // a (r, cl) - Node
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+selectGraphicalView(RDIResource.RDIViews_WAVEFORM_VIEWER, 368, 281); // n (o, cl)
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+selectGraphicalView(RDIResource.RDIViews_WAVEFORM_VIEWER, 372, 188); // n (o, cl)
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// HMemoryUtils.trashcanNow. Engine heap size: 7,229 MB. GUI used memory: 359 MB. Current time: 11/28/19, 10:25:44 AM KST
+// Elapsed time: 53 seconds
+selectGraphicalView(RDIResource.RDIViews_WAVEFORM_VIEWER, 37, 379); // n (o, cl)
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// HMemoryUtils.trashcanNow. Engine heap size: 7,229 MB. GUI used memory: 330 MB. Current time: 11/28/19, 10:26:38 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+selectGraphicalView(RDIResource.RDIViews_WAVEFORM_VIEWER, 60, 407); // n (o, cl)
+// HMemoryUtils.trashcanNow. Engine heap size: 7,229 MB. GUI used memory: 338 MB. Current time: 11/28/19, 10:26:39 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// HMemoryUtils.trashcanNow. Engine heap size: 7,229 MB. GUI used memory: 330 MB. Current time: 11/28/19, 10:26:40 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// Elapsed time: 22 seconds
+selectTab("PlanAheadTabBaseWorkspace_JideTabbedPane", (HResource) null, "hw_ila_1", 0); // k (j, cl)
+// HMemoryUtils.trashcanNow. Engine heap size: 7,229 MB. GUI used memory: 338 MB. Current time: 11/28/19, 10:27:02 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// HMemoryUtils.trashcanNow. Engine heap size: 7,229 MB. GUI used memory: 336 MB. Current time: 11/28/19, 10:27:10 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, slot_0 : BlackBoxJam_0_m_axi_hostmem : Interface, slot_0 : BlackBoxJam_0_m_axi_hostmem : AR Channel]", 1, true); // a (r, cl) - Node
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// HMemoryUtils.trashcanNow. Engine heap size: 7,229 MB. GUI used memory: 338 MB. Current time: 11/28/19, 10:27:16 AM KST
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, slot_0 : BlackBoxJam_0_m_axi_hostmem : Interface]", 0, true); // a (r, cl) - Node
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, slot_0 : BlackBoxJam_0_m_axi_hostmem : Interface, slot_0 : BlackBoxJam_0_m_axi_hostmem : R Channel]", 2, true); // a (r, cl) - Node
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// TclEventType: HW_TARGET_NEEDS_CLOSE
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// Elapsed time: 261 seconds
+selectGraphicalView(RDIResource.RDIViews_WAVEFORM_VIEWER, 204, 231); // n (o, cl)
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, slot_0 : BlackBoxJam_0_m_axi_hostmem : Interface, slot_0 : BlackBoxJam_0_m_axi_hostmem : AW Channel]", 3, true); // a (r, cl) - Node
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// Elapsed time: 144 seconds
+selectGraphicalView(RDIResource.RDIViews_WAVEFORM_VIEWER, 743, 195); // n (o, cl)
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+selectTab("PlanAheadTabBaseWorkspace_JideTabbedPane", (HResource) null, "hw_ila_2", 1); // k (j, cl)
+selectGraphicalView(RDIResource.RDIViews_WAVEFORM_VIEWER, 313, 232); // n (o, cl)
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// HMemoryUtils.trashcanNow. Engine heap size: 7,229 MB. GUI used memory: 356 MB. Current time: 11/28/19, 10:34:10 AM KST
+selectTab("PlanAheadTabBaseWorkspace_JideTabbedPane", (HResource) null, "hw_ila_1", 0); // k (j, cl)
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// Elapsed time: 37 seconds
+selectButton(PAResourceTtoZ.TriggerStatusPanel_RUN_TRIGGER_FOR_THIS_ILA_CORE, "ILA_run_trigger"); // B (f, cl)
+// Run Command: PAResourceCommand.PACommandNames_RUN_TRIGGER
+// TclEventType: HW_ILA_CHANGE
+// Tcl Message: run_hw_ila [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}] 
+// Tcl Message: INFO: [Labtools 27-1964] The ILA core 'hw_ila_1' trigger was armed at 2019-Nov-28 10:34:49 
+selectGraphicalView(RDIResource.RDIViews_WAVEFORM_VIEWER, 451, 150); // n (o, cl)
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// TclEventType: HW_ILA_CHANGE
+// Tcl Message: wait_on_hw_ila [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}] 
+// Tcl Message: display_hw_ila_data [upload_hw_ila_data [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}]] 
+// Tcl Message: INFO: [Labtools 27-1966] The ILA core 'hw_ila_1' triggered at 2019-Nov-28 10:34:52 
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: HW_ILA_CHANGE
+// TclEventType: WAVEFORM_GLASSPANE
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// TclEventType: WAVEFORM_DELAYED_MODEL_EVENT
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// TclEventType: WAVEFORM_UPDATE_TITLE
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: DEBUG_PROBE_CHANGE
+// HMemoryUtils.trashcanNow. Engine heap size: 7,252 MB. GUI used memory: 330 MB. Current time: 11/28/19, 10:34:55 AM KST
+// TclEventType: DEBUG_PROBE_CHANGE
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// TclEventType: WAVEFORM_UPDATE_TITLE
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// TclEventType: WAVEFORM_UPDATE_TITLE
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// TclEventType: WAVEFORM_UPDATE_TITLE
+// HMemoryUtils.trashcanNow. Engine heap size: 7,252 MB. GUI used memory: 355 MB. Current time: 11/28/19, 10:34:55 AM KST
+// TclEventType: WAVEFORM_UPDATE_TITLE
+// TclEventType: HW_WAVE_ZIP_EXPORT_DONE
+// TclEventType: WAVEFORM_GLASSPANE
+// Tcl Message: Processed interface BlackBoxJam_0_m_axi_hostmem_ila1_slot0 
+// Tcl Message: INFO: [Labtools 27-3304] ILA Waveform data saved to file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.hw/backup/hw_ila_data_1.ila. Use Tcl command 'read_hw_ila_data' or Vivado File->Import->Import ILA Data menu item to import the previously saved data. 
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+selectGraphicalView(RDIResource.RDIViews_WAVEFORM_VIEWER, 152, 335); // n (o, cl)
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, slot_0 : BlackBoxJam_0_m_axi_hostmem : Interface, slot_0 : BlackBoxJam_0_m_axi_hostmem : R Channel]", 4, true); // a (r, cl) - Node
+// HMemoryUtils.trashcanNow. Engine heap size: 7,244 MB. GUI used memory: 330 MB. Current time: 11/28/19, 10:35:03 AM KST
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, slot_0 : BlackBoxJam_0_m_axi_hostmem : Interface, slot_0 : BlackBoxJam_0_m_axi_hostmem : AR Channel]", 3, true); // a (r, cl) - Node
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+selectGraphicalView(RDIResource.RDIViews_WAVEFORM_VIEWER, 493, 229); // n (o, cl)
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// HMemoryUtils.trashcanNow. Engine heap size: 7,244 MB. GUI used memory: 330 MB. Current time: 11/28/19, 10:35:06 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+selectGraphicalView(RDIResource.RDIViews_WAVEFORM_VIEWER, 194, 223); // n (o, cl)
+// HMemoryUtils.trashcanNow. Engine heap size: 7,244 MB. GUI used memory: 331 MB. Current time: 11/28/19, 10:35:11 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// HMemoryUtils.trashcanNow. Engine heap size: 7,244 MB. GUI used memory: 331 MB. Current time: 11/28/19, 10:35:11 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// HMemoryUtils.trashcanNow. Engine heap size: 7,244 MB. GUI used memory: 331 MB. Current time: 11/28/19, 10:35:11 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// HMemoryUtils.trashcanNow. Engine heap size: 7,244 MB. GUI used memory: 330 MB. Current time: 11/28/19, 10:35:12 AM KST
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, slot_0 : BlackBoxJam_0_m_axi_hostmem : Interface, slot_0 : BlackBoxJam_0_m_axi_hostmem : W Channel]", 6, true); // a (r, cl) - Node
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+expandTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, slot_0 : BlackBoxJam_0_m_axi_hostmem : Interface, slot_0 : BlackBoxJam_0_m_axi_hostmem : W Channel]", 6); // a (r, cl)
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// HMemoryUtils.trashcanNow. Engine heap size: 7,244 MB. GUI used memory: 332 MB. Current time: 11/28/19, 10:35:14 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// Elapsed time: 16 seconds
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, slot_0 : BlackBoxJam_0_m_axi_hostmem : Interface, slot_0 : BlackBoxJam_0_m_axi_hostmem : AW Channel]", 5, true); // a (r, cl) - Node
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+expandTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, slot_0 : BlackBoxJam_0_m_axi_hostmem : Interface, slot_0 : BlackBoxJam_0_m_axi_hostmem : AW Channel]", 5); // a (r, cl)
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// HMemoryUtils.trashcanNow. Engine heap size: 7,244 MB. GUI used memory: 331 MB. Current time: 11/28/19, 10:35:32 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, slot_0 : BlackBoxJam_0_m_axi_hostmem : Interface, slot_0 : BlackBoxJam_0_m_axi_hostmem : AW Channel, slot_0 : BlackBoxJam_0_m_axi_hostmem : AWADDR]", 8, true); // a (r, cl) - Node
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// Elapsed time: 277 seconds
+selectGraphicalView(RDIResource.RDIViews_WAVEFORM_VIEWER, 371, 408); // n (o, cl)
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// HMemoryUtils.trashcanNow. Engine heap size: 7,245 MB. GUI used memory: 355 MB. Current time: 11/28/19, 10:40:14 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// Elapsed time: 14 seconds
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, slot_0 : BlackBoxJam_0_m_axi_hostmem : Interface, slot_0 : BlackBoxJam_0_m_axi_hostmem : AW Channel, slot_0 : BlackBoxJam_0_m_axi_hostmem : AWADDR]", 8, true); // a (r, cl) - Node
+// HMemoryUtils.trashcanNow. Engine heap size: 7,245 MB. GUI used memory: 331 MB. Current time: 11/28/19, 10:40:27 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// Elapsed time: 87 seconds
+selectGraphicalView(RDIResource.RDIViews_WAVEFORM_VIEWER, 533, 345); // n (o, cl)
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// HMemoryUtils.trashcanNow. Engine heap size: 7,245 MB. GUI used memory: 329 MB. Current time: 11/28/19, 10:41:56 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, slot_0 : BlackBoxJam_0_m_axi_hostmem : Interface, slot_0 : BlackBoxJam_0_m_axi_hostmem : W Channel, slot_0 : BlackBoxJam_0_m_axi_hostmem : WDATA]", 19, true); // a (r, cl) - Node
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// HMemoryUtils.trashcanNow. Engine heap size: 7,245 MB. GUI used memory: 329 MB. Current time: 11/28/19, 10:42:00 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// HMemoryUtils.trashcanNow. Engine heap size: 7,245 MB. GUI used memory: 329 MB. Current time: 11/28/19, 10:42:09 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// Elapsed time: 15 seconds
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, slot_0 : BlackBoxJam_0_m_axi_hostmem : Interface, slot_0 : BlackBoxJam_0_m_axi_hostmem : AW Channel, slot_0 : BlackBoxJam_0_m_axi_hostmem : AWADDR]", 8, true); // a (r, cl) - Node
+// HMemoryUtils.trashcanNow. Engine heap size: 7,245 MB. GUI used memory: 329 MB. Current time: 11/28/19, 10:42:14 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+selectGraphicalView(RDIResource.RDIViews_WAVEFORM_VIEWER, 780, 398); // n (o, cl)
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// HMemoryUtils.trashcanNow. Engine heap size: 7,245 MB. GUI used memory: 330 MB. Current time: 11/28/19, 10:42:16 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+selectGraphicalView(RDIResource.RDIViews_WAVEFORM_VIEWER, 1018, 257); // n (o, cl)
+// HMemoryUtils.trashcanNow. Engine heap size: 7,245 MB. GUI used memory: 336 MB. Current time: 11/28/19, 10:42:17 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// HMemoryUtils.trashcanNow. Engine heap size: 7,245 MB. GUI used memory: 330 MB. Current time: 11/28/19, 10:42:17 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// HMemoryUtils.trashcanNow. Engine heap size: 7,245 MB. GUI used memory: 330 MB. Current time: 11/28/19, 10:42:17 AM KST
+selectGraphicalView(RDIResource.RDIViews_WAVEFORM_VIEWER, 915, 343); // n (o, cl)
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// HMemoryUtils.trashcanNow. Engine heap size: 7,245 MB. GUI used memory: 329 MB. Current time: 11/28/19, 10:42:21 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// Elapsed time: 252 seconds
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, slot_0 : BlackBoxJam_0_m_axi_hostmem : Interface, slot_0 : BlackBoxJam_0_m_axi_hostmem : AW Channel, slot_0 : BlackBoxJam_0_m_axi_hostmem : AWADDR]", 8, true); // a (r, cl) - Node
+selectTab("PlanAheadTabBaseWorkspace_JideTabbedPane", (HResource) null, "hw_ila_2", 1); // k (j, cl)
+selectGraphicalView(RDIResource.RDIViews_WAVEFORM_VIEWER, 315, 345); // n (o, cl)
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// HMemoryUtils.trashcanNow. Engine heap size: 7,245 MB. GUI used memory: 330 MB. Current time: 11/28/19, 10:46:35 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+selectButton(PAResourceEtoH.HardwareIlaWaveformView_RUN_TRIGGER_IMMEDIATE_FOR_THIS_ILA_CORE, "Waveform Viewer_trigger_immediate"); // B (f, cl)
+// Run Command: PAResourceCommand.PACommandNames_TRIGGER_IMMEDIATE
+// TclEventType: HW_ILA_CHANGE
+// Tcl Message: run_hw_ila [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}] -trigger_now 
+// Tcl Message: INFO: [Labtools 27-1964] The ILA core 'hw_ila_2' trigger was armed at 2019-Nov-28 10:46:36 
+// Tcl Message: wait_on_hw_ila [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}] 
+// TclEventType: HW_ILA_CHANGE
+// TclEventType: WAVEFORM_GLASSPANE
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// HMemoryUtils.trashcanNow. Engine heap size: 7,245 MB. GUI used memory: 330 MB. Current time: 11/28/19, 10:46:38 AM KST
+// TclEventType: WAVEFORM_DELAYED_MODEL_EVENT
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// TclEventType: WAVEFORM_UPDATE_TITLE
+// TclEventType: HW_WAVE_ZIP_EXPORT_DONE
+// TclEventType: WAVEFORM_GLASSPANE
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// Tcl Message: display_hw_ila_data [upload_hw_ila_data [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}]] 
+// Tcl Message: INFO: [Labtools 27-1966] The ILA core 'hw_ila_2' triggered at 2019-Nov-28 10:46:36 INFO: [Labtools 27-3304] ILA Waveform data saved to file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.hw/backup/hw_ila_data_2.ila. Use Tcl command 'read_hw_ila_data' or Vivado File->Import->Import ILA Data menu item to import the previously saved data. 
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/StreamingDataWidthCo_13_U0/in_V_V_dout[63:0]]", 10, true); // a (r, cl) - Node
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// HMemoryUtils.trashcanNow. Engine heap size: 7,245 MB. GUI used memory: 356 MB. Current time: 11/28/19, 10:46:42 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// HMemoryUtils.trashcanNow. Engine heap size: 7,245 MB. GUI used memory: 333 MB. Current time: 11/28/19, 10:46:43 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// HMemoryUtils.trashcanNow. Engine heap size: 7,245 MB. GUI used memory: 330 MB. Current time: 11/28/19, 10:46:45 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// Elapsed time: 21 seconds
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Stream2Mem_Batch_1_U0/in_V_V_read]", 10, false); // a (r, cl)
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/StreamingDataWidthCo_13_U0/in_V_V_read]", 14, false); // a (r, cl)
+// HMemoryUtils.trashcanNow. Engine heap size: 7,245 MB. GUI used memory: 371 MB. Current time: 11/28/19, 10:47:05 AM KST
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/StreamingDataWidthCo_13_U0/in_V_V_dout[63:0]]", 12, true); // a (r, cl) - Node
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+selectTree(RDIResource.WaveformNameTree_WAVEFORM_NAME_TREE, "[true, design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/DoCompute_Block_pro_U0/Stream2Mem_Batch_1_U0/in_V_V_read]", 10, false); // a (r, cl)
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// HMemoryUtils.trashcanNow. Engine heap size: 7,245 MB. GUI used memory: 382 MB. Current time: 11/28/19, 10:47:13 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// HMemoryUtils.trashcanNow. Engine heap size: 7,245 MB. GUI used memory: 331 MB. Current time: 11/28/19, 10:47:13 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// HMemoryUtils.trashcanNow. Engine heap size: 7,245 MB. GUI used memory: 344 MB. Current time: 11/28/19, 10:47:16 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// HMemoryUtils.trashcanNow. Engine heap size: 7,245 MB. GUI used memory: 337 MB. Current time: 11/28/19, 10:47:16 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+selectGraphicalView(RDIResource.RDIViews_WAVEFORM_VIEWER, 420, 440); // n (o, cl)
+// HMemoryUtils.trashcanNow. Engine heap size: 7,245 MB. GUI used memory: 330 MB. Current time: 11/28/19, 10:47:19 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// HMemoryUtils.trashcanNow. Engine heap size: 7,245 MB. GUI used memory: 333 MB. Current time: 11/28/19, 10:47:19 AM KST
+// Elapsed time: 45 seconds
+selectCodeEditor("DoCompute_Block_pro.v", 457, 116); // cl (w, cl)
+selectCodeEditor("DoCompute_Block_pro.v", 208, 40); // cl (w, cl)
+selectCodeEditor("DoCompute_Block_pro.v", 208, 40, false, false, false, false, true); // cl (w, cl) - Double Click
+selectCodeEditor("DoCompute_Block_pro.v", 82, 45); // cl (w, cl)
+selectCodeEditor("DoCompute_Block_pro.v", 82, 45, false, false, false, false, true); // cl (w, cl) - Double Click
+applyEnter(RDIResource.HCodeEditor_SEARCH_TEXT_COMBO_BOX, "Stream2Mem_Batch_1"); // l (aT, cl)
+applyEnter(RDIResource.HCodeEditor_SEARCH_TEXT_COMBO_BOX, "Stream2Mem_Batch_1"); // l (aT, cl)
+applyEnter(RDIResource.HCodeEditor_SEARCH_TEXT_COMBO_BOX, "Stream2Mem_Batch_1"); // l (aT, cl)
+setText(RDIResource.HCodeEditor_SEARCH_TEXT_COMBO_BOX, "Stream2Mem_Batch", true); // l (aT, cl)
+selectCodeEditor("DoCompute_Block_pro.v", 153, 181); // cl (w, cl)
+selectCodeEditor("DoCompute_Block_pro.v", 153, 181, false, false, false, false, true); // cl (w, cl) - Double Click
+selectCodeEditor("DoCompute_Block_pro.v", 128, 149); // cl (w, cl)
+selectCodeEditor("DoCompute_Block_pro.v", 145, 158); // cl (w, cl)
+selectCodeEditor("DoCompute_Block_pro.v", 145, 158, false, false, false, false, true); // cl (w, cl) - Double Click
+selectCodeEditor("DoCompute_Block_pro.v", 590, 199); // cl (w, cl)
+selectCodeEditor("DoCompute_Block_pro.v", 265, 163); // cl (w, cl)
+selectCodeEditor("DoCompute_Block_pro.v", 265, 163, false, false, false, false, true); // cl (w, cl) - Double Click
+selectCodeEditor("DoCompute_Block_pro.v", 162, 163); // cl (w, cl)
+selectCodeEditor("DoCompute_Block_pro.v", 162, 163, false, false, false, false, true); // cl (w, cl) - Double Click
+selectCodeEditor("DoCompute_Block_pro.v", 584, 190); // cl (w, cl)
+selectCodeEditor("DoCompute_Block_pro.v", 68, 28); // cl (w, cl)
+selectCodeEditor("DoCompute_Block_pro.v", 68, 28, false, false, false, false, true); // cl (w, cl) - Double Click
+// Elapsed time: 14 seconds
+selectCodeEditor("DoCompute_Block_pro.v", 432, 144); // cl (w, cl)
+selectCodeEditor("DoCompute_Block_pro.v", 74, 21); // cl (w, cl)
+selectCodeEditor("DoCompute_Block_pro.v", 74, 21, false, false, false, false, true); // cl (w, cl) - Double Click
+unmaximizeView(PAResourceOtoP.PAViews_BASE_WORKSPACE, "BaseWorkspace"); // O (aH, cl)
+expandTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), DoCompute_Block_pro_U0 : DoCompute_Block_pro (DoCompute_Block_pro.v)]", 503); // B (F, cl)
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), DoCompute_Block_pro_U0 : DoCompute_Block_pro (DoCompute_Block_pro.v), Stream2Mem_Batch_U0 : Stream2Mem_Batch (Stream2Mem_Batch.v)]", 544, true); // B (F, cl) - Node
+// Tcl Message: current_project BlackBoxJam_v1_0_project 
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), DoCompute_Block_pro_U0 : DoCompute_Block_pro (DoCompute_Block_pro.v), Stream2Mem_Batch_1_U0 : Stream2Mem_Batch_1 (Stream2Mem_Batch_1.v)]", 545, true); // B (F, cl) - Node
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), DoCompute_Block_pro_U0 : DoCompute_Block_pro (DoCompute_Block_pro.v), Stream2Mem_Batch_U0 : Stream2Mem_Batch (Stream2Mem_Batch.v)]", 544, true); // B (F, cl) - Node
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), DoCompute_Block_pro_U0 : DoCompute_Block_pro (DoCompute_Block_pro.v), Stream2Mem_Batch_U0 : Stream2Mem_Batch (Stream2Mem_Batch.v)]", 544, true, false, false, false, false, true); // B (F, cl) - Double Click - Node
+selectCodeEditor("Stream2Mem_Batch.v", 206, 169); // cl (w, cl)
+selectCodeEditor("Stream2Mem_Batch.v", 229, 148); // cl (w, cl)
+// Elapsed time: 10 seconds
+typeControlKey((HResource) null, "Stream2Mem_Batch.v", 'c'); // cl (w, cl)
+typeControlKey((HResource) null, "Stream2Mem_Batch.v", 'v'); // cl (w, cl)
+typeControlKey((HResource) null, "Stream2Mem_Batch.v", 'v'); // cl (w, cl)
+// TclEventType: DG_GRAPH_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: WAVEFORM_UPDATE_COMMANDS
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// TclEventType: FILE_SET_CHANGE
+// HMemoryUtils.trashcanNow. Engine heap size: 7,263 MB. GUI used memory: 331 MB. Current time: 11/28/19, 10:49:26 AM KST
+selectCodeEditor("Stream2Mem_Batch.v", 329, 242); // cl (w, cl)
+typeControlKey((HResource) null, "Stream2Mem_Batch.v", 'v'); // cl (w, cl)
+// TclEventType: DG_GRAPH_STALE
+// TclEventType: FILE_SET_CHANGE
+selectCodeEditor("Stream2Mem_Batch.v", 392, 224); // cl (w, cl)
+selectCodeEditor("Stream2Mem_Batch.v", 392, 224, false, false, false, false, true); // cl (w, cl) - Double Click
+selectCodeEditor("Stream2Mem_Batch.v", 249, 364); // cl (w, cl)
+typeControlKey((HResource) null, "Stream2Mem_Batch.v", 'v'); // cl (w, cl)
+typeControlKey((HResource) null, "Stream2Mem_Batch.v", 'v'); // cl (w, cl)
+// TclEventType: DG_GRAPH_STALE
+// TclEventType: FILE_SET_CHANGE
+// HMemoryUtils.trashcanNow. Engine heap size: 7,285 MB. GUI used memory: 331 MB. Current time: 11/28/19, 10:49:46 AM KST
+selectCodeEditor("Stream2Mem_Batch.v", 204, 146); // cl (w, cl)
+typeControlKey((HResource) null, "Stream2Mem_Batch.v", 'v'); // cl (w, cl)
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: DG_GRAPH_STALE
+selectCodeEditor("Stream2Mem_Batch.v", 370, 208); // cl (w, cl)
+selectCodeEditor("Stream2Mem_Batch.v", 370, 208, false, false, false, false, true); // cl (w, cl) - Double Click
+selectCodeEditor("Stream2Mem_Batch.v", 428, 246); // cl (w, cl)
+selectCodeEditor("Stream2Mem_Batch.v", 428, 246, false, false, false, false, true); // cl (w, cl) - Double Click
+selectCodeEditor("Stream2Mem_Batch.v", 426, 127); // cl (w, cl)
+selectCodeEditor("Stream2Mem_Batch.v", 426, 127, false, false, false, false, true); // cl (w, cl) - Double Click
+selectCodeEditor("Stream2Mem_Batch.v", 384, 96); // cl (w, cl)
+selectCodeEditor("Stream2Mem_Batch.v", 384, 96, false, false, false, false, true); // cl (w, cl) - Double Click
+selectCodeEditor("Stream2Mem_Batch.v", 513, 325); // cl (w, cl)
+selectCodeEditor("Stream2Mem_Batch.v", 490, 191); // cl (w, cl)
+collapseTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), DoCompute_Block_pro_U0 : DoCompute_Block_pro (DoCompute_Block_pro.v), Stream2Mem_Batch_U0 : Stream2Mem_Batch (Stream2Mem_Batch.v)]", 544); // B (F, cl)
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), DoCompute_Block_pro_U0 : DoCompute_Block_pro (DoCompute_Block_pro.v), Stream2Mem_Batch_1_U0 : Stream2Mem_Batch_1 (Stream2Mem_Batch_1.v)]", 545, true); // B (F, cl) - Node
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, BlackBoxJam (BlackBoxJam.v), grp_DoCompute_fu_1130 : DoCompute (DoCompute.v), DoCompute_Block_pro_U0 : DoCompute_Block_pro (DoCompute_Block_pro.v), Stream2Mem_Batch_1_U0 : Stream2Mem_Batch_1 (Stream2Mem_Batch_1.v)]", 545, true, false, false, false, false, true); // B (F, cl) - Double Click - Node
+selectCodeEditor("Stream2Mem_Batch_1.v", 469, 136); // cl (w, cl)
+selectCodeEditor("Stream2Mem_Batch_1.v", 261, 124); // cl (w, cl)
+typeControlKey((HResource) null, "Stream2Mem_Batch_1.v", 'v'); // cl (w, cl)
+// TclEventType: FILE_SET_CHANGE
+// HMemoryUtils.trashcanNow. Engine heap size: 7,330 MB. GUI used memory: 332 MB. Current time: 11/28/19, 10:50:16 AM KST
+typeControlKey((HResource) null, "Stream2Mem_Batch_1.v", 'v'); // cl (w, cl)
+typeControlKey((HResource) null, "Stream2Mem_Batch_1.v", 'v'); // cl (w, cl)
+// TclEventType: DG_GRAPH_STALE
+// TclEventType: FILE_SET_CHANGE
+typeControlKey((HResource) null, "Stream2Mem_Batch_1.v", 'v'); // cl (w, cl)
+// TclEventType: DG_GRAPH_STALE
+selectCodeEditor("Stream2Mem_Batch_1.v", 614, 64); // cl (w, cl)
+selectTab("PlanAheadTabBaseWorkspace_JideTabbedPane", (HResource) null, "Package IP - BlackBoxJam", 1); // k (j, cl)
+selectList(PAResourceOtoP.PackagerStepsPanel_PACKAGER_STEPS_LIST, "Review and Package", 7); // ar (O, cl)
+selectButton(PAResourceQtoS.ReviewContentPanel_RE_PACKAGE_IP, "Re-Package IP"); // a (c, cl)
+// TclEventType: PACKAGER_OBJECT_CHANGE
+// Tcl Message: set_property core_revision 1911271626 [ipx::current_core] 
+// Tcl Message: ipx::update_source_project_archive -component [ipx::current_core] 
+// Tcl Message: ipx::create_xgui_files [ipx::current_core] 
+// by (cl):  Package IP : addNotify
+// Tcl Message: ipx::update_checksums [ipx::current_core] 
+// Tcl Message: ipx::save_core [ipx::current_core] 
+// ax (cl): Package IP: addNotify
+// a (cl): Critical Messages: addNotify
+dismissDialog("Package IP"); // by (cl)
+// TclEventType: FILE_SET_CHANGE
+selectButton(PAResourceAtoD.CmdMsgDialog_OK, "OK"); // f (a)
+dismissDialog("Critical Messages"); // a (cl)
+// HMemoryUtils.trashcanNow. Engine heap size: 7,383 MB. GUI used memory: 335 MB. Current time: 11/28/19, 10:50:36 AM KST
+selectButton(PAResourceAtoD.CmdMsgDialog_OK, "OK"); // f (ax)
+dismissDialog("Package IP"); // ax (cl)
+// by (cl):  Package IP : addNotify
+selectButton("OptionPane.button", "Yes"); // JButton (A, G)
+// Tcl Message: ipx::move_temp_component_back -component [ipx::current_core] 
+// TclEventType: PROJECT_CLOSE
+// HMemoryUtils.trashcanNow. Engine heap size: 7,359 MB. GUI used memory: 328 MB. Current time: 11/28/19, 10:50:39 AM KST
+// Tcl Message: close_project -delete 
+dismissDialog("Package IP"); // by (cl)
+// TclEventType: CREATE_IP_CATALOG
+// TclEventType: IP_LOCK_CHANGE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: BDCELL_LOCK_CHANGE
+// TclEventType: RSB_LOCK_CHANGE
+// TclEventType: IP_LOCK_CHANGE
+// TclEventType: RSB_BITABEN_IPREPODATA_REFRESH
+// TclEventType: BDCELL_LOCK_CHANGE
+// TclEventType: CREATE_IP_CATALOG
+// HMemoryUtils.trashcanNow. Engine heap size: 7,205 MB. GUI used memory: 333 MB. Current time: 11/28/19, 10:50:39 AM KST
+// TclEventType: WAVEFORM_UPDATE_WAVEFORM
+// Tcl Message: update_ip_catalog -rebuild -repo_path /data_drive/bnn_seg_hls_project_backup/bnn_fpga_dbg_no_log_test_1127/sol1/impl/ip 
+// Tcl Message: INFO: [IP_Flow 19-725] Reloaded user IP repository '/data_drive/bnn_seg_hls_project_backup/bnn_fpga_dbg_no_log_test_1127/sol1/impl/ip' 
+selectTree(PAResourceEtoH.FlowNavigatorTreePanel_FLOW_NAVIGATOR_TREE, "[, Program and Debug, Open Hardware Manager]", 21, true, false, false, false, true, false); // u (O, cl) - Popup Trigger - Node
+selectMenuItem(PAResourceCommand.PACommandNames_CLOSE_HARDWARE_DESIGN, "Close"); // ah (an, cl)
+// Run Command: PAResourceCommand.PACommandNames_CLOSE_HARDWARE_DESIGN
+// TclEventType: WAVEFORM_UPDATE_TITLE
+// by (cl):  Close Hardware Manager : addNotify
+// Tcl Message: save_wave_config {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.hw/hw_1/wave/hw_ila_data_1/hw_ila_data_1.wcfg} 
+// Tcl Message: save_wave_config {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.hw/hw_1/wave/hw_ila_data_2/hw_ila_data_2.wcfg} 
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_CLOSE_WCFG
+// TclEventType: WAVEFORM_MODEL_EVENT
+// TclEventType: WAVEFORM_CLOSE_WCFG
+// TclEventType: HW_OBJECT_DELETE
+// TclEventType: HW_SERVER_CLOSE
+// Tcl Message: close_hw 
+// TclEventType: HW_SERVER_CLOSE
+// TclEventType: HW_SYSMON_DELETE
+closeView(PAResourceOtoP.PAViews_DASHBOARD, "hw_ila_1"); // i
+closeView(PAResourceOtoP.PAViews_DASHBOARD, "hw_ila_2"); // i
+// TclEventType: HW_TARGET_CLOSE
+// TclEventType: HW_TARGET_UPDATE
+// TclEventType: DEBUG_PROBE_DELETE
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: HW_SESSION_CLOSE
+dismissDialog("Close Hardware Manager"); // by (cl)
+selectTree(PAResourceEtoH.FlowNavigatorTreePanel_FLOW_NAVIGATOR_TREE, "[, IP Integrator, Open Block Design]", 7, false); // u (O, cl)
+// Run Command: PAResourceCommand.PACommandNames_OPEN_BLOCK_DESIGN
+// by (cl):  Open Block Design : addNotify
+// TclEventType: RSB_OPEN_DIAGRAM
+closeView(PAResourceOtoP.PAViews_PROJECT_SUMMARY, "Project Summary"); // v
+// Tcl Message: open_bd_design {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/design_1.bd} 
+dismissDialog("Open Block Design"); // by (cl)
+selectButton(PAResourceQtoS.SystemTab_SHOW_IP_STATUS, "Show IP Status"); // h (cS, cl)
+selectButton(RDIResource.BaseReportTab_RERUN, "Rerun"); // h (cS, cl)
+// Tcl Command: 'report_ip_status -name ip_status '
+// TclEventType: IP_SUMMARY_RESULTS
+// Tcl Message: report_ip_status -name ip_status  
+selectButton(PAResourceItoN.IPStatusSectionPanel_UPGRADE_SELECTED, "Upgrade Selected"); // a (g, cl)
+// Run Command: PAResourceCommand.PACommandNames_UPGRADE_IP
+// TclEventType: RSB_OPEN_DIAGRAM
+// TclEventType: RUN_MODIFY
+// TclEventType: RUN_RESET
+// TclEventType: RUN_STATUS_CHANGE
+// TclEventType: RUN_RESET
+// TclEventType: RUN_MODIFY
+// TclEventType: RUN_DELETE
+// TclEventType: DG_GRAPH_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: FILE_SET_DELETE
+// TclEventType: RSB_SCRIPT_TASK
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: RSB_REMOVE_OBJECT
+// by (cl):  Upgrade IP : addNotify
+// TclEventType: RSB_REMOVE_OBJECT
+// TclEventType: FILE_SET_CHANGE
+// Tcl Message: upgrade_ip -vlnv xilinx.com:hls:BlackBoxJam:1.0 [get_ips  design_1_BlackBoxJam_0_0] -log ip_upgrade.log 
+// Tcl Message: Upgrading '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/design_1.bd' 
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: RSB_REMOVE_OBJECT
+// TclEventType: RSB_SCRIPT_TASK
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: RSB_SAVE_DIAGRAM
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: RSB_SAVE_DIAGRAM
+// TclEventType: FILESET_UPDATE_IP
+// TclEventType: IP_UPGRADE_COMPLETE
+// Tcl Message: INFO: [IP_Flow 19-3422] Upgraded design_1_BlackBoxJam_0_0 (Blackboxjam 1.0) from revision 1911271625 to revision 1911271626 
+// Tcl Message: Excluding </zynq_ultra_ps_e_0/SAXIGP2/HP0_LPS_OCM> from </BlackBoxJam_0/Data_m_axi_hostmem> Excluding </zynq_ultra_ps_e_0/SAXIGP2/HP0_QSPI> from </BlackBoxJam_0/Data_m_axi_hostmem> Wrote  : </home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/design_1.bd>  
+// Tcl Message: INFO: [Coretcl 2-1525] Wrote upgrade log to '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/ip_upgrade.log'. 
+// Tcl Message: export_ip_user_files -of_objects [get_ips design_1_BlackBoxJam_0_0] -no_script -sync -force -quiet 
+// aI (cl): Generate Output Products: addNotify
+selectButton("OptionPane.button", "OK"); // JButton (A, G)
+selectButton(PAResourceQtoS.SimpleOutputProductDialog_GENERATE_OUTPUT_PRODUCTS_IMMEDIATELY, "Generate"); // a (aI)
+// by (cl):  Managing Output Products : addNotify
+// TclEventType: RSB_SCRIPT_TASK
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: RSB_SCRIPT_TASK
+// TclEventType: RSB_REMOVE_OBJECT
+// TclEventType: RSB_SCRIPT_TASK
+// TclEventType: RSB_REMOVE_OBJECT
+// TclEventType: RSB_SCRIPT_TASK
+// TclEventType: RSB_REMOVE_OBJECT
+// TclEventType: DG_GRAPH_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: RSB_REMOVE_OBJECT
+// Tcl Message: generate_target all [get_files  /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/design_1.bd] 
+// TclEventType: RSB_REMOVE_OBJECT
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: RSB_REMOVE_OBJECT
+// TclEventType: RSB_SCRIPT_TASK
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: RSB_REMOVE_OBJECT
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: RSB_REMOVE_OBJECT
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: RSB_REMOVE_OBJECT
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: RSB_REMOVE_OBJECT
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: RSB_CLOSE_DIAGRAM
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: RSB_CLOSE_DIAGRAM
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: REPORT_IP_STATUS_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: RSB_SCRIPT_TASK
+// TclEventType: RSB_SAVE_DIAGRAM
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: RSB_SAVE_DIAGRAM
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: RSB_SAVE_DIAGRAM
+// TclEventType: RSB_SCRIPT_TASK
+// TclEventType: FILE_SET_CHANGE
+// Tcl Message: Wrote  : </home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/design_1.bd>  
+// Tcl Message: VHDL Output written to : /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/synth/design_1.v 
+// Tcl Message: VHDL Output written to : /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/sim/design_1.v VHDL Output written to : /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/hdl/design_1_wrapper.v 
+// Tcl Message: INFO: [BD 41-1029] Generation completed for the IP Integrator block zynq_ultra_ps_e_0 . INFO: [BD 41-1029] Generation completed for the IP Integrator block BlackBoxJam_0 . INFO: [BD 41-1029] Generation completed for the IP Integrator block ps8_0_axi_periph/xbar . INFO: [BD 41-1029] Generation completed for the IP Integrator block rst_ps8_0_100M . 
+// TclEventType: FILE_SET_CHANGE
+// Tcl Message: Exporting to file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_axi_smc_0/bd_0/hw_handoff/design_1_axi_smc_0.hwh Generated Block Design Tcl file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_axi_smc_0/bd_0/hw_handoff/design_1_axi_smc_0_bd.tcl Generated Hardware Definition File /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_axi_smc_0/bd_0/synth/design_1_axi_smc_0.hwdef 
+// Tcl Message: INFO: [BD 41-1029] Generation completed for the IP Integrator block axi_smc . 
+// TclEventType: FILE_SET_CHANGE
+// Tcl Message: Exporting to file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_system_ila_0_1/bd_0/hw_handoff/design_1_system_ila_0_1.hwh Generated Block Design Tcl file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_system_ila_0_1/bd_0/hw_handoff/design_1_system_ila_0_1_bd.tcl Generated Hardware Definition File /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_system_ila_0_1/bd_0/synth/design_1_system_ila_0_1.hwdef 
+// Tcl Message: INFO: [BD 41-1029] Generation completed for the IP Integrator block system_ila_0 . 
+// Tcl Message: INFO: [BD 41-1029] Generation completed for the IP Integrator block ps8_0_axi_periph/s00_couplers/auto_ds . 
+// Tcl Message: INFO: [BD 41-1029] Generation completed for the IP Integrator block ps8_0_axi_periph/s00_couplers/auto_pc . 
+// Tcl Message: INFO: [BD 41-1029] Generation completed for the IP Integrator block ps8_0_axi_periph/s01_couplers/auto_ds . 
+// Tcl Message: INFO: [BD 41-1029] Generation completed for the IP Integrator block ps8_0_axi_periph/s01_couplers/auto_pc . 
+// Tcl Message: Exporting to file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/hw_handoff/design_1.hwh Generated Block Design Tcl file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/hw_handoff/design_1_bd.tcl Generated Hardware Definition File /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/synth/design_1.hwdef 
+// Tcl Message: generate_target: Time (s): cpu = 00:00:24 ; elapsed = 00:00:23 . Memory (MB): peak = 12350.695 ; gain = 0.000 ; free physical = 3038 ; free virtual = 8223 
+// Tcl Message: catch { config_ip_cache -export [get_ips -all design_1_BlackBoxJam_0_0] } 
+// TclEventType: FILE_SET_CHANGE
+// Tcl Message: catch { config_ip_cache -export [get_ips -all design_1_auto_ds_0] } 
+// TclEventType: OOC_IP_CACHE_USED
+// Tcl Message: INFO: [IP_Flow 19-4993] Using cached IP synthesis design for IP design_1_auto_ds_0, cache-ID = 30ff942aacf18660; cache size = 4019.512 MB. 
+// TclEventType: FILE_SET_CHANGE
+// Tcl Message: catch { config_ip_cache -export [get_ips -all design_1_auto_pc_0] } 
+// TclEventType: OOC_IP_CACHE_USED
+// Tcl Message: INFO: [IP_Flow 19-4993] Using cached IP synthesis design for IP design_1_auto_pc_0, cache-ID = dbc4c1421a76552b; cache size = 4019.512 MB. 
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: OOC_IP_CACHE_USED
+// Tcl Message: catch { config_ip_cache -export [get_ips -all design_1_auto_ds_1] } 
+// Tcl Message: INFO: [IP_Flow 19-4993] Using cached IP synthesis design for IP design_1_auto_ds_1, cache-ID = 30ff942aacf18660; cache size = 4019.512 MB. 
+// TclEventType: FILE_SET_CHANGE
+// Tcl Message: catch { config_ip_cache -export [get_ips -all design_1_auto_pc_1] } 
+// TclEventType: OOC_IP_CACHE_USED
+// TclEventType: PROJ_DESIGN_MODE_SET
+// Tcl Message: INFO: [IP_Flow 19-4993] Using cached IP synthesis design for IP design_1_auto_pc_1, cache-ID = dbc4c1421a76552b; cache size = 4019.512 MB. 
+// TclEventType: PROJ_DESIGN_MODE_SET
+// Tcl Message: export_ip_user_files -of_objects [get_files /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/design_1.bd] -no_script -sync -force -quiet 
+// TclEventType: FILE_SET_NEW
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: RUN_ADD
+// Tcl Message: create_ip_run [get_files -of_objects [get_fileset sources_1] /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/design_1.bd] 
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: RUN_LAUNCH
+// TclEventType: RUN_MODIFY
+// Tcl Message: launch_runs -jobs 12 design_1_BlackBoxJam_0_0_synth_1 
+// Tcl Message: [Thu Nov 28 10:51:25 2019] Launched design_1_BlackBoxJam_0_0_synth_1... Run output will be captured here: /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/design_1_BlackBoxJam_0_0_synth_1/runme.log 
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: RUN_STATUS_CHANGE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: PROJECT_CHANGE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: PROJECT_CHANGE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: PROJECT_CHANGE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: RUN_STATUS_CHANGE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: PROJECT_CHANGE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: PROJECT_CHANGE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: PROJECT_CHANGE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: PROJECT_CHANGE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: PROJECT_CHANGE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: PACKAGER_MESSAGE_RESET
+// TclEventType: PACKAGER_UNLOAD_CORE
+// TclEventType: FILE_SET_CHANGE
+// Elapsed time: 61 seconds
+selectButton("OptionPane.button", "OK"); // JButton (A, G)
+selectButton(RDIResource.BaseReportTab_RERUN, "Rerun"); // h (cS, cl)
+// Tcl Command: 'report_ip_status -name ip_status '
+// TclEventType: IP_SUMMARY_RESULTS
+// Tcl Message: report_ip_status -name ip_status  
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Constraints, constrs_1, design_1_consts.xdc]", 4, false); // B (F, cl)
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Constraints, constrs_1, design_1_consts.xdc]", 4, false, false, false, false, false, true); // B (F, cl) - Double Click
+selectCodeEditor("design_1_consts.xdc", 402, 118); // cl (w, cl)
+selectCodeEditor("design_1_consts.xdc", 571, 123); // cl (w, cl)
+// TclEventType: FILE_SET_CHANGE
+// Elapsed time: 11 seconds
+selectCodeEditor("design_1_consts.xdc", 517, 259); // cl (w, cl)
+selectCodeEditor("design_1_consts.xdc", 421, 162); // cl (w, cl)
+closeView(PAResourceOtoP.PAViews_CODE, "Code"); // B
+selectTab("PlanAheadTabBaseWorkspace_JideTabbedPane", (HResource) null, "System", 0); // k (j, cl)
+selectTree(PAResourceEtoH.FlowNavigatorTreePanel_FLOW_NAVIGATOR_TREE, "[, Synthesis, Run Synthesis]", 14, false); // u (O, cl)
+// Run Command: PAResourceCommand.PACommandNames_RUN_SYNTHESIS
+// A (cl): Run Synthesis: addNotify
+selectButton(RDIResource.BaseDialog_OK, "OK"); // a (A)
+// by (cl):  Resetting Runs : addNotify
+dismissDialog("Run Synthesis"); // A (cl)
+// TclEventType: RUN_MODIFY
+// TclEventType: RUN_RESET
+// TclEventType: RUN_STATUS_CHANGE
+// TclEventType: RUN_RESET
+// TclEventType: RUN_STATUS_CHANGE
+// TclEventType: RUN_RESET
+// TclEventType: RUN_MODIFY
+// Tcl Message: reset_run synth_1 
+// f (cl): Launch Runs: addNotify
+selectButton(RDIResource.BaseDialog_OK, "OK"); // a (f)
+// by (cl):  Starting Design Runs : addNotify
+dismissDialog("Launch Runs"); // f (cl)
+// TclEventType: RUN_RESET
+// TclEventType: RUN_STATUS_CHANGE
+// TclEventType: RUN_RESET
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: RUN_LAUNCH
+// TclEventType: FILESET_TARGET_UCF_CHANGE
+// Tcl Message: launch_runs synth_1 -jobs 12 
+// TclEventType: RUN_LAUNCH
+// TclEventType: RUN_MODIFY
+// TclEventType: RUN_STATUS_CHANGE
+// TclEventType: RUN_MODIFY
+// Tcl Message: [Thu Nov 28 10:52:35 2019] Launched design_1_BlackBoxJam_0_0_synth_1... Run output will be captured here: /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/design_1_BlackBoxJam_0_0_synth_1/runme.log [Thu Nov 28 10:52:35 2019] Launched synth_1... Run output will be captured here: /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/synth_1/runme.log 
+// 'k' command handler elapsed time: 9 seconds
+dismissDialog("Starting Design Runs"); // by (cl)
+// TclEventType: RUN_STATUS_CHANGE
+// Elapsed time: 26 seconds
+selectTree(PAResourceItoN.MsgTreePanel_MESSAGE_VIEW_TREE, null, -1, false, false, false, true, false); // ah (O, cl) - Popup Trigger
+selectMenu(PAResourceItoN.MsgTreePanel_MESSAGE_SEVERITY, "Message Severity"); // ae (K, cl)
+selectMenuItem(PAResourceItoN.MsgTreePanel_DISCARD_USER_CREATED_MESSAGES, "Discard User Created Messages"); // ah (K, cl)
+// WARNING: HEventQueue.dispatchEvent() is taking  1084 ms.
+// WARNING: HSwingWorker (Update Runs Swing Worker) is taking 1151 ms. Increasing delay to 3000 ms.
+// WARNING: HSwingWorker (Refresh Filesets Swing Worker) is taking 3373 ms. Increasing delay to 10119 ms.
+// WARNING: HSwingWorker (Refresh Filesets Swing Worker) is taking 502 ms. Decreasing delay to 2502 ms.
+// WARNING: HTimer (ExpRunMonitor Update Timer) is taking 1929ms to process. Increasing delay to 3000 ms.
+// WARNING: HEventQueue.dispatchEvent() is taking  1929 ms.
+// WARNING: HEventQueue.dispatchEvent() is taking  1363 ms.
+// WARNING: HTimer (ActiveMsgMonitor Process Messages Timer) is taking 217ms to process. Increasing delay to 2000 ms.
+// WARNING: HTimer (ActiveMsgMonitor Process Messages Timer) is taking 1167ms to process. Increasing delay to 3000 ms.
+// WARNING: HEventQueue.dispatchEvent() is taking  1179 ms.
+// WARNING: HEventQueue.dispatchEvent() is taking  1062 ms.
+// WARNING: HTimer (FileMgr Design Graph Update Timer) is taking 520ms to process. Increasing delay to 3000 ms.
+// WARNING: HTimer (ActiveMsgMonitor Process Messages Timer) is taking 960ms to process. Increasing delay to 4000 ms.
+// WARNING: HTimer (StateMonitor Timer) is taking 9593ms to process. Increasing delay to 4000 ms.
+// WARNING: HEventQueue.dispatchEvent() is taking  9732 ms.
+// WARNING: HTimer (WrapperUtils Delayed Delete Timer) is taking 303ms to process. Increasing delay to 2000 ms.
+// WARNING: HSwingWorker (Refresh Filesets Swing Worker) is taking 16735 ms. Increasing delay to 50205 ms.
+// WARNING: HSwingWorker (Update Runs Swing Worker) is taking 15723 ms. Increasing delay to 4000 ms.
+// WARNING: HEventQueue.dispatchEvent() is taking  1018 ms.

@@ -1,0 +1,1117 @@
+#-----------------------------------------------------------
+# Vivado v2019.1.1 (64-bit)
+# SW Build 2580384 on Sat Jun 29 08:04:45 MDT 2019
+# IP Build 2579722 on Sat Jun 29 11:35:40 MDT 2019
+# Start of session at: Sun Nov 17 13:13:22 2019
+# Process ID: 4208
+# Current directory: /home/hwkim/work/pynq-bnn/BNN-PYNQ
+# Command line: vivado
+# Log file: /home/hwkim/work/pynq-bnn/BNN-PYNQ/vivado.log
+# Journal file: /home/hwkim/work/pynq-bnn/BNN-PYNQ/vivado.jou
+#-----------------------------------------------------------
+start_gui
+open_project /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.xpr
+Scanning sources...
+Finished scanning sources
+INFO: [IP_Flow 19-234] Refreshing IP repositories
+INFO: [IP_Flow 19-1700] Loaded user IP repository '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_seg_net-zcu104/sol1/impl/ip'.
+INFO: [IP_Flow 19-2313] Loaded Vivado IP repository '/home/hwkim/Xilinx/Vivado/2019.1/data/ip'.
+open_project: Time (s): cpu = 00:00:20 ; elapsed = 00:00:13 . Memory (MB): peak = 6657.199 ; gain = 241.480 ; free physical = 11368 ; free virtual = 15511
+update_compile_order -fileset sources_1
+WARNING: [IP_Flow 19-3899] Cannot get the environment domain name variable for the component vendor name. Setting the vendor name to 'user.org'.
+WARNING: [IP_Flow 19-4318] IP-XACT file does not exist: /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_seg_net-zcu104/sol1/impl/ip/component.xml. It will be created.
+set_property  ip_repo_paths  {} [current_project]
+update_ip_catalog
+INFO: [IP_Flow 19-234] Refreshing IP repositories
+INFO: [IP_Flow 19-1704] No user IP repositories specified
+WARNING: [IP_Flow 19-3899] Cannot get the environment domain name variable for the component vendor name. Setting the vendor name to 'user.org'.
+set_property  ip_repo_paths  /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip [current_project]
+update_ip_catalog
+INFO: [IP_Flow 19-234] Refreshing IP repositories
+INFO: [IP_Flow 19-1700] Loaded user IP repository '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip'.
+WARNING: [IP_Flow 19-3899] Cannot get the environment domain name variable for the component vendor name. Setting the vendor name to 'user.org'.
+WARNING: [IP_Flow 19-3899] Cannot get the environment domain name variable for the component vendor name. Setting the vendor name to 'user.org'.
+WARNING: [IP_Flow 19-3899] Cannot get the environment domain name variable for the component vendor name. Setting the vendor name to 'user.org'.
+open_bd_design {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/design_1.bd}
+Adding component instance block -- xilinx.com:ip:zynq_ultra_ps_e:3.3 - zynq_ultra_ps_e_0
+WARNING: [BD 41-176] The physical port 'M_AXI_HPM0_FPD_aximm_wr_socket' specified in the portmap, is not found on the block! 
+WARNING: [BD 41-176] The physical port 'M_AXI_HPM0_FPD_aximm_rd_socket' specified in the portmap, is not found on the block! 
+WARNING: [BD 41-176] The physical port 'M_AXI_HPM1_FPD_aximm_wr_socket' specified in the portmap, is not found on the block! 
+WARNING: [BD 41-176] The physical port 'M_AXI_HPM1_FPD_aximm_rd_socket' specified in the portmap, is not found on the block! 
+WARNING: [BD 41-176] The physical port 'S_AXI_HP0_FPD_aximm_wr_socket' specified in the portmap, is not found on the block! 
+WARNING: [BD 41-176] The physical port 'S_AXI_HP0_FPD_aximm_rd_socket' specified in the portmap, is not found on the block! 
+Adding component instance block -- xilinx.com:ip:axi_interconnect:2.1 - ps8_0_axi_periph
+Adding component instance block -- xilinx.com:ip:axi_crossbar:2.1 - xbar
+Adding component instance block -- xilinx.com:ip:axi_dwidth_converter:2.1 - auto_ds
+Adding component instance block -- xilinx.com:ip:axi_protocol_converter:2.1 - auto_pc
+Adding component instance block -- xilinx.com:ip:axi_dwidth_converter:2.1 - auto_ds
+Adding component instance block -- xilinx.com:ip:axi_protocol_converter:2.1 - auto_pc
+Adding component instance block -- xilinx.com:ip:proc_sys_reset:5.0 - rst_ps8_0_100M
+Adding component instance block -- xilinx.com:ip:smartconnect:1.0 - axi_smc
+Adding component instance block -- xilinx.com:ip:system_ila:1.1 - system_ila_0
+Adding component instance block -- xilinx.com:hls:BlackBoxJam:1.0 - BlackBoxJam_0
+Excluding </zynq_ultra_ps_e_0/SAXIGP2/HP0_LPS_OCM> from </BlackBoxJam_0/Data_m_axi_hostmem>
+Excluding </zynq_ultra_ps_e_0/SAXIGP2/HP0_QSPI> from </BlackBoxJam_0/Data_m_axi_hostmem>
+Successfully read diagram <design_1> from BD file </home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/design_1.bd>
+report_ip_status -name ip_status 
+upgrade_ip -vlnv xilinx.com:hls:BlackBoxJam:1.0 [get_ips  design_1_BlackBoxJam_0_0] -log ip_upgrade.log
+Upgrading '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/design_1.bd'
+INFO: [IP_Flow 19-3420] Updated design_1_BlackBoxJam_0_0 to use current project options
+Excluding </zynq_ultra_ps_e_0/SAXIGP2/HP0_LPS_OCM> from </BlackBoxJam_0/Data_m_axi_hostmem>
+Excluding </zynq_ultra_ps_e_0/SAXIGP2/HP0_QSPI> from </BlackBoxJam_0/Data_m_axi_hostmem>
+Wrote  : </home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/design_1.bd> 
+INFO: [Coretcl 2-1525] Wrote upgrade log to '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/ip_upgrade.log'.
+export_ip_user_files -of_objects [get_ips design_1_BlackBoxJam_0_0] -no_script -sync -force -quiet
+report_ip_status -name ip_status 
+ipx::edit_ip_in_project -upgrade true -name BlackBoxJam_v1_0_project -directory /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.tmp/BlackBoxJam_v1_0_project /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/component.xml
+INFO: [IP_Flow 19-234] Refreshing IP repositories
+INFO: [IP_Flow 19-1704] No user IP repositories specified
+INFO: [IP_Flow 19-2313] Loaded Vivado IP repository '/home/hwkim/Xilinx/Vivado/2019.1/data/ip'.
+INFO: [IP_Flow 19-234] Refreshing IP repositories
+INFO: [IP_Flow 19-1700] Loaded user IP repository '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip'.
+INFO: [IP_Flow 19-795] Syncing license key meta-data
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/BlackBoxJam_control_s_axi.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/BlackBoxJam_hostmem_m_axi.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/BlackBoxJam_mux_32_32_1_1.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/BlackBoxJam_mux_42_16_1_1.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/BlackBoxJam_mux_42_24_1_1.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/BlackBoxJam_mux_42_32_1_1.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/BlackBoxJam_mux_53_32_1_1.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/BlackBoxJam_mux_94_24_1_1.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/BlackBoxJam_mux_164_32_1_1.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/BlackBoxJam_mux_185_32_1_1.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/BlackBoxJam_mux_325_32_1_1.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/BlackBoxJam_mux_366_16_1_1.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/BlackBoxJam_mux_366_32_1_1.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/BlackBoxJam_mux_727_32_1_1.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/BlackBoxJam_threshs0_m_threshold_15.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/BlackBoxJam_threshs1_m_threshold_31.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/BlackBoxJam_threshs2_m_threshold_15.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/BlackBoxJam_threshs3_m_threshold_31.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/BlackBoxJam_threshs4_m_threshold_15.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/BlackBoxJam_weights0_m_weights_V.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/BlackBoxJam_weights1_m_weights_V.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/BlackBoxJam_weights2_m_weights_V.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/BlackBoxJam_weights4_m_weights_V.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/BlackBoxJam_weights10_m_weights_10.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/ConvolutionInputGene.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/ConvolutionInputGene_1.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/ConvolutionInputGene_2.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/ConvolutionInputGene_2_inputBuf_0_V.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/ConvolutionInputGene_3.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/ConvolutionInputGene_4.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/ConvolutionInputGene_4_inputBuf_0_V.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/ConvolutionInputGene_5.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/ConvolutionInputGene_6.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/ConvolutionInputGene_7.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/ConvolutionInputGene_8.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/ConvolutionInputGene_inputBuf_0_V.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/DoCompute.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/DoCompute_Block_pro.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/DoMemInit.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/fifo_w16_d256_A.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/fifo_w24_d2_A.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/fifo_w24_d256_A.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/fifo_w32_d47_A.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/fifo_w32_d256_A.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/fifo_w61_d47_A.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/fifo_w64_d2_A.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/fifo_w128_d2_A.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/fifo_w192_d2_A.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/fifo_w256_d2_A.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/fifo_w264_d2_A.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/infer_category.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/Matrix_Vector_Activa.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/Matrix_Vector_Activa_1.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/Matrix_Vector_Activa_2.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/Matrix_Vector_Activa_3.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/Matrix_Vector_Activa_4.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/Matrix_Vector_Activa_5.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/Matrix_Vector_Activa_6.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/Matrix_Vector_Activa_7.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/Matrix_Vector_Activa_8.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/Matrix_Vector_Activa_9.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/Matrix_Vector_Activa_10.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/Mem2Stream.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/Mem2Stream_1.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/Mem2Stream_Batch3671.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/start_for_ConvolutionInputGene_1_U0.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/start_for_ConvolutionInputGene_2_U0.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/start_for_ConvolutionInputGene_3_U0.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/start_for_ConvolutionInputGene_4_U0.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/start_for_ConvolutionInputGene_5_U0.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/start_for_ConvolutionInputGene_6_U0.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/start_for_ConvolutionInputGene_7_U0.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/start_for_ConvolutionInputGene_8_U0.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/start_for_ConvolutionInputGene_U0.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/start_for_DoCompute_Block_pro_U0.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/start_for_infer_category_U0.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/start_for_StreamingDataWidthCo_1_U0.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/start_for_StreamingDataWidthCo_2_U0.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/start_for_StreamingDataWidthCo_3_U0.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/start_for_StreamingDataWidthCo_4_U0.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/start_for_StreamingDataWidthCo_5_U0.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/start_for_StreamingDataWidthCo_6_U0.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/start_for_StreamingDataWidthCo_7_U0.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/start_for_StreamingDataWidthCo_8_U0.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/start_for_StreamingDataWidthCo_9_U0.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/start_for_StreamingDataWidthCo_10_U0.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/start_for_StreamingDataWidthCo_11_U0.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/start_for_StreamingDataWidthCo_12_U0.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/start_for_StreamingDataWidthCo_13_U0.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/start_for_StreamingDataWidthCo_14_U0.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/start_for_StreamingDataWidthCo_15_U0.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/start_for_StreamingDataWidthCo_16_U0.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/start_for_StreamingDataWidthCo_17_U0.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/start_for_StreamingDataWidthCo_18_U0.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/start_for_StreamingDataWidthCo_19_U0.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/start_for_StreamingDataWidthCo_20_U0.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/start_for_StreamingDataWidthCo_21_U0.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/start_for_StreamingDataWidthCo_22_U0.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/start_for_StreamingDataWidthCo_23_U0.v:]
+WARNING: [filemgmt 56-99] Vivado Synthesis ignores library specification for Verilog or SystemVerilog files. [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip/hdl/verilog/start_for_StreamingDataWidthCo_24_U0.v:]
+INFO: [Common 17-14] Message 'filemgmt 56-99' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
+ipx::edit_ip_in_project: Time (s): cpu = 00:00:20 ; elapsed = 00:00:10 . Memory (MB): peak = 6971.352 ; gain = 0.000 ; free physical = 10357 ; free virtual = 14935
+update_compile_order -fileset sources_1
+set_property core_revision 1911161736 [ipx::current_core]
+ipx::update_source_project_archive -component [ipx::current_core]
+ipx::create_xgui_files [ipx::current_core]
+ipx::update_checksums [ipx::current_core]
+ipx::save_core [ipx::current_core]
+ipx::move_temp_component_back -component [ipx::current_core]
+close_project -delete
+update_ip_catalog -rebuild -repo_path /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip
+INFO: [IP_Flow 19-725] Reloaded user IP repository '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/hls-syn/bnn_w_fpga_debug/sol1/impl/ip'
+report_ip_status -name ip_status 
+upgrade_ip -vlnv xilinx.com:hls:BlackBoxJam:1.0 [get_ips  design_1_BlackBoxJam_0_0] -log ip_upgrade.log
+Upgrading '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/design_1.bd'
+INFO: [IP_Flow 19-3422] Upgraded design_1_BlackBoxJam_0_0 (Blackboxjam 1.0) from revision 1911161735 to revision 1911161736
+Excluding </zynq_ultra_ps_e_0/SAXIGP2/HP0_LPS_OCM> from </BlackBoxJam_0/Data_m_axi_hostmem>
+Excluding </zynq_ultra_ps_e_0/SAXIGP2/HP0_QSPI> from </BlackBoxJam_0/Data_m_axi_hostmem>
+Wrote  : </home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/design_1.bd> 
+INFO: [Coretcl 2-1525] Wrote upgrade log to '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/ip_upgrade.log'.
+export_ip_user_files -of_objects [get_ips design_1_BlackBoxJam_0_0] -no_script -sync -force -quiet
+generate_target all [get_files  /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/design_1.bd]
+WARNING: [BD 41-1781] Updates have been made to one or more nets/interface connections marked for debug.
+Debug nets, which are already connected to System ILA IP core in the block-design, will be automatically available for debug in Hardware Manager.
+For unconnected Debug nets, please open synthesized design and use 'Set Up Debug' wizard to insert, modify or delete Debug Cores. Failure to do so could result in critical warnings and errors in the implementation flow.
+WARNING: [BD 41-1629] Slave segment </zynq_ultra_ps_e_0/SAXIGP2/HP0_QSPI> is excluded from all addressing paths.
+WARNING: [BD 41-1629] Slave segment </zynq_ultra_ps_e_0/SAXIGP2/HP0_LPS_OCM> is excluded from all addressing paths.
+WARNING: [BD 41-237] Bus Interface property AWUSER_WIDTH does not match between /ps8_0_axi_periph/s00_couplers/auto_ds/S_AXI(0) and /zynq_ultra_ps_e_0/M_AXI_HPM0_FPD(16)
+WARNING: [BD 41-237] Bus Interface property ARUSER_WIDTH does not match between /ps8_0_axi_periph/s00_couplers/auto_ds/S_AXI(0) and /zynq_ultra_ps_e_0/M_AXI_HPM0_FPD(16)
+WARNING: [BD 41-237] Bus Interface property AWUSER_WIDTH does not match between /ps8_0_axi_periph/s01_couplers/auto_ds/S_AXI(0) and /zynq_ultra_ps_e_0/M_AXI_HPM1_FPD(16)
+WARNING: [BD 41-237] Bus Interface property ARUSER_WIDTH does not match between /ps8_0_axi_periph/s01_couplers/auto_ds/S_AXI(0) and /zynq_ultra_ps_e_0/M_AXI_HPM1_FPD(16)
+WARNING: [BD 41-237] Bus Interface property AWUSER_WIDTH does not match between /zynq_ultra_ps_e_0/S_AXI_HP0_FPD(1) and /axi_smc/M00_AXI(0)
+WARNING: [BD 41-237] Bus Interface property ARUSER_WIDTH does not match between /zynq_ultra_ps_e_0/S_AXI_HP0_FPD(1) and /axi_smc/M00_AXI(0)
+WARNING: [BD 41-927] Following properties on pin /BlackBoxJam_0/ap_clk have been updated from connected ip. They may not be synchronized with cell properties. You can set property on pin directly to confirm the value and resolve the warning.
+	CLK_DOMAIN=design_1_zynq_ultra_ps_e_0_0_pl_clk0 
+Wrote  : </home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/design_1.bd> 
+WARNING: [BD 41-235] Width mismatch when connecting pin: '/axi_smc/S00_AXI_arlock'(1) to net 'BlackBoxJam_0_m_axi_hostmem_ARLOCK'(2) - Only lower order bits will be connected.
+WARNING: [BD 41-235] Width mismatch when connecting pin: '/system_ila_0/SLOT_0_AXI_arlock'(1) to net 'BlackBoxJam_0_m_axi_hostmem_ARLOCK'(2) - Only lower order bits will be connected.
+WARNING: [BD 41-235] Width mismatch when connecting pin: '/axi_smc/S00_AXI_awlock'(1) to net 'BlackBoxJam_0_m_axi_hostmem_AWLOCK'(2) - Only lower order bits will be connected.
+WARNING: [BD 41-235] Width mismatch when connecting pin: '/system_ila_0/SLOT_0_AXI_awlock'(1) to net 'BlackBoxJam_0_m_axi_hostmem_AWLOCK'(2) - Only lower order bits will be connected.
+VHDL Output written to : /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/synth/design_1.v
+WARNING: [BD 41-235] Width mismatch when connecting pin: '/axi_smc/S00_AXI_arlock'(1) to net 'BlackBoxJam_0_m_axi_hostmem_ARLOCK'(2) - Only lower order bits will be connected.
+WARNING: [BD 41-235] Width mismatch when connecting pin: '/system_ila_0/SLOT_0_AXI_arlock'(1) to net 'BlackBoxJam_0_m_axi_hostmem_ARLOCK'(2) - Only lower order bits will be connected.
+WARNING: [BD 41-235] Width mismatch when connecting pin: '/axi_smc/S00_AXI_awlock'(1) to net 'BlackBoxJam_0_m_axi_hostmem_AWLOCK'(2) - Only lower order bits will be connected.
+WARNING: [BD 41-235] Width mismatch when connecting pin: '/system_ila_0/SLOT_0_AXI_awlock'(1) to net 'BlackBoxJam_0_m_axi_hostmem_AWLOCK'(2) - Only lower order bits will be connected.
+VHDL Output written to : /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/sim/design_1.v
+VHDL Output written to : /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/hdl/design_1_wrapper.v
+INFO: [BD 41-1029] Generation completed for the IP Integrator block zynq_ultra_ps_e_0 .
+INFO: [BD 41-1029] Generation completed for the IP Integrator block BlackBoxJam_0 .
+INFO: [BD 41-1029] Generation completed for the IP Integrator block ps8_0_axi_periph/xbar .
+INFO: [BD 41-1029] Generation completed for the IP Integrator block rst_ps8_0_100M .
+Exporting to file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_axi_smc_0/bd_0/hw_handoff/design_1_axi_smc_0.hwh
+Generated Block Design Tcl file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_axi_smc_0/bd_0/hw_handoff/design_1_axi_smc_0_bd.tcl
+Generated Hardware Definition File /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_axi_smc_0/bd_0/synth/design_1_axi_smc_0.hwdef
+INFO: [BD 41-1029] Generation completed for the IP Integrator block axi_smc .
+Exporting to file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_system_ila_0_0/bd_0/hw_handoff/design_1_system_ila_0_0.hwh
+Generated Block Design Tcl file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_system_ila_0_0/bd_0/hw_handoff/design_1_system_ila_0_0_bd.tcl
+Generated Hardware Definition File /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_system_ila_0_0/bd_0/synth/design_1_system_ila_0_0.hwdef
+INFO: [BD 41-1029] Generation completed for the IP Integrator block system_ila_0 .
+WARNING: [IP_Flow 19-4994] Overwriting existing constraint file '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_auto_ds_0/design_1_auto_ds_0_ooc.xdc'
+INFO: [BD 41-1029] Generation completed for the IP Integrator block ps8_0_axi_periph/s00_couplers/auto_ds .
+WARNING: [IP_Flow 19-4994] Overwriting existing constraint file '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_auto_pc_0/design_1_auto_pc_0_ooc.xdc'
+INFO: [BD 41-1029] Generation completed for the IP Integrator block ps8_0_axi_periph/s00_couplers/auto_pc .
+WARNING: [IP_Flow 19-4994] Overwriting existing constraint file '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_auto_ds_1/design_1_auto_ds_1_ooc.xdc'
+INFO: [BD 41-1029] Generation completed for the IP Integrator block ps8_0_axi_periph/s01_couplers/auto_ds .
+WARNING: [IP_Flow 19-4994] Overwriting existing constraint file '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_auto_pc_1/design_1_auto_pc_1_ooc.xdc'
+INFO: [BD 41-1029] Generation completed for the IP Integrator block ps8_0_axi_periph/s01_couplers/auto_pc .
+Exporting to file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/hw_handoff/design_1.hwh
+Generated Block Design Tcl file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/hw_handoff/design_1_bd.tcl
+Generated Hardware Definition File /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/synth/design_1.hwdef
+generate_target: Time (s): cpu = 00:00:21 ; elapsed = 00:00:19 . Memory (MB): peak = 7342.906 ; gain = 19.844 ; free physical = 9589 ; free virtual = 14242
+catch { config_ip_cache -export [get_ips -all design_1_BlackBoxJam_0_0] }
+catch { config_ip_cache -export [get_ips -all design_1_auto_ds_0] }
+INFO: [IP_Flow 19-4993] Using cached IP synthesis design for IP design_1_auto_ds_0, cache-ID = 30ff942aacf18660; cache size = 1305.205 MB.
+catch { config_ip_cache -export [get_ips -all design_1_auto_pc_0] }
+INFO: [IP_Flow 19-4993] Using cached IP synthesis design for IP design_1_auto_pc_0, cache-ID = dbc4c1421a76552b; cache size = 1305.205 MB.
+catch { config_ip_cache -export [get_ips -all design_1_auto_ds_1] }
+INFO: [IP_Flow 19-4993] Using cached IP synthesis design for IP design_1_auto_ds_1, cache-ID = 30ff942aacf18660; cache size = 1305.205 MB.
+catch { config_ip_cache -export [get_ips -all design_1_auto_pc_1] }
+INFO: [IP_Flow 19-4993] Using cached IP synthesis design for IP design_1_auto_pc_1, cache-ID = dbc4c1421a76552b; cache size = 1305.205 MB.
+export_ip_user_files -of_objects [get_files /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/design_1.bd] -no_script -sync -force -quiet
+create_ip_run [get_files -of_objects [get_fileset sources_1] /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/design_1.bd]
+launch_runs -jobs 12 design_1_BlackBoxJam_0_0_synth_1
+[Sun Nov 17 13:34:40 2019] Launched design_1_BlackBoxJam_0_0_synth_1...
+Run output will be captured here: /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/design_1_BlackBoxJam_0_0_synth_1/runme.log
+export_simulation -of_objects [get_files /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/design_1.bd] -directory /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.ip_user_files/sim_scripts -ip_user_files_dir /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.ip_user_files -ipstatic_source_dir /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.ip_user_files/ipstatic -lib_map_path [list {modelsim=/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.cache/compile_simlib/modelsim} {questa=/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.cache/compile_simlib/questa} {ies=/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.cache/compile_simlib/ies} {xcelium=/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.cache/compile_simlib/xcelium} {vcs=/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.cache/compile_simlib/vcs} {riviera=/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.cache/compile_simlib/riviera}] -use_ip_compiled_libs -force -quiet
+report_ip_status -name ip_status 
+reset_run synth_1
+launch_runs synth_1 -jobs 12
+[Sun Nov 17 13:35:32 2019] Launched design_1_BlackBoxJam_0_0_synth_1...
+Run output will be captured here: /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/design_1_BlackBoxJam_0_0_synth_1/runme.log
+[Sun Nov 17 13:35:32 2019] Launched synth_1...
+Run output will be captured here: /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/synth_1/runme.log
+open_run synth_1 -name synth_1
+Design is defaulting to impl run constrset: constrs_1
+Design is defaulting to synth run part: xczu7ev-ffvc1156-2-e
+INFO: [Device 21-403] Loading part xczu7ev-ffvc1156-2-e
+INFO: [Project 1-454] Reading design checkpoint '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_BlackBoxJam_0_0/design_1_BlackBoxJam_0_0.dcp' for cell 'design_1_i/BlackBoxJam_0'
+INFO: [Project 1-454] Reading design checkpoint '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_axi_smc_0/design_1_axi_smc_0.dcp' for cell 'design_1_i/axi_smc'
+INFO: [Project 1-454] Reading design checkpoint '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_rst_ps8_0_100M_0/design_1_rst_ps8_0_100M_0.dcp' for cell 'design_1_i/rst_ps8_0_100M'
+INFO: [Project 1-454] Reading design checkpoint '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_system_ila_0_0/design_1_system_ila_0_0.dcp' for cell 'design_1_i/system_ila_0'
+INFO: [Project 1-454] Reading design checkpoint '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_zynq_ultra_ps_e_0_0/design_1_zynq_ultra_ps_e_0_0.dcp' for cell 'design_1_i/zynq_ultra_ps_e_0'
+INFO: [Project 1-454] Reading design checkpoint '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_xbar_0/design_1_xbar_0.dcp' for cell 'design_1_i/ps8_0_axi_periph/xbar'
+INFO: [Project 1-454] Reading design checkpoint '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_auto_ds_0/design_1_auto_ds_0.dcp' for cell 'design_1_i/ps8_0_axi_periph/s00_couplers/auto_ds'
+INFO: [Project 1-454] Reading design checkpoint '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_auto_pc_0/design_1_auto_pc_0.dcp' for cell 'design_1_i/ps8_0_axi_periph/s00_couplers/auto_pc'
+INFO: [Project 1-454] Reading design checkpoint '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_auto_ds_1/design_1_auto_ds_1.dcp' for cell 'design_1_i/ps8_0_axi_periph/s01_couplers/auto_ds'
+INFO: [Project 1-454] Reading design checkpoint '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_auto_pc_1/design_1_auto_pc_1.dcp' for cell 'design_1_i/ps8_0_axi_periph/s01_couplers/auto_pc'
+INFO: [Netlist 29-17] Analyzing 11010 Unisim elements for replacement
+INFO: [Netlist 29-28] Unisim Transformation completed in 1 CPU seconds
+INFO: [Project 1-479] Netlist was created with Vivado 2019.1.1
+INFO: [Project 1-570] Preparing netlist for logic optimization
+INFO: [Chipscope 16-324] Core: design_1_i/system_ila_0/inst/ila_lib UUID: cd4c83c8-23a6-596d-99ad-09be1335c6b0 
+Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_zynq_ultra_ps_e_0_0/design_1_zynq_ultra_ps_e_0_0.xdc] for cell 'design_1_i/zynq_ultra_ps_e_0/inst'
+Finished Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_zynq_ultra_ps_e_0_0/design_1_zynq_ultra_ps_e_0_0.xdc] for cell 'design_1_i/zynq_ultra_ps_e_0/inst'
+Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_rst_ps8_0_100M_0/design_1_rst_ps8_0_100M_0_board.xdc] for cell 'design_1_i/rst_ps8_0_100M/U0'
+Finished Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_rst_ps8_0_100M_0/design_1_rst_ps8_0_100M_0_board.xdc] for cell 'design_1_i/rst_ps8_0_100M/U0'
+Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_rst_ps8_0_100M_0/design_1_rst_ps8_0_100M_0.xdc] for cell 'design_1_i/rst_ps8_0_100M/U0'
+Finished Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_rst_ps8_0_100M_0/design_1_rst_ps8_0_100M_0.xdc] for cell 'design_1_i/rst_ps8_0_100M/U0'
+Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_axi_smc_0/bd_0/ip/ip_1/bd_afc3_psr_aclk_0_board.xdc] for cell 'design_1_i/axi_smc/inst/clk_map/psr_aclk/U0'
+Finished Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_axi_smc_0/bd_0/ip/ip_1/bd_afc3_psr_aclk_0_board.xdc] for cell 'design_1_i/axi_smc/inst/clk_map/psr_aclk/U0'
+Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_axi_smc_0/bd_0/ip/ip_1/bd_afc3_psr_aclk_0.xdc] for cell 'design_1_i/axi_smc/inst/clk_map/psr_aclk/U0'
+Finished Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_axi_smc_0/bd_0/ip/ip_1/bd_afc3_psr_aclk_0.xdc] for cell 'design_1_i/axi_smc/inst/clk_map/psr_aclk/U0'
+Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_system_ila_0_0/bd_0/ip/ip_0/ila_v6_2/constraints/ila_impl.xdc] for cell 'design_1_i/system_ila_0/inst/ila_lib/inst'
+Finished Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_system_ila_0_0/bd_0/ip/ip_0/ila_v6_2/constraints/ila_impl.xdc] for cell 'design_1_i/system_ila_0/inst/ila_lib/inst'
+Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_system_ila_0_0/bd_0/ip/ip_0/ila_v6_2/constraints/ila.xdc] for cell 'design_1_i/system_ila_0/inst/ila_lib/inst'
+Finished Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_system_ila_0_0/bd_0/ip/ip_0/ila_v6_2/constraints/ila.xdc] for cell 'design_1_i/system_ila_0/inst/ila_lib/inst'
+Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/constrs_1/new/design_1_consts.xdc]
+Finished Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/constrs_1/new/design_1_consts.xdc]
+Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_auto_ds_0/design_1_auto_ds_0_clocks.xdc] for cell 'design_1_i/ps8_0_axi_periph/s00_couplers/auto_ds/inst'
+Finished Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_auto_ds_0/design_1_auto_ds_0_clocks.xdc] for cell 'design_1_i/ps8_0_axi_periph/s00_couplers/auto_ds/inst'
+Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_auto_ds_1/design_1_auto_ds_1_clocks.xdc] for cell 'design_1_i/ps8_0_axi_periph/s01_couplers/auto_ds/inst'
+Finished Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_auto_ds_1/design_1_auto_ds_1_clocks.xdc] for cell 'design_1_i/ps8_0_axi_periph/s01_couplers/auto_ds/inst'
+Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl] for cell 'design_1_i/ps8_0_axi_periph/s00_couplers/auto_ds/inst/gen_downsizer.gen_simple_downsizer.axi_downsizer_inst/USE_READ.read_addr_inst/cmd_queue/inst/fifo_gen_inst/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst'
+INFO: [Timing 38-35] Done setting XDC timing constraints. [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl:2]
+all_registers: Time (s): cpu = 00:00:19 ; elapsed = 00:00:10 . Memory (MB): peak = 9072.309 ; gain = 555.891 ; free physical = 8671 ; free virtual = 12747
+Finished Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl] for cell 'design_1_i/ps8_0_axi_periph/s00_couplers/auto_ds/inst/gen_downsizer.gen_simple_downsizer.axi_downsizer_inst/USE_READ.read_addr_inst/cmd_queue/inst/fifo_gen_inst/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst'
+Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl] for cell 'design_1_i/ps8_0_axi_periph/s00_couplers/auto_ds/inst/gen_downsizer.gen_simple_downsizer.axi_downsizer_inst/USE_WRITE.write_addr_inst/USE_B_CHANNEL.cmd_b_queue/inst/fifo_gen_inst/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst'
+Finished Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl] for cell 'design_1_i/ps8_0_axi_periph/s00_couplers/auto_ds/inst/gen_downsizer.gen_simple_downsizer.axi_downsizer_inst/USE_WRITE.write_addr_inst/USE_B_CHANNEL.cmd_b_queue/inst/fifo_gen_inst/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst'
+Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl] for cell 'design_1_i/ps8_0_axi_periph/s00_couplers/auto_ds/inst/gen_downsizer.gen_simple_downsizer.axi_downsizer_inst/USE_WRITE.write_addr_inst/cmd_queue/inst/fifo_gen_inst/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst'
+Finished Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl] for cell 'design_1_i/ps8_0_axi_periph/s00_couplers/auto_ds/inst/gen_downsizer.gen_simple_downsizer.axi_downsizer_inst/USE_WRITE.write_addr_inst/cmd_queue/inst/fifo_gen_inst/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst'
+Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl] for cell 'design_1_i/ps8_0_axi_periph/s01_couplers/auto_ds/inst/gen_downsizer.gen_simple_downsizer.axi_downsizer_inst/USE_READ.read_addr_inst/cmd_queue/inst/fifo_gen_inst/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst'
+Finished Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl] for cell 'design_1_i/ps8_0_axi_periph/s01_couplers/auto_ds/inst/gen_downsizer.gen_simple_downsizer.axi_downsizer_inst/USE_READ.read_addr_inst/cmd_queue/inst/fifo_gen_inst/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst'
+Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl] for cell 'design_1_i/ps8_0_axi_periph/s01_couplers/auto_ds/inst/gen_downsizer.gen_simple_downsizer.axi_downsizer_inst/USE_WRITE.write_addr_inst/USE_B_CHANNEL.cmd_b_queue/inst/fifo_gen_inst/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst'
+Finished Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl] for cell 'design_1_i/ps8_0_axi_periph/s01_couplers/auto_ds/inst/gen_downsizer.gen_simple_downsizer.axi_downsizer_inst/USE_WRITE.write_addr_inst/USE_B_CHANNEL.cmd_b_queue/inst/fifo_gen_inst/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst'
+Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl] for cell 'design_1_i/ps8_0_axi_periph/s01_couplers/auto_ds/inst/gen_downsizer.gen_simple_downsizer.axi_downsizer_inst/USE_WRITE.write_addr_inst/cmd_queue/inst/fifo_gen_inst/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst'
+Finished Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl] for cell 'design_1_i/ps8_0_axi_periph/s01_couplers/auto_ds/inst/gen_downsizer.gen_simple_downsizer.axi_downsizer_inst/USE_WRITE.write_addr_inst/cmd_queue/inst/fifo_gen_inst/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst'
+Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_memory/tcl/xpm_memory_xdc.tcl] for cell 'design_1_i/axi_smc/inst/s00_nodes/s00_ar_node/inst/inst_mi_handler/gen_normal_area.inst_fifo_node_payld/gen_xpm_memory_fifo.inst_fifo/gen_mem_rep[0].inst_xpm_memory'
+Finished Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_memory/tcl/xpm_memory_xdc.tcl] for cell 'design_1_i/axi_smc/inst/s00_nodes/s00_ar_node/inst/inst_mi_handler/gen_normal_area.inst_fifo_node_payld/gen_xpm_memory_fifo.inst_fifo/gen_mem_rep[0].inst_xpm_memory'
+Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_memory/tcl/xpm_memory_xdc.tcl] for cell 'design_1_i/axi_smc/inst/s00_nodes/s00_aw_node/inst/inst_mi_handler/gen_normal_area.inst_fifo_node_payld/gen_xpm_memory_fifo.inst_fifo/gen_mem_rep[0].inst_xpm_memory'
+Finished Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_memory/tcl/xpm_memory_xdc.tcl] for cell 'design_1_i/axi_smc/inst/s00_nodes/s00_aw_node/inst/inst_mi_handler/gen_normal_area.inst_fifo_node_payld/gen_xpm_memory_fifo.inst_fifo/gen_mem_rep[0].inst_xpm_memory'
+Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_memory/tcl/xpm_memory_xdc.tcl] for cell 'design_1_i/axi_smc/inst/s00_nodes/s00_b_node/inst/inst_mi_handler/gen_normal_area.inst_fifo_node_payld/gen_xpm_memory_fifo.inst_fifo/gen_mem_rep[0].inst_xpm_memory'
+Finished Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_memory/tcl/xpm_memory_xdc.tcl] for cell 'design_1_i/axi_smc/inst/s00_nodes/s00_b_node/inst/inst_mi_handler/gen_normal_area.inst_fifo_node_payld/gen_xpm_memory_fifo.inst_fifo/gen_mem_rep[0].inst_xpm_memory'
+Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_memory/tcl/xpm_memory_xdc.tcl] for cell 'design_1_i/axi_smc/inst/s00_nodes/s00_r_node/inst/inst_mi_handler/gen_normal_area.inst_fifo_node_payld/gen_xpm_memory_fifo.inst_fifo/gen_mem_rep[0].inst_xpm_memory'
+Finished Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_memory/tcl/xpm_memory_xdc.tcl] for cell 'design_1_i/axi_smc/inst/s00_nodes/s00_r_node/inst/inst_mi_handler/gen_normal_area.inst_fifo_node_payld/gen_xpm_memory_fifo.inst_fifo/gen_mem_rep[0].inst_xpm_memory'
+Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_memory/tcl/xpm_memory_xdc.tcl] for cell 'design_1_i/axi_smc/inst/s00_nodes/s00_w_node/inst/inst_mi_handler/gen_normal_area.inst_fifo_node_payld/gen_xpm_memory_fifo.inst_fifo/gen_mem_rep[0].inst_xpm_memory'
+Finished Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_memory/tcl/xpm_memory_xdc.tcl] for cell 'design_1_i/axi_smc/inst/s00_nodes/s00_w_node/inst/inst_mi_handler/gen_normal_area.inst_fifo_node_payld/gen_xpm_memory_fifo.inst_fifo/gen_mem_rep[0].inst_xpm_memory'
+INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s).
+Netlist sorting complete. Time (s): cpu = 00:00:00.02 ; elapsed = 00:00:00.03 . Memory (MB): peak = 9072.309 ; gain = 0.000 ; free physical = 8875 ; free virtual = 12951
+INFO: [Project 1-111] Unisim Transformation Summary:
+  A total of 4659 instances were transformed.
+  CFGLUT5 => CFGLUT5 (SRLC32E, SRL16E): 376 instances
+  DSP48E2 => DSP48E2 (DSP_ALU, DSP_A_B_DATA, DSP_C_DATA, DSP_MULTIPLIER, DSP_M_DATA, DSP_OUTPUT, DSP_PREADD_DATA, DSP_PREADD): 22 instances
+  RAM16X1S => RAM32X1S (RAMS32): 3968 instances
+  RAM32M16 => RAM32M16 (RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMS32, RAMS32): 69 instances
+  RAM32X1S => RAM32X1S (RAMS32): 224 instances
+
+open_run: Time (s): cpu = 00:01:14 ; elapsed = 00:00:58 . Memory (MB): peak = 9199.625 ; gain = 1648.613 ; free physical = 8622 ; free virtual = 12704
+create_debug_core u_ila_0 ila
+set_property C_DATA_DEPTH 1024 [get_debug_cores u_ila_0]
+set_property C_TRIGIN_EN false [get_debug_cores u_ila_0]
+set_property C_TRIGOUT_EN false [get_debug_cores u_ila_0]
+set_property C_ADV_TRIGGER false [get_debug_cores u_ila_0]
+set_property C_INPUT_PIPE_STAGES 0 [get_debug_cores u_ila_0]
+set_property C_EN_STRG_QUAL false [get_debug_cores u_ila_0]
+set_property ALL_PROBE_SAME_MU true [get_debug_cores u_ila_0]
+set_property ALL_PROBE_SAME_MU_CNT 1 [get_debug_cores u_ila_0]
+connect_debug_port u_ila_0/clk [get_nets [list design_1_i/zynq_ultra_ps_e_0/inst/pl_clk0 ]]
+set_property port_width 2 [get_debug_ports u_ila_0/probe0]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe0]
+connect_debug_port u_ila_0/probe0 [get_nets [list {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_13_address0[0]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_13_address0[1]} ]]
+create_debug_port u_ila_0 probe
+set_property port_width 16 [get_debug_ports u_ila_0/probe1]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe1]
+connect_debug_port u_ila_0/probe1 [get_nets [list {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_log_V_V_din[0]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_log_V_V_din[1]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_log_V_V_din[2]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_log_V_V_din[3]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_log_V_V_din[4]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_log_V_V_din[5]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_log_V_V_din[6]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_log_V_V_din[7]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_log_V_V_din[8]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_log_V_V_din[9]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_log_V_V_din[10]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_log_V_V_din[11]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_log_V_V_din[12]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_log_V_V_din[13]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_log_V_V_din[14]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_log_V_V_din[15]} ]]
+create_debug_port u_ila_0 probe
+set_property port_width 24 [get_debug_ports u_ila_0/probe2]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe2]
+connect_debug_port u_ila_0/probe2 [get_nets [list {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[0]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[1]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[2]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[3]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[4]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[5]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[6]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[7]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[8]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[9]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[10]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[11]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[12]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[13]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[14]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[15]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[16]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[17]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[18]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[19]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[20]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[21]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[22]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[23]} ]]
+create_debug_port u_ila_0 probe
+set_property port_width 24 [get_debug_ports u_ila_0/probe3]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe3]
+connect_debug_port u_ila_0/probe3 [get_nets [list {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[0]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[1]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[2]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[3]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[4]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[5]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[6]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[7]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[8]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[9]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[10]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[11]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[12]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[13]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[14]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[15]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[16]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[17]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[18]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[19]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[20]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[21]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[22]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[23]} ]]
+create_debug_port u_ila_0 probe
+set_property port_width 6 [get_debug_ports u_ila_0/probe4]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe4]
+connect_debug_port u_ila_0/probe4 [get_nets [list {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/weights0_m_weights_V_address0[0]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/weights0_m_weights_V_address0[1]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/weights0_m_weights_V_address0[2]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/weights0_m_weights_V_address0[3]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/weights0_m_weights_V_address0[4]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/weights0_m_weights_V_address0[5]} ]]
+create_debug_port u_ila_0 probe
+set_property port_width 3 [get_debug_ports u_ila_0/probe5]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe5]
+connect_debug_port u_ila_0/probe5 [get_nets [list {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/weights0_m_weights_V_q0[0]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/weights0_m_weights_V_q0[1]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/weights0_m_weights_V_q0[2]} ]]
+create_debug_port u_ila_0 probe
+set_property port_width 1 [get_debug_ports u_ila_0/probe6]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe6]
+connect_debug_port u_ila_0/probe6 [get_nets [list design_1_i/BlackBoxJam_0/inst/ap_done ]]
+create_debug_port u_ila_0 probe
+set_property port_width 1 [get_debug_ports u_ila_0/probe7]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe7]
+connect_debug_port u_ila_0/probe7 [get_nets [list design_1_i/BlackBoxJam_0/inst/ap_idle ]]
+create_debug_port u_ila_0 probe
+set_property port_width 1 [get_debug_ports u_ila_0/probe8]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe8]
+connect_debug_port u_ila_0/probe8 [get_nets [list design_1_i/BlackBoxJam_0/inst/ap_ready ]]
+create_debug_port u_ila_0 probe
+set_property port_width 1 [get_debug_ports u_ila_0/probe9]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe9]
+connect_debug_port u_ila_0/probe9 [get_nets [list design_1_i/BlackBoxJam_0/inst/ap_start ]]
+create_debug_port u_ila_0 probe
+set_property port_width 1 [get_debug_ports u_ila_0/probe10]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe10]
+connect_debug_port u_ila_0/probe10 [get_nets [list design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_read ]]
+create_debug_port u_ila_0 probe
+set_property port_width 1 [get_debug_ports u_ila_0/probe11]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe11]
+connect_debug_port u_ila_0/probe11 [get_nets [list design_1_i/BlackBoxJam_0/inst/interrupt ]]
+create_debug_port u_ila_0 probe
+set_property port_width 1 [get_debug_ports u_ila_0/probe12]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe12]
+connect_debug_port u_ila_0/probe12 [get_nets [list design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_V_V_write ]]
+create_debug_port u_ila_0 probe
+set_property port_width 1 [get_debug_ports u_ila_0/probe13]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe13]
+connect_debug_port u_ila_0/probe13 [get_nets [list design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_ce0 ]]
+save_constraints
+launch_runs impl_1 -to_step write_bitstream -jobs 12
+Netlist sorting complete. Time (s): cpu = 00:00:00.06 ; elapsed = 00:00:00.07 . Memory (MB): peak = 9326.844 ; gain = 0.000 ; free physical = 8473 ; free virtual = 12555
+INFO: [Timing 38-480] Writing timing data to binary archive.
+[Sun Nov 17 13:50:30 2019] Launched impl_1...
+Run output will be captured here: /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/impl_1/runme.log
+launch_runs: Time (s): cpu = 00:00:27 ; elapsed = 00:00:23 . Memory (MB): peak = 9326.844 ; gain = 0.000 ; free physical = 8396 ; free virtual = 12507
+close_design
+open_run impl_1
+INFO: [Netlist 29-17] Analyzing 11142 Unisim elements for replacement
+INFO: [Netlist 29-28] Unisim Transformation completed in 1 CPU seconds
+INFO: [Project 1-479] Netlist was created with Vivado 2019.1.1
+INFO: [Project 1-570] Preparing netlist for logic optimization
+INFO: [Timing 38-478] Restoring timing data from binary archive.
+INFO: [Timing 38-479] Binary timing data restore complete.
+INFO: [Project 1-856] Restoring constraints from binary archive.
+INFO: [Project 1-853] Binary constraint restore complete.
+Reading XDEF placement.
+Reading placer database...
+Reading XDEF routing.
+Read XDEF File: Time (s): cpu = 00:00:11 ; elapsed = 00:00:10 . Memory (MB): peak = 9397.617 ; gain = 70.773 ; free physical = 7876 ; free virtual = 12385
+Restored from archive | CPU: 11.210000 secs | Memory: 157.150444 MB |
+Finished XDEF File Restore: Time (s): cpu = 00:00:11 ; elapsed = 00:00:10 . Memory (MB): peak = 9397.617 ; gain = 70.773 ; free physical = 7876 ; free virtual = 12385
+Netlist sorting complete. Time (s): cpu = 00:00:00.03 ; elapsed = 00:00:00.03 . Memory (MB): peak = 9397.617 ; gain = 0.000 ; free physical = 7893 ; free virtual = 12403
+INFO: [Project 1-111] Unisim Transformation Summary:
+  A total of 4756 instances were transformed.
+  CFGLUT5 => CFGLUT5 (SRLC32E, SRL16E): 484 instances
+  DSP48E2 => DSP48E2 (DSP_ALU, DSP_A_B_DATA, DSP_C_DATA, DSP_MULTIPLIER, DSP_M_DATA, DSP_OUTPUT, DSP_PREADD_DATA, DSP_PREADD): 22 instances
+  RAM16X1S => RAM32X1S (RAMS32): 3968 instances
+  RAM32M16 => RAM32M16 (RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMS32, RAMS32): 58 instances
+  RAM32X1S => RAM32X1S (RAMS32): 224 instances
+
+open_run: Time (s): cpu = 00:00:46 ; elapsed = 00:00:43 . Memory (MB): peak = 9660.965 ; gain = 334.121 ; free physical = 7684 ; free virtual = 12195
+open_report: Time (s): cpu = 00:00:20 ; elapsed = 00:00:07 . Memory (MB): peak = 9753.930 ; gain = 87.961 ; free physical = 7360 ; free virtual = 11872
+WARNING: [Timing 38-436] There are set_bus_skew constraint(s) in this design. Please run report_bus_skew to ensure that bus skew requirements are met.
+file copy -force /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/impl_1/design_1_wrapper.sysdef /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.sdk/design_1_wrapper.hdf
+
+file copy -force /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/impl_1/design_1_wrapper.sysdef /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.sdk/design_1_wrapper.hdf
+
+launch_sdk -workspace /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.sdk -hwspec /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.sdk/design_1_wrapper.hdf
+INFO: [Vivado 12-393] Launching SDK...
+INFO: [Vivado 12-417] Running xsdk -workspace /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.sdk -hwspec /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.sdk/design_1_wrapper.hdf
+INFO: [Vivado 12-3157] SDK launch initiated. Please check console for any further messages.
+open_hw
+connect_hw_server -url 121.155.128.106:3121
+INFO: [Labtools 27-2285] Connecting to hw_server url TCP:121.155.128.106:3121
+current_hw_target [get_hw_targets */xilinx_tcf/Xilinx/88281A]
+set_property PARAM.FREQUENCY 15000000 [get_hw_targets */xilinx_tcf/Xilinx/88281A]
+open_hw_target
+INFO: [Labtoolstcl 44-466] Opening hw_target 121.155.128.106:3121/xilinx_tcf/Xilinx/88281A
+open_hw_target: Time (s): cpu = 00:00:02 ; elapsed = 00:00:06 . Memory (MB): peak = 11995.062 ; gain = 839.035 ; free physical = 3701 ; free virtual = 8556
+set_property PROGRAM.FILE {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/impl_1/design_1_wrapper.bit} [get_hw_devices xczu7_0]
+set_property PROBES.FILE {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/impl_1/design_1_wrapper.ltx} [get_hw_devices xczu7_0]
+set_property FULL_PROBES.FILE {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/impl_1/design_1_wrapper.ltx} [get_hw_devices xczu7_0]
+current_hw_device [get_hw_devices xczu7_0]
+refresh_hw_device [lindex [get_hw_devices xczu7_0] 0]
+INFO: [Labtools 27-2302] Device xczu7 (JTAG device index = 0) is programmed with a design that has 2 ILA core(s).
+display_hw_ila_data [ get_hw_ila_data hw_ila_data_1 -of_objects [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}]]
+Processed interface BlackBoxJam_0_m_axi_hostmem_ila1_slot0
+Processed interface ps8_0_axi_periph_M00_AXI_ila1_slot1
+display_hw_ila_data [ get_hw_ila_data hw_ila_data_2 -of_objects [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}]]
+WARNING: Simulation object design_1_i/BlackBoxJam_0/inst/call_ln1052_DoMemInit_fu_2164/threshs10_m_scales_V_1_ap_vld was not found in the design.
+WARNING: Simulation object design_1_i/BlackBoxJam_0/inst/call_ln1052_DoMemInit_fu_2164/threshs10_m_scales_V_ap_vld was not found in the design.
+WARNING: Simulation object design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/infer_category_U0/in_V_V_dout was not found in the design.
+WARNING: Simulation object design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/infer_category_U0/in_V_V_read was not found in the design.
+WARNING: Simulation object design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/infer_category_U0/out_V_V_din was not found in the design.
+WARNING: Simulation object design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/infer_category_U0/out_V_V_write was not found in the design.
+WARNING: Simulation object design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_5_U0/in_V_V_dout was not found in the design.
+WARNING: Simulation object design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_5_U0/in_V_V_read was not found in the design.
+WARNING: Simulation object design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_5_U0/out_V_V_din was not found in the design.
+WARNING: Simulation object design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_5_U0/out_V_V_write was not found in the design.
+WARNING: Simulation object design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_5_U0/threshs10_m_scales_V was not found in the design.
+WARNING: Simulation object design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_5_U0/threshs10_m_scales_V_1 was not found in the design.
+WARNING: Simulation object design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_V_V_din was not found in the design.
+WARNING: Simulation object design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_V_V_write was not found in the design.
+WARNING: Simulation object design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_1_q0 was not found in the design.
+WARNING: Simulation object design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_address0 was not found in the design.
+WARNING: Simulation object design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/weights0_m_weights_V_1_q0 was not found in the design.
+WARNING: Simulation object design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/weights0_m_weights_V_ce0 was not found in the design.
+current_hw_device [get_hw_devices arm_dap_1]
+refresh_hw_device -update_hw_probes false [lindex [get_hw_devices arm_dap_1] 0]
+current_hw_device [get_hw_devices xczu7_0]
+run_hw_ila [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}] -trigger_now
+INFO: [Labtools 27-1964] The ILA core 'hw_ila_2' trigger was armed at 2019-Nov-17 14:26:16
+wait_on_hw_ila [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}]
+display_hw_ila_data [upload_hw_ila_data [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}]]
+INFO: [Labtools 27-1966] The ILA core 'hw_ila_2' triggered at 2019-Nov-17 14:26:16
+INFO: [Labtools 27-3304] ILA Waveform data saved to file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.hw/backup/hw_ila_data_2.ila. Use Tcl command 'read_hw_ila_data' or Vivado File->Import->Import ILA Data menu item to import the previously saved data.
+add_wave -into {hw_ila_data_2.wcfg} -radix hex { {design_1_i/BlackBoxJam_0/inst/ap_idle} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_read} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_log_V_V_din} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_13_address0} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_ce0} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/weights0_m_weights_V_address0} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/weights0_m_weights_V_q0} {design_1_i/BlackBoxJam_0/inst/interrupt} {u_ila_0_ap_done} {u_ila_0_ap_ready} {u_ila_0_ap_start} {u_ila_0_out_V_V_write} }
+run_hw_ila [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}] -trigger_now
+INFO: [Labtools 27-1964] The ILA core 'hw_ila_2' trigger was armed at 2019-Nov-17 14:26:56
+wait_on_hw_ila [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}]
+display_hw_ila_data [upload_hw_ila_data [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}]]
+INFO: [Labtools 27-1966] The ILA core 'hw_ila_2' triggered at 2019-Nov-17 14:26:56
+INFO: [Labtools 27-3304] ILA Waveform data saved to file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.hw/backup/hw_ila_data_2.ila. Use Tcl command 'read_hw_ila_data' or Vivado File->Import->Import ILA Data menu item to import the previously saved data.
+run_hw_ila [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}] -trigger_now
+INFO: [Labtools 27-1964] The ILA core 'hw_ila_2' trigger was armed at 2019-Nov-17 14:27:38
+wait_on_hw_ila [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}]
+display_hw_ila_data [upload_hw_ila_data [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}]]
+INFO: [Labtools 27-1966] The ILA core 'hw_ila_2' triggered at 2019-Nov-17 14:27:38
+INFO: [Labtools 27-3304] ILA Waveform data saved to file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.hw/backup/hw_ila_data_2.ila. Use Tcl command 'read_hw_ila_data' or Vivado File->Import->Import ILA Data menu item to import the previously saved data.
+save_wave_config {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.hw/hw_1/wave/hw_ila_data_1/hw_ila_data_1.wcfg}
+save_wave_config {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.hw/hw_1/wave/hw_ila_data_2/hw_ila_data_2.wcfg}
+close_hw
+open_hw
+connect_hw_server -url 121.155.128.106:3121
+INFO: [Labtools 27-2285] Connecting to hw_server url TCP:121.155.128.106:3121
+current_hw_target [get_hw_targets */xilinx_tcf/Xilinx/88281A]
+set_property PARAM.FREQUENCY 15000000 [get_hw_targets */xilinx_tcf/Xilinx/88281A]
+open_hw_target
+INFO: [Labtoolstcl 44-466] Opening hw_target 121.155.128.106:3121/xilinx_tcf/Xilinx/88281A
+set_property PROGRAM.FILE {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/impl_1/design_1_wrapper.bit} [get_hw_devices xczu7_0]
+set_property PROBES.FILE {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/impl_1/design_1_wrapper.ltx} [get_hw_devices xczu7_0]
+set_property FULL_PROBES.FILE {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/impl_1/design_1_wrapper.ltx} [get_hw_devices xczu7_0]
+current_hw_device [get_hw_devices xczu7_0]
+refresh_hw_device [lindex [get_hw_devices xczu7_0] 0]
+INFO: [Labtools 27-2302] Device xczu7 (JTAG device index = 0) is programmed with a design that has 2 ILA core(s).
+display_hw_ila_data [ get_hw_ila_data hw_ila_data_1 -of_objects [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}]]
+Processed interface BlackBoxJam_0_m_axi_hostmem_ila1_slot0
+Processed interface ps8_0_axi_periph_M00_AXI_ila1_slot1
+display_hw_ila_data [ get_hw_ila_data hw_ila_data_2 -of_objects [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}]]
+current_hw_device [get_hw_devices arm_dap_1]
+refresh_hw_device -update_hw_probes false [lindex [get_hw_devices arm_dap_1] 0]
+current_hw_device [get_hw_devices xczu7_0]
+run_hw_ila [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}] -trigger_now
+INFO: [Labtools 27-1964] The ILA core 'hw_ila_2' trigger was armed at 2019-Nov-17 14:32:22
+wait_on_hw_ila [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}]
+display_hw_ila_data [upload_hw_ila_data [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}]]
+INFO: [Labtools 27-1966] The ILA core 'hw_ila_2' triggered at 2019-Nov-17 14:32:22
+INFO: [Labtools 27-3304] ILA Waveform data saved to file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.hw/backup/hw_ila_data_2.ila. Use Tcl command 'read_hw_ila_data' or Vivado File->Import->Import ILA Data menu item to import the previously saved data.
+set_property TRIGGER_COMPARE_VALUE eq1'bR [get_hw_probes u_ila_0_ap_done -of_objects [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}]]
+run_hw_ila [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}]
+INFO: [Labtools 27-1964] The ILA core 'hw_ila_2' trigger was armed at 2019-Nov-17 14:33:00
+wait_on_hw_ila [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}]
+display_hw_ila_data [upload_hw_ila_data [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}]]
+INFO: [Labtools 27-1966] The ILA core 'hw_ila_2' triggered at 2019-Nov-17 14:33:07
+INFO: [Labtools 27-3304] ILA Waveform data saved to file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.hw/backup/hw_ila_data_2.ila. Use Tcl command 'read_hw_ila_data' or Vivado File->Import->Import ILA Data menu item to import the previously saved data.
+set_property TRIGGER_COMPARE_VALUE eq1'bR [get_hw_probes u_ila_0_out_V_V_write -of_objects [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}]]
+run_hw_ila [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}]
+INFO: [Labtools 27-1964] The ILA core 'hw_ila_2' trigger was armed at 2019-Nov-17 14:34:51
+wait_on_hw_ila [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}]
+display_hw_ila_data [upload_hw_ila_data [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}]]
+INFO: [Labtools 27-1966] The ILA core 'hw_ila_2' triggered at 2019-Nov-17 14:34:56
+INFO: [Labtools 27-3304] ILA Waveform data saved to file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.hw/backup/hw_ila_data_2.ila. Use Tcl command 'read_hw_ila_data' or Vivado File->Import->Import ILA Data menu item to import the previously saved data.
+set_property TRIGGER_COMPARE_VALUE eq1'bX [get_hw_probes design_1_i/system_ila_0/inst/net_slot_1_axi_rvalid -of_objects [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}]]
+set_property TRIGGER_COMPARE_VALUE eq1'bR [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_wvalid -of_objects [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}]]
+save_wave_config {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.hw/hw_1/wave/hw_ila_data_1/hw_ila_data_1.wcfg}
+save_wave_config {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.hw/hw_1/wave/hw_ila_data_2/hw_ila_data_2.wcfg}
+close_hw
+open_hw
+connect_hw_server -url 121.155.128.106:3121
+INFO: [Labtools 27-2285] Connecting to hw_server url TCP:121.155.128.106:3121
+current_hw_target [get_hw_targets */xilinx_tcf/Xilinx/88281A]
+set_property PARAM.FREQUENCY 15000000 [get_hw_targets */xilinx_tcf/Xilinx/88281A]
+open_hw_target
+INFO: [Labtoolstcl 44-466] Opening hw_target 121.155.128.106:3121/xilinx_tcf/Xilinx/88281A
+set_property PROGRAM.FILE {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/impl_1/design_1_wrapper.bit} [get_hw_devices xczu7_0]
+set_property PROBES.FILE {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/impl_1/design_1_wrapper.ltx} [get_hw_devices xczu7_0]
+set_property FULL_PROBES.FILE {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/impl_1/design_1_wrapper.ltx} [get_hw_devices xczu7_0]
+current_hw_device [get_hw_devices xczu7_0]
+refresh_hw_device [lindex [get_hw_devices xczu7_0] 0]
+INFO: [Labtools 27-2302] Device xczu7 (JTAG device index = 0) is programmed with a design that has 2 ILA core(s).
+display_hw_ila_data [ get_hw_ila_data hw_ila_data_1 -of_objects [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}]]
+Processed interface BlackBoxJam_0_m_axi_hostmem_ila1_slot0
+Processed interface ps8_0_axi_periph_M00_AXI_ila1_slot1
+display_hw_ila_data [ get_hw_ila_data hw_ila_data_2 -of_objects [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}]]
+current_hw_device [get_hw_devices arm_dap_1]
+refresh_hw_device -update_hw_probes false [lindex [get_hw_devices arm_dap_1] 0]
+current_hw_device [get_hw_devices xczu7_0]
+set_property TRIGGER_COMPARE_VALUE eq1'bX [get_hw_probes design_1_i/system_ila_0/inst/net_slot_1_axi_rvalid -of_objects [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}]]
+set_property TRIGGER_COMPARE_VALUE eq1'bX [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_wvalid -of_objects [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}]]
+set_property TRIGGER_COMPARE_VALUE eq1'bX [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_awvalid -of_objects [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}]]
+set_property TRIGGER_COMPARE_VALUE eq1'bR [get_hw_probes design_1_i/system_ila_0/inst/net_slot_1_axi_wvalid -of_objects [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}]]
+set_property TRIGGER_COMPARE_VALUE eq1'bR [get_hw_probes design_1_i/system_ila_0/inst/net_slot_1_axi_awvalid -of_objects [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}]]
+run_hw_ila [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}]
+INFO: [Labtools 27-1964] The ILA core 'hw_ila_1' trigger was armed at 2019-Nov-17 14:57:47
+wait_on_hw_ila [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}]
+display_hw_ila_data [upload_hw_ila_data [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}]]
+INFO: [Labtools 27-1966] The ILA core 'hw_ila_1' triggered at 2019-Nov-17 14:57:52
+Processed interface BlackBoxJam_0_m_axi_hostmem_ila1_slot0
+Processed interface ps8_0_axi_periph_M00_AXI_ila1_slot1
+INFO: [Labtools 27-3304] ILA Waveform data saved to file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.hw/backup/hw_ila_data_1.ila. Use Tcl command 'read_hw_ila_data' or Vivado File->Import->Import ILA Data menu item to import the previously saved data.
+run_hw_ila [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}] -trigger_now
+INFO: [Labtools 27-1964] The ILA core 'hw_ila_2' trigger was armed at 2019-Nov-17 14:59:14
+wait_on_hw_ila [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}]
+display_hw_ila_data [upload_hw_ila_data [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}]]
+INFO: [Labtools 27-1966] The ILA core 'hw_ila_2' triggered at 2019-Nov-17 14:59:14
+INFO: [Labtools 27-3304] ILA Waveform data saved to file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.hw/backup/hw_ila_data_2.ila. Use Tcl command 'read_hw_ila_data' or Vivado File->Import->Import ILA Data menu item to import the previously saved data.
+set_property TRIGGER_COMPARE_VALUE eq1'bX [get_hw_probes design_1_i/system_ila_0/inst/net_slot_1_axi_wvalid -of_objects [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}]]
+set_property TRIGGER_COMPARE_VALUE eq1'bX [get_hw_probes design_1_i/system_ila_0/inst/net_slot_1_axi_awvalid -of_objects [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}]]
+add_wave -into {hw_ila_data_1.wcfg} -radix hex { {design_1_i/system_ila_0/inst/net_slot_0_axi_ar_ctrl} {design_1_i/system_ila_0/inst/net_slot_0_axi_aw_ctrl} {design_1_i/system_ila_0/inst/net_slot_0_axi_b_ctrl} {design_1_i/system_ila_0/inst/net_slot_0_axi_r_ctrl} {design_1_i/system_ila_0/inst/net_slot_0_axi_w_ctrl} {design_1_i/system_ila_0/inst/net_slot_1_axi_ar_ctrl} {design_1_i/system_ila_0/inst/net_slot_1_axi_aw_ctrl} {design_1_i/system_ila_0/inst/net_slot_1_axi_b_ctrl} {design_1_i/system_ila_0/inst/net_slot_1_axi_r_ctrl} {design_1_i/system_ila_0/inst/net_slot_1_axi_w_ctrl} {design_1_i/system_ila_0/inst/net_slot_0_axi_ar_cnt} {design_1_i/system_ila_0/inst/net_slot_0_axi_araddr} {design_1_i/system_ila_0/inst/net_slot_0_axi_arcache} {AR_Channel_(i1:s0)_(BlackBoxJam_0_m_axi_hostmem)} {design_1_i/system_ila_0/inst/net_slot_0_axi_arlen} {design_1_i/system_ila_0/inst/net_slot_0_axi_arlock} {design_1_i/system_ila_0/inst/net_slot_0_axi_arqos} {design_1_i/system_ila_0/inst/net_slot_0_axi_arregion} {design_1_i/system_ila_0/inst/net_slot_0_axi_arsize} {design_1_i/system_ila_0/inst/net_slot_0_axi_aw_cnt} {design_1_i/system_ila_0/inst/net_slot_0_axi_awaddr} {design_1_i/system_ila_0/inst/net_slot_0_axi_awcache} {AW_Channel_(i1:s0)_(BlackBoxJam_0_m_axi_hostmem)} {design_1_i/system_ila_0/inst/net_slot_0_axi_awlen} {design_1_i/system_ila_0/inst/net_slot_0_axi_awlock} {design_1_i/system_ila_0/inst/net_slot_0_axi_awqos} {design_1_i/system_ila_0/inst/net_slot_0_axi_awregion} {design_1_i/system_ila_0/inst/net_slot_0_axi_awsize} {design_1_i/system_ila_0/inst/net_slot_0_axi_b_cnt} {B_Channel_(i1:s0)_(BlackBoxJam_0_m_axi_hostmem)} {Interface_(i1:s0)_(BlackBoxJam_0_m_axi_hostmem)} {design_1_i/system_ila_0/inst/net_slot_0_axi_r_cnt} {R_Channel_(i1:s0)_(BlackBoxJam_0_m_axi_hostmem)} {design_1_i/system_ila_0/inst/net_slot_0_axi_rdata} {slot_0___BlackBoxJam_0_m_axi_hostmem___Read_Transactions_0} {design_1_i/system_ila_0/inst/net_slot_0_axi_rlast} {W_Channel_(i1:s0)_(BlackBoxJam_0_m_axi_hostmem)} {design_1_i/system_ila_0/inst/net_slot_0_axi_wdata} {design_1_i/system_ila_0/inst/net_slot_0_axi_wlast} {design_1_i/system_ila_0/inst/net_slot_0_axi_wstrb} {design_1_i/system_ila_0/inst/net_slot_0_axi_arprot} {design_1_i/system_ila_0/inst/net_slot_0_axi_arready} {design_1_i/system_ila_0/inst/net_slot_0_axi_arvalid} {design_1_i/system_ila_0/inst/net_slot_0_axi_awprot} {design_1_i/system_ila_0/inst/net_slot_0_axi_awready} {design_1_i/system_ila_0/inst/net_slot_0_axi_awvalid} {design_1_i/system_ila_0/inst/net_slot_0_axi_bready} {design_1_i/system_ila_0/inst/net_slot_0_axi_bresp} {design_1_i/system_ila_0/inst/net_slot_0_axi_bvalid} {design_1_i/system_ila_0/inst/net_slot_0_axi_rready} {design_1_i/system_ila_0/inst/net_slot_0_axi_rresp} {design_1_i/system_ila_0/inst/net_slot_0_axi_rvalid} {design_1_i/system_ila_0/inst/net_slot_0_axi_wready} {design_1_i/system_ila_0/inst/net_slot_0_axi_wvalid} {design_1_i/system_ila_0/inst/net_slot_1_axi_arprot} {design_1_i/system_ila_0/inst/net_slot_1_axi_arready} {design_1_i/system_ila_0/inst/net_slot_1_axi_arvalid} {design_1_i/system_ila_0/inst/net_slot_1_axi_awprot} {design_1_i/system_ila_0/inst/net_slot_1_axi_awready} {design_1_i/system_ila_0/inst/net_slot_1_axi_awvalid} {design_1_i/system_ila_0/inst/net_slot_1_axi_bready} {design_1_i/system_ila_0/inst/net_slot_1_axi_bresp} {design_1_i/system_ila_0/inst/net_slot_1_axi_bvalid} {design_1_i/system_ila_0/inst/net_slot_1_axi_rready} {design_1_i/system_ila_0/inst/net_slot_1_axi_rresp} {design_1_i/system_ila_0/inst/net_slot_1_axi_rvalid} {design_1_i/system_ila_0/inst/net_slot_1_axi_wready} {design_1_i/system_ila_0/inst/net_slot_1_axi_wvalid} {design_1_i/system_ila_0/inst/net_slot_1_axi_ar_cnt} {design_1_i/system_ila_0/inst/net_slot_1_axi_araddr} {AR_Channel_(i1:s1)_(ps8_0_axi_periph_M00_AXI)} {design_1_i/system_ila_0/inst/net_slot_1_axi_aw_cnt} {design_1_i/system_ila_0/inst/net_slot_1_axi_awaddr} {AW_Channel_(i1:s1)_(ps8_0_axi_periph_M00_AXI)} {design_1_i/system_ila_0/inst/net_slot_1_axi_b_cnt} {B_Channel_(i1:s1)_(ps8_0_axi_periph_M00_AXI)} {Interface_(i1:s1)_(ps8_0_axi_periph_M00_AXI)} {design_1_i/system_ila_0/inst/net_slot_1_axi_r_cnt} {R_Channel_(i1:s1)_(ps8_0_axi_periph_M00_AXI)} {design_1_i/system_ila_0/inst/net_slot_1_axi_rdata} {slot_1___ps8_0_axi_periph_M00_AXI___Read_Transactions_0} {W_Channel_(i1:s1)_(ps8_0_axi_periph_M00_AXI)} {design_1_i/system_ila_0/inst/net_slot_1_axi_wdata} {slot_1___ps8_0_axi_periph_M00_AXI___Write_Transactions_0} {design_1_i/system_ila_0/inst/net_slot_1_axi_wstrb} }
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : AR_CNT} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_ar_cnt] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : ARADDR} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_araddr] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : ARCACHE} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_arcache] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : AR Channel  Events} [get_hw_probes AR_Channel_(i1:s0)_(BlackBoxJam_0_m_axi_hostmem)] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : ARLEN} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_arlen] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : ARLOCK} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_arlock] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : ARQOS} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_arqos] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : ARREGION} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_arregion] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : ARSIZE} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_arsize] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : AW_CNT} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_aw_cnt] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : AWADDR} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_awaddr] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : AWCACHE} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_awcache] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : AW Channel  Events} [get_hw_probes AW_Channel_(i1:s0)_(BlackBoxJam_0_m_axi_hostmem)] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : AWLEN} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_awlen] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : AWLOCK} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_awlock] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : AWQOS} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_awqos] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : AWREGION} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_awregion] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : AWSIZE} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_awsize] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : B_CNT} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_b_cnt] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : B Channel  Events} [get_hw_probes B_Channel_(i1:s0)_(BlackBoxJam_0_m_axi_hostmem)] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : Interface  Events} [get_hw_probes Interface_(i1:s0)_(BlackBoxJam_0_m_axi_hostmem)] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : R_CNT} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_r_cnt] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : R Channel  Events} [get_hw_probes R_Channel_(i1:s0)_(BlackBoxJam_0_m_axi_hostmem)] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : RDATA} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_rdata] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : Read Transactions 0} [get_hw_probes slot_0___BlackBoxJam_0_m_axi_hostmem___Read_Transactions_0] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : RLAST} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_rlast] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : W Channel  Events} [get_hw_probes W_Channel_(i1:s0)_(BlackBoxJam_0_m_axi_hostmem)] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : WDATA} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_wdata] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : WLAST} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_wlast] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : WSTRB} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_wstrb] 
+set_property NAME.CUSTOM {slot_0 : ps8_0_axi_periph_M00_AXI : ARPROT} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_arprot] 
+set_property NAME.CUSTOM {slot_0 : ps8_0_axi_periph_M00_AXI : ARREADY} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_arready] 
+set_property NAME.CUSTOM {slot_0 : ps8_0_axi_periph_M00_AXI : ARVALID} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_arvalid] 
+set_property NAME.CUSTOM {slot_0 : ps8_0_axi_periph_M00_AXI : AWPROT} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_awprot] 
+set_property NAME.CUSTOM {slot_0 : ps8_0_axi_periph_M00_AXI : AWREADY} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_awready] 
+set_property NAME.CUSTOM {slot_0 : ps8_0_axi_periph_M00_AXI : AWVALID} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_awvalid] 
+set_property NAME.CUSTOM {slot_0 : ps8_0_axi_periph_M00_AXI : BREADY} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_bready] 
+set_property NAME.CUSTOM {slot_0 : ps8_0_axi_periph_M00_AXI : BRESP} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_bresp] 
+set_property NAME.CUSTOM {slot_0 : ps8_0_axi_periph_M00_AXI : BVALID} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_bvalid] 
+set_property NAME.CUSTOM {slot_0 : ps8_0_axi_periph_M00_AXI : RREADY} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_rready] 
+set_property NAME.CUSTOM {slot_0 : ps8_0_axi_periph_M00_AXI : RRESP} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_rresp] 
+set_property NAME.CUSTOM {slot_0 : ps8_0_axi_periph_M00_AXI : RVALID} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_rvalid] 
+set_property NAME.CUSTOM {slot_0 : ps8_0_axi_periph_M00_AXI : WREADY} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_wready] 
+set_property NAME.CUSTOM {slot_0 : ps8_0_axi_periph_M00_AXI : WVALID} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_wvalid] 
+set_property NAME.CUSTOM {slot_1 : BlackBoxJam_0_m_axi_hostmem : ARPROT} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_1_axi_arprot] 
+set_property NAME.CUSTOM {slot_1 : BlackBoxJam_0_m_axi_hostmem : ARREADY} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_1_axi_arready] 
+set_property NAME.CUSTOM {slot_1 : BlackBoxJam_0_m_axi_hostmem : ARVALID} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_1_axi_arvalid] 
+set_property NAME.CUSTOM {slot_1 : BlackBoxJam_0_m_axi_hostmem : AWPROT} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_1_axi_awprot] 
+set_property NAME.CUSTOM {slot_1 : BlackBoxJam_0_m_axi_hostmem : AWREADY} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_1_axi_awready] 
+set_property NAME.CUSTOM {slot_1 : BlackBoxJam_0_m_axi_hostmem : AWVALID} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_1_axi_awvalid] 
+set_property NAME.CUSTOM {slot_1 : BlackBoxJam_0_m_axi_hostmem : BREADY} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_1_axi_bready] 
+set_property NAME.CUSTOM {slot_1 : BlackBoxJam_0_m_axi_hostmem : BRESP} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_1_axi_bresp] 
+set_property NAME.CUSTOM {slot_1 : BlackBoxJam_0_m_axi_hostmem : BVALID} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_1_axi_bvalid] 
+set_property NAME.CUSTOM {slot_1 : BlackBoxJam_0_m_axi_hostmem : RREADY} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_1_axi_rready] 
+set_property NAME.CUSTOM {slot_1 : BlackBoxJam_0_m_axi_hostmem : RRESP} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_1_axi_rresp] 
+set_property NAME.CUSTOM {slot_1 : BlackBoxJam_0_m_axi_hostmem : RVALID} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_1_axi_rvalid] 
+set_property NAME.CUSTOM {slot_1 : BlackBoxJam_0_m_axi_hostmem : WREADY} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_1_axi_wready] 
+set_property NAME.CUSTOM {slot_1 : BlackBoxJam_0_m_axi_hostmem : WVALID} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_1_axi_wvalid] 
+set_property NAME.CUSTOM {slot_1 : ps8_0_axi_periph_M00_AXI : AR_CNT} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_1_axi_ar_cnt] 
+set_property NAME.CUSTOM {slot_1 : ps8_0_axi_periph_M00_AXI : ARADDR} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_1_axi_araddr] 
+set_property NAME.CUSTOM {slot_1 : ps8_0_axi_periph_M00_AXI : AR Channel  Events} [get_hw_probes AR_Channel_(i1:s1)_(ps8_0_axi_periph_M00_AXI)] 
+set_property NAME.CUSTOM {slot_1 : ps8_0_axi_periph_M00_AXI : AW_CNT} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_1_axi_aw_cnt] 
+set_property NAME.CUSTOM {slot_1 : ps8_0_axi_periph_M00_AXI : AWADDR} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_1_axi_awaddr] 
+set_property NAME.CUSTOM {slot_1 : ps8_0_axi_periph_M00_AXI : AW Channel  Events} [get_hw_probes AW_Channel_(i1:s1)_(ps8_0_axi_periph_M00_AXI)] 
+set_property NAME.CUSTOM {slot_1 : ps8_0_axi_periph_M00_AXI : B_CNT} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_1_axi_b_cnt] 
+set_property NAME.CUSTOM {slot_1 : ps8_0_axi_periph_M00_AXI : B Channel  Events} [get_hw_probes B_Channel_(i1:s1)_(ps8_0_axi_periph_M00_AXI)] 
+set_property NAME.CUSTOM {slot_1 : ps8_0_axi_periph_M00_AXI : Interface  Events} [get_hw_probes Interface_(i1:s1)_(ps8_0_axi_periph_M00_AXI)] 
+set_property NAME.CUSTOM {slot_1 : ps8_0_axi_periph_M00_AXI : R_CNT} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_1_axi_r_cnt] 
+set_property NAME.CUSTOM {slot_1 : ps8_0_axi_periph_M00_AXI : R Channel  Events} [get_hw_probes R_Channel_(i1:s1)_(ps8_0_axi_periph_M00_AXI)] 
+set_property NAME.CUSTOM {slot_1 : ps8_0_axi_periph_M00_AXI : RDATA} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_1_axi_rdata] 
+set_property NAME.CUSTOM {slot_1 : ps8_0_axi_periph_M00_AXI : Read Transactions 0} [get_hw_probes slot_1___ps8_0_axi_periph_M00_AXI___Read_Transactions_0] 
+set_property NAME.CUSTOM {slot_1 : ps8_0_axi_periph_M00_AXI : W Channel  Events} [get_hw_probes W_Channel_(i1:s1)_(ps8_0_axi_periph_M00_AXI)] 
+set_property NAME.CUSTOM {slot_1 : ps8_0_axi_periph_M00_AXI : WDATA} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_1_axi_wdata] 
+set_property NAME.CUSTOM {slot_1 : ps8_0_axi_periph_M00_AXI : Write Transactions 0} [get_hw_probes slot_1___ps8_0_axi_periph_M00_AXI___Write_Transactions_0] 
+set_property NAME.CUSTOM {slot_1 : ps8_0_axi_periph_M00_AXI : WSTRB} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_1_axi_wstrb] 
+set_property TRIGGER_COMPARE_VALUE eq1'bR [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_wvalid -of_objects [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}]]
+set_property TRIGGER_COMPARE_VALUE eq1'bR [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_awvalid -of_objects [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}]]
+save_wave_config {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.hw/hw_1/wave/hw_ila_data_1/hw_ila_data_1.wcfg}
+save_wave_config {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.hw/hw_1/wave/hw_ila_data_2/hw_ila_data_2.wcfg}
+close_hw
+open_hw
+connect_hw_server -url 121.155.128.106:3121
+INFO: [Labtools 27-2285] Connecting to hw_server url TCP:121.155.128.106:3121
+current_hw_target [get_hw_targets */xilinx_tcf/Xilinx/88281A]
+set_property PARAM.FREQUENCY 15000000 [get_hw_targets */xilinx_tcf/Xilinx/88281A]
+open_hw_target
+INFO: [Labtoolstcl 44-466] Opening hw_target 121.155.128.106:3121/xilinx_tcf/Xilinx/88281A
+set_property PROGRAM.FILE {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/impl_1/design_1_wrapper.bit} [get_hw_devices xczu7_0]
+set_property PROBES.FILE {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/impl_1/design_1_wrapper.ltx} [get_hw_devices xczu7_0]
+set_property FULL_PROBES.FILE {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/impl_1/design_1_wrapper.ltx} [get_hw_devices xczu7_0]
+current_hw_device [get_hw_devices xczu7_0]
+refresh_hw_device [lindex [get_hw_devices xczu7_0] 0]
+INFO: [Labtools 27-2302] Device xczu7 (JTAG device index = 0) is programmed with a design that has 2 ILA core(s).
+display_hw_ila_data [ get_hw_ila_data hw_ila_data_1 -of_objects [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}]]
+WARNING: Simulation object slot_0___BlackBoxJam_0_m_axi_hostmem___Read_Transactions_0 was not found in the design.
+WARNING: Simulation object slot_1___ps8_0_axi_periph_M00_AXI___Read_Transactions_0 was not found in the design.
+WARNING: Simulation object slot_1___ps8_0_axi_periph_M00_AXI___Write_Transactions_0 was not found in the design.
+Processing Interface BlackBoxJam_0_m_axi_hostmem_ila1_slot0
+Processing Interface ps8_0_axi_periph_M00_AXI_ila1_slot1
+display_hw_ila_data [ get_hw_ila_data hw_ila_data_2 -of_objects [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}]]
+current_hw_device [get_hw_devices arm_dap_1]
+refresh_hw_device -update_hw_probes false [lindex [get_hw_devices arm_dap_1] 0]
+current_hw_device [get_hw_devices xczu7_0]
+run_hw_ila [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}]
+INFO: [Labtools 27-1964] The ILA core 'hw_ila_1' trigger was armed at 2019-Nov-17 15:04:45
+wait_on_hw_ila [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}]
+display_hw_ila_data [upload_hw_ila_data [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}]]
+INFO: [Labtools 27-1966] The ILA core 'hw_ila_1' triggered at 2019-Nov-17 15:04:49
+Processed interface BlackBoxJam_0_m_axi_hostmem_ila1_slot0
+Processed interface ps8_0_axi_periph_M00_AXI_ila1_slot1
+INFO: [Labtools 27-3304] ILA Waveform data saved to file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.hw/backup/hw_ila_data_1.ila. Use Tcl command 'read_hw_ila_data' or Vivado File->Import->Import ILA Data menu item to import the previously saved data.
+save_wave_config {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.hw/hw_1/wave/hw_ila_data_1/hw_ila_data_1.wcfg}
+save_wave_config {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.hw/hw_1/wave/hw_ila_data_2/hw_ila_data_2.wcfg}
+close_hw
+open_bd_design {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/design_1.bd}
+startgroup
+set_property HDL_ATTRIBUTE.DEBUG false [get_bd_intf_nets { ps8_0_axi_periph_M00_AXI } ]
+disconnect_bd_intf_net [get_bd_intf_net ps8_0_axi_periph_M00_AXI] [get_bd_intf_pins system_ila_0/SLOT_1_AXI]
+apply_bd_automation -rule xilinx.com:bd_rule:resize [get_bd_cells system_ila_0]
+endgroup
+startgroup
+set_property HDL_ATTRIBUTE.DEBUG false [get_bd_intf_nets { BlackBoxJam_0_m_axi_hostmem } ]
+disconnect_bd_intf_net [get_bd_intf_net BlackBoxJam_0_m_axi_hostmem] [get_bd_intf_pins system_ila_0/SLOT_0_AXI]
+apply_bd_automation -rule xilinx.com:bd_rule:resize [get_bd_cells system_ila_0]
+endgroup
+regenerate_bd_layout
+set_property HDL_ATTRIBUTE.DEBUG true [get_bd_intf_nets {BlackBoxJam_0_m_axi_hostmem}]
+true
+startgroup
+apply_bd_automation -rule xilinx.com:bd_rule:debug -dict [list \
+                                                          [get_bd_intf_nets BlackBoxJam_0_m_axi_hostmem] {AXI_R_ADDRESS "Data and Trigger" AXI_R_DATA "Data and Trigger" AXI_W_ADDRESS "Data and Trigger" AXI_W_DATA "Data and Trigger" AXI_W_RESPONSE "Data and Trigger" CLK_SRC "/zynq_ultra_ps_e_0/pl_clk0" SYSTEM_ILA "Auto" APC_EN "0" } \
+                                                         ]
+Debug Automation : Instantiating new System ILA block '/system_ila_0' with mode INTERFACE, 1 slot interface pins and 0 probe pins. Also setting parameters on this block, corresponding to newly enabled interface pins and probe pins as specified via Debug Automation.
+Debug Automation : Connecting source clock pin /zynq_ultra_ps_e_0/pl_clk0 to the following sink clock pins :
+/system_ila_0/clk
+Debug Automation : Connecting source reset pin /rst_ps8_0_100M/peripheral_aresetn to the following sink reset pins :
+/system_ila_0/resetn
+Debug Automation : Connecting interface connection /BlackBoxJam_0_m_axi_hostmem, to System ILA slot interface pin /system_ila_0/SLOT_0_AXI for debug.
+endgroup
+regenerate_bd_layout
+save_bd_design
+Wrote  : </home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/design_1.bd> 
+Wrote  : </home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ui/bd_1f5defd0.ui> 
+reset_run synth_1
+launch_runs synth_1 -jobs 12
+WARNING: [BD 41-1781] Updates have been made to one or more nets/interface connections marked for debug.
+Debug nets, which are already connected to System ILA IP core in the block-design, will be automatically available for debug in Hardware Manager.
+For unconnected Debug nets, please open synthesized design and use 'Set Up Debug' wizard to insert, modify or delete Debug Cores. Failure to do so could result in critical warnings and errors in the implementation flow.
+WARNING: [BD 41-1629] Slave segment </zynq_ultra_ps_e_0/SAXIGP2/HP0_QSPI> is excluded from all addressing paths.
+WARNING: [BD 41-1629] Slave segment </zynq_ultra_ps_e_0/SAXIGP2/HP0_LPS_OCM> is excluded from all addressing paths.
+WARNING: [BD 41-237] Bus Interface property AWUSER_WIDTH does not match between /ps8_0_axi_periph/s00_couplers/auto_ds/S_AXI(0) and /zynq_ultra_ps_e_0/M_AXI_HPM0_FPD(16)
+WARNING: [BD 41-237] Bus Interface property ARUSER_WIDTH does not match between /ps8_0_axi_periph/s00_couplers/auto_ds/S_AXI(0) and /zynq_ultra_ps_e_0/M_AXI_HPM0_FPD(16)
+WARNING: [BD 41-237] Bus Interface property AWUSER_WIDTH does not match between /ps8_0_axi_periph/s01_couplers/auto_ds/S_AXI(0) and /zynq_ultra_ps_e_0/M_AXI_HPM1_FPD(16)
+WARNING: [BD 41-237] Bus Interface property ARUSER_WIDTH does not match between /ps8_0_axi_periph/s01_couplers/auto_ds/S_AXI(0) and /zynq_ultra_ps_e_0/M_AXI_HPM1_FPD(16)
+WARNING: [BD 41-237] Bus Interface property AWUSER_WIDTH does not match between /zynq_ultra_ps_e_0/S_AXI_HP0_FPD(1) and /axi_smc/M00_AXI(0)
+WARNING: [BD 41-237] Bus Interface property ARUSER_WIDTH does not match between /zynq_ultra_ps_e_0/S_AXI_HP0_FPD(1) and /axi_smc/M00_AXI(0)
+WARNING: [BD 41-927] Following properties on pin /BlackBoxJam_0/ap_clk have been updated from connected ip. They may not be synchronized with cell properties. You can set property on pin directly to confirm the value and resolve the warning.
+	CLK_DOMAIN=design_1_zynq_ultra_ps_e_0_0_pl_clk0 
+Wrote  : </home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/design_1.bd> 
+WARNING: [BD 41-235] Width mismatch when connecting pin: '/axi_smc/S00_AXI_arlock'(1) to net 'BlackBoxJam_0_m_axi_hostmem_ARLOCK'(2) - Only lower order bits will be connected.
+WARNING: [BD 41-235] Width mismatch when connecting pin: '/system_ila_0/SLOT_0_AXI_arlock'(1) to net 'BlackBoxJam_0_m_axi_hostmem_ARLOCK'(2) - Only lower order bits will be connected.
+WARNING: [BD 41-235] Width mismatch when connecting pin: '/axi_smc/S00_AXI_awlock'(1) to net 'BlackBoxJam_0_m_axi_hostmem_AWLOCK'(2) - Only lower order bits will be connected.
+WARNING: [BD 41-235] Width mismatch when connecting pin: '/system_ila_0/SLOT_0_AXI_awlock'(1) to net 'BlackBoxJam_0_m_axi_hostmem_AWLOCK'(2) - Only lower order bits will be connected.
+VHDL Output written to : /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/synth/design_1.v
+WARNING: [BD 41-235] Width mismatch when connecting pin: '/axi_smc/S00_AXI_arlock'(1) to net 'BlackBoxJam_0_m_axi_hostmem_ARLOCK'(2) - Only lower order bits will be connected.
+WARNING: [BD 41-235] Width mismatch when connecting pin: '/system_ila_0/SLOT_0_AXI_arlock'(1) to net 'BlackBoxJam_0_m_axi_hostmem_ARLOCK'(2) - Only lower order bits will be connected.
+WARNING: [BD 41-235] Width mismatch when connecting pin: '/axi_smc/S00_AXI_awlock'(1) to net 'BlackBoxJam_0_m_axi_hostmem_AWLOCK'(2) - Only lower order bits will be connected.
+WARNING: [BD 41-235] Width mismatch when connecting pin: '/system_ila_0/SLOT_0_AXI_awlock'(1) to net 'BlackBoxJam_0_m_axi_hostmem_AWLOCK'(2) - Only lower order bits will be connected.
+VHDL Output written to : /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/sim/design_1.v
+VHDL Output written to : /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/hdl/design_1_wrapper.v
+INFO: [BD 41-1029] Generation completed for the IP Integrator block zynq_ultra_ps_e_0 .
+INFO: [BD 41-1029] Generation completed for the IP Integrator block BlackBoxJam_0 .
+INFO: [BD 41-1029] Generation completed for the IP Integrator block ps8_0_axi_periph/xbar .
+INFO: [BD 41-1029] Generation completed for the IP Integrator block rst_ps8_0_100M .
+Exporting to file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_axi_smc_0/bd_0/hw_handoff/design_1_axi_smc_0.hwh
+Generated Block Design Tcl file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_axi_smc_0/bd_0/hw_handoff/design_1_axi_smc_0_bd.tcl
+Generated Hardware Definition File /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_axi_smc_0/bd_0/synth/design_1_axi_smc_0.hwdef
+INFO: [BD 41-1029] Generation completed for the IP Integrator block axi_smc .
+Exporting to file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_system_ila_0_1/bd_0/hw_handoff/design_1_system_ila_0_1.hwh
+Generated Block Design Tcl file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_system_ila_0_1/bd_0/hw_handoff/design_1_system_ila_0_1_bd.tcl
+Generated Hardware Definition File /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_system_ila_0_1/bd_0/synth/design_1_system_ila_0_1.hwdef
+INFO: [BD 41-1029] Generation completed for the IP Integrator block system_ila_0 .
+WARNING: [IP_Flow 19-4994] Overwriting existing constraint file '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_auto_ds_0/design_1_auto_ds_0_ooc.xdc'
+INFO: [BD 41-1029] Generation completed for the IP Integrator block ps8_0_axi_periph/s00_couplers/auto_ds .
+WARNING: [IP_Flow 19-4994] Overwriting existing constraint file '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_auto_pc_0/design_1_auto_pc_0_ooc.xdc'
+INFO: [BD 41-1029] Generation completed for the IP Integrator block ps8_0_axi_periph/s00_couplers/auto_pc .
+WARNING: [IP_Flow 19-4994] Overwriting existing constraint file '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_auto_ds_1/design_1_auto_ds_1_ooc.xdc'
+INFO: [BD 41-1029] Generation completed for the IP Integrator block ps8_0_axi_periph/s01_couplers/auto_ds .
+WARNING: [IP_Flow 19-4994] Overwriting existing constraint file '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_auto_pc_1/design_1_auto_pc_1_ooc.xdc'
+INFO: [BD 41-1029] Generation completed for the IP Integrator block ps8_0_axi_periph/s01_couplers/auto_pc .
+Exporting to file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/hw_handoff/design_1.hwh
+Generated Block Design Tcl file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/hw_handoff/design_1_bd.tcl
+Generated Hardware Definition File /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/synth/design_1.hwdef
+INFO: [IP_Flow 19-4993] Using cached IP synthesis design for IP design_1_auto_ds_0, cache-ID = 30ff942aacf18660; cache size = 1428.850 MB.
+INFO: [IP_Flow 19-4993] Using cached IP synthesis design for IP design_1_auto_ds_1, cache-ID = 30ff942aacf18660; cache size = 1428.850 MB.
+INFO: [IP_Flow 19-4993] Using cached IP synthesis design for IP design_1_auto_pc_0, cache-ID = dbc4c1421a76552b; cache size = 1428.850 MB.
+INFO: [IP_Flow 19-4993] Using cached IP synthesis design for IP design_1_auto_pc_1, cache-ID = dbc4c1421a76552b; cache size = 1428.850 MB.
+[Sun Nov 17 15:08:57 2019] Launched design_1_system_ila_0_1_synth_1...
+Run output will be captured here: /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/design_1_system_ila_0_1_synth_1/runme.log
+[Sun Nov 17 15:08:57 2019] Launched synth_1...
+Run output will be captured here: /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/synth_1/runme.log
+launch_runs: Time (s): cpu = 00:00:24 ; elapsed = 00:00:22 . Memory (MB): peak = 12421.820 ; gain = 119.523 ; free physical = 3905 ; free virtual = 8604
+open_run synth_1 -name synth_1
+Design is defaulting to impl run constrset: constrs_1
+Design is defaulting to synth run part: xczu7ev-ffvc1156-2-e
+INFO: [Project 1-454] Reading design checkpoint '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_BlackBoxJam_0_0/design_1_BlackBoxJam_0_0.dcp' for cell 'design_1_i/BlackBoxJam_0'
+INFO: [Project 1-454] Reading design checkpoint '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_axi_smc_0/design_1_axi_smc_0.dcp' for cell 'design_1_i/axi_smc'
+INFO: [Project 1-454] Reading design checkpoint '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_rst_ps8_0_100M_0/design_1_rst_ps8_0_100M_0.dcp' for cell 'design_1_i/rst_ps8_0_100M'
+INFO: [Project 1-454] Reading design checkpoint '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_system_ila_0_1/design_1_system_ila_0_1.dcp' for cell 'design_1_i/system_ila_0'
+INFO: [Project 1-454] Reading design checkpoint '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_zynq_ultra_ps_e_0_0/design_1_zynq_ultra_ps_e_0_0.dcp' for cell 'design_1_i/zynq_ultra_ps_e_0'
+INFO: [Project 1-454] Reading design checkpoint '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_xbar_0/design_1_xbar_0.dcp' for cell 'design_1_i/ps8_0_axi_periph/xbar'
+INFO: [Project 1-454] Reading design checkpoint '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_auto_ds_0/design_1_auto_ds_0.dcp' for cell 'design_1_i/ps8_0_axi_periph/s00_couplers/auto_ds'
+INFO: [Project 1-454] Reading design checkpoint '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_auto_pc_0/design_1_auto_pc_0.dcp' for cell 'design_1_i/ps8_0_axi_periph/s00_couplers/auto_pc'
+INFO: [Project 1-454] Reading design checkpoint '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_auto_ds_1/design_1_auto_ds_1.dcp' for cell 'design_1_i/ps8_0_axi_periph/s01_couplers/auto_ds'
+INFO: [Project 1-454] Reading design checkpoint '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_auto_pc_1/design_1_auto_pc_1.dcp' for cell 'design_1_i/ps8_0_axi_periph/s01_couplers/auto_pc'
+INFO: [Netlist 29-17] Analyzing 10765 Unisim elements for replacement
+INFO: [Netlist 29-28] Unisim Transformation completed in 1 CPU seconds
+INFO: [Project 1-479] Netlist was created with Vivado 2019.1.1
+INFO: [Project 1-570] Preparing netlist for logic optimization
+INFO: [Chipscope 16-324] Core: design_1_i/system_ila_0/inst/ila_lib UUID: cd4c83c8-23a6-596d-99ad-09be1335c6b0 
+Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_zynq_ultra_ps_e_0_0/design_1_zynq_ultra_ps_e_0_0.xdc] for cell 'design_1_i/zynq_ultra_ps_e_0/inst'
+Finished Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_zynq_ultra_ps_e_0_0/design_1_zynq_ultra_ps_e_0_0.xdc] for cell 'design_1_i/zynq_ultra_ps_e_0/inst'
+Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_rst_ps8_0_100M_0/design_1_rst_ps8_0_100M_0_board.xdc] for cell 'design_1_i/rst_ps8_0_100M/U0'
+Finished Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_rst_ps8_0_100M_0/design_1_rst_ps8_0_100M_0_board.xdc] for cell 'design_1_i/rst_ps8_0_100M/U0'
+Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_rst_ps8_0_100M_0/design_1_rst_ps8_0_100M_0.xdc] for cell 'design_1_i/rst_ps8_0_100M/U0'
+Finished Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_rst_ps8_0_100M_0/design_1_rst_ps8_0_100M_0.xdc] for cell 'design_1_i/rst_ps8_0_100M/U0'
+Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_axi_smc_0/bd_0/ip/ip_1/bd_afc3_psr_aclk_0_board.xdc] for cell 'design_1_i/axi_smc/inst/clk_map/psr_aclk/U0'
+Finished Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_axi_smc_0/bd_0/ip/ip_1/bd_afc3_psr_aclk_0_board.xdc] for cell 'design_1_i/axi_smc/inst/clk_map/psr_aclk/U0'
+Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_axi_smc_0/bd_0/ip/ip_1/bd_afc3_psr_aclk_0.xdc] for cell 'design_1_i/axi_smc/inst/clk_map/psr_aclk/U0'
+Finished Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_axi_smc_0/bd_0/ip/ip_1/bd_afc3_psr_aclk_0.xdc] for cell 'design_1_i/axi_smc/inst/clk_map/psr_aclk/U0'
+Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_system_ila_0_1/bd_0/ip/ip_0/ila_v6_2/constraints/ila_impl.xdc] for cell 'design_1_i/system_ila_0/inst/ila_lib/inst'
+Finished Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_system_ila_0_1/bd_0/ip/ip_0/ila_v6_2/constraints/ila_impl.xdc] for cell 'design_1_i/system_ila_0/inst/ila_lib/inst'
+Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_system_ila_0_1/bd_0/ip/ip_0/ila_v6_2/constraints/ila.xdc] for cell 'design_1_i/system_ila_0/inst/ila_lib/inst'
+Finished Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_system_ila_0_1/bd_0/ip/ip_0/ila_v6_2/constraints/ila.xdc] for cell 'design_1_i/system_ila_0/inst/ila_lib/inst'
+Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/constrs_1/new/design_1_consts.xdc]
+Finished Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/constrs_1/new/design_1_consts.xdc]
+Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_auto_ds_0/design_1_auto_ds_0_clocks.xdc] for cell 'design_1_i/ps8_0_axi_periph/s00_couplers/auto_ds/inst'
+Finished Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_auto_ds_0/design_1_auto_ds_0_clocks.xdc] for cell 'design_1_i/ps8_0_axi_periph/s00_couplers/auto_ds/inst'
+Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_auto_ds_1/design_1_auto_ds_1_clocks.xdc] for cell 'design_1_i/ps8_0_axi_periph/s01_couplers/auto_ds/inst'
+Finished Parsing XDC File [/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.srcs/sources_1/bd/design_1/ip/design_1_auto_ds_1/design_1_auto_ds_1_clocks.xdc] for cell 'design_1_i/ps8_0_axi_periph/s01_couplers/auto_ds/inst'
+Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl] for cell 'design_1_i/ps8_0_axi_periph/s00_couplers/auto_ds/inst/gen_downsizer.gen_simple_downsizer.axi_downsizer_inst/USE_READ.read_addr_inst/cmd_queue/inst/fifo_gen_inst/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst'
+INFO: [Timing 38-35] Done setting XDC timing constraints. [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl:2]
+all_registers: Time (s): cpu = 00:00:15 ; elapsed = 00:00:05 . Memory (MB): peak = 12995.945 ; gain = 368.402 ; free physical = 3862 ; free virtual = 8769
+Finished Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl] for cell 'design_1_i/ps8_0_axi_periph/s00_couplers/auto_ds/inst/gen_downsizer.gen_simple_downsizer.axi_downsizer_inst/USE_READ.read_addr_inst/cmd_queue/inst/fifo_gen_inst/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst'
+Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl] for cell 'design_1_i/ps8_0_axi_periph/s00_couplers/auto_ds/inst/gen_downsizer.gen_simple_downsizer.axi_downsizer_inst/USE_WRITE.write_addr_inst/USE_B_CHANNEL.cmd_b_queue/inst/fifo_gen_inst/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst'
+Finished Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl] for cell 'design_1_i/ps8_0_axi_periph/s00_couplers/auto_ds/inst/gen_downsizer.gen_simple_downsizer.axi_downsizer_inst/USE_WRITE.write_addr_inst/USE_B_CHANNEL.cmd_b_queue/inst/fifo_gen_inst/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst'
+Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl] for cell 'design_1_i/ps8_0_axi_periph/s00_couplers/auto_ds/inst/gen_downsizer.gen_simple_downsizer.axi_downsizer_inst/USE_WRITE.write_addr_inst/cmd_queue/inst/fifo_gen_inst/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst'
+Finished Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl] for cell 'design_1_i/ps8_0_axi_periph/s00_couplers/auto_ds/inst/gen_downsizer.gen_simple_downsizer.axi_downsizer_inst/USE_WRITE.write_addr_inst/cmd_queue/inst/fifo_gen_inst/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst'
+Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl] for cell 'design_1_i/ps8_0_axi_periph/s01_couplers/auto_ds/inst/gen_downsizer.gen_simple_downsizer.axi_downsizer_inst/USE_READ.read_addr_inst/cmd_queue/inst/fifo_gen_inst/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst'
+Finished Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl] for cell 'design_1_i/ps8_0_axi_periph/s01_couplers/auto_ds/inst/gen_downsizer.gen_simple_downsizer.axi_downsizer_inst/USE_READ.read_addr_inst/cmd_queue/inst/fifo_gen_inst/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst'
+Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl] for cell 'design_1_i/ps8_0_axi_periph/s01_couplers/auto_ds/inst/gen_downsizer.gen_simple_downsizer.axi_downsizer_inst/USE_WRITE.write_addr_inst/USE_B_CHANNEL.cmd_b_queue/inst/fifo_gen_inst/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst'
+Finished Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl] for cell 'design_1_i/ps8_0_axi_periph/s01_couplers/auto_ds/inst/gen_downsizer.gen_simple_downsizer.axi_downsizer_inst/USE_WRITE.write_addr_inst/USE_B_CHANNEL.cmd_b_queue/inst/fifo_gen_inst/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst'
+Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl] for cell 'design_1_i/ps8_0_axi_periph/s01_couplers/auto_ds/inst/gen_downsizer.gen_simple_downsizer.axi_downsizer_inst/USE_WRITE.write_addr_inst/cmd_queue/inst/fifo_gen_inst/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst'
+Finished Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl] for cell 'design_1_i/ps8_0_axi_periph/s01_couplers/auto_ds/inst/gen_downsizer.gen_simple_downsizer.axi_downsizer_inst/USE_WRITE.write_addr_inst/cmd_queue/inst/fifo_gen_inst/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst'
+Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_memory/tcl/xpm_memory_xdc.tcl] for cell 'design_1_i/axi_smc/inst/s00_nodes/s00_ar_node/inst/inst_mi_handler/gen_normal_area.inst_fifo_node_payld/gen_xpm_memory_fifo.inst_fifo/gen_mem_rep[0].inst_xpm_memory'
+Finished Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_memory/tcl/xpm_memory_xdc.tcl] for cell 'design_1_i/axi_smc/inst/s00_nodes/s00_ar_node/inst/inst_mi_handler/gen_normal_area.inst_fifo_node_payld/gen_xpm_memory_fifo.inst_fifo/gen_mem_rep[0].inst_xpm_memory'
+Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_memory/tcl/xpm_memory_xdc.tcl] for cell 'design_1_i/axi_smc/inst/s00_nodes/s00_aw_node/inst/inst_mi_handler/gen_normal_area.inst_fifo_node_payld/gen_xpm_memory_fifo.inst_fifo/gen_mem_rep[0].inst_xpm_memory'
+Finished Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_memory/tcl/xpm_memory_xdc.tcl] for cell 'design_1_i/axi_smc/inst/s00_nodes/s00_aw_node/inst/inst_mi_handler/gen_normal_area.inst_fifo_node_payld/gen_xpm_memory_fifo.inst_fifo/gen_mem_rep[0].inst_xpm_memory'
+Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_memory/tcl/xpm_memory_xdc.tcl] for cell 'design_1_i/axi_smc/inst/s00_nodes/s00_b_node/inst/inst_mi_handler/gen_normal_area.inst_fifo_node_payld/gen_xpm_memory_fifo.inst_fifo/gen_mem_rep[0].inst_xpm_memory'
+Finished Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_memory/tcl/xpm_memory_xdc.tcl] for cell 'design_1_i/axi_smc/inst/s00_nodes/s00_b_node/inst/inst_mi_handler/gen_normal_area.inst_fifo_node_payld/gen_xpm_memory_fifo.inst_fifo/gen_mem_rep[0].inst_xpm_memory'
+Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_memory/tcl/xpm_memory_xdc.tcl] for cell 'design_1_i/axi_smc/inst/s00_nodes/s00_r_node/inst/inst_mi_handler/gen_normal_area.inst_fifo_node_payld/gen_xpm_memory_fifo.inst_fifo/gen_mem_rep[0].inst_xpm_memory'
+Finished Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_memory/tcl/xpm_memory_xdc.tcl] for cell 'design_1_i/axi_smc/inst/s00_nodes/s00_r_node/inst/inst_mi_handler/gen_normal_area.inst_fifo_node_payld/gen_xpm_memory_fifo.inst_fifo/gen_mem_rep[0].inst_xpm_memory'
+Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_memory/tcl/xpm_memory_xdc.tcl] for cell 'design_1_i/axi_smc/inst/s00_nodes/s00_w_node/inst/inst_mi_handler/gen_normal_area.inst_fifo_node_payld/gen_xpm_memory_fifo.inst_fifo/gen_mem_rep[0].inst_xpm_memory'
+Finished Sourcing Tcl File [/home/hwkim/Xilinx/Vivado/2019.1/data/ip/xpm/xpm_memory/tcl/xpm_memory_xdc.tcl] for cell 'design_1_i/axi_smc/inst/s00_nodes/s00_w_node/inst/inst_mi_handler/gen_normal_area.inst_fifo_node_payld/gen_xpm_memory_fifo.inst_fifo/gen_mem_rep[0].inst_xpm_memory'
+INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s).
+Netlist sorting complete. Time (s): cpu = 00:00:00.02 ; elapsed = 00:00:00.02 . Memory (MB): peak = 12995.945 ; gain = 0.000 ; free physical = 4066 ; free virtual = 8973
+INFO: [Project 1-111] Unisim Transformation Summary:
+  A total of 4555 instances were transformed.
+  CFGLUT5 => CFGLUT5 (SRLC32E, SRL16E): 272 instances
+  DSP48E2 => DSP48E2 (DSP_ALU, DSP_A_B_DATA, DSP_C_DATA, DSP_MULTIPLIER, DSP_M_DATA, DSP_OUTPUT, DSP_PREADD_DATA, DSP_PREADD): 22 instances
+  RAM16X1S => RAM32X1S (RAMS32): 3968 instances
+  RAM32M16 => RAM32M16 (RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMS32, RAMS32): 69 instances
+  RAM32X1S => RAM32X1S (RAMS32): 224 instances
+
+open_run: Time (s): cpu = 00:00:52 ; elapsed = 00:00:36 . Memory (MB): peak = 13067.754 ; gain = 629.926 ; free physical = 3796 ; free virtual = 8703
+create_debug_core u_ila_0 ila
+set_property C_DATA_DEPTH 1024 [get_debug_cores u_ila_0]
+set_property C_TRIGIN_EN false [get_debug_cores u_ila_0]
+set_property C_TRIGOUT_EN false [get_debug_cores u_ila_0]
+set_property C_ADV_TRIGGER false [get_debug_cores u_ila_0]
+set_property C_INPUT_PIPE_STAGES 0 [get_debug_cores u_ila_0]
+set_property C_EN_STRG_QUAL false [get_debug_cores u_ila_0]
+set_property ALL_PROBE_SAME_MU true [get_debug_cores u_ila_0]
+set_property ALL_PROBE_SAME_MU_CNT 1 [get_debug_cores u_ila_0]
+connect_debug_port u_ila_0/clk [get_nets [list design_1_i/zynq_ultra_ps_e_0/inst/pl_clk0 ]]
+set_property port_width 16 [get_debug_ports u_ila_0/probe0]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe0]
+connect_debug_port u_ila_0/probe0 [get_nets [list {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_log_V_V_din[0]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_log_V_V_din[1]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_log_V_V_din[2]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_log_V_V_din[3]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_log_V_V_din[4]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_log_V_V_din[5]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_log_V_V_din[6]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_log_V_V_din[7]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_log_V_V_din[8]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_log_V_V_din[9]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_log_V_V_din[10]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_log_V_V_din[11]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_log_V_V_din[12]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_log_V_V_din[13]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_log_V_V_din[14]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_log_V_V_din[15]} ]]
+create_debug_port u_ila_0 probe
+set_property port_width 24 [get_debug_ports u_ila_0/probe1]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe1]
+connect_debug_port u_ila_0/probe1 [get_nets [list {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[0]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[1]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[2]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[3]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[4]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[5]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[6]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[7]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[8]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[9]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[10]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[11]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[12]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[13]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[14]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[15]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[16]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[17]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[18]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[19]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[20]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[21]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[22]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_dout[23]} ]]
+create_debug_port u_ila_0 probe
+set_property port_width 3 [get_debug_ports u_ila_0/probe2]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe2]
+connect_debug_port u_ila_0/probe2 [get_nets [list {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/weights0_m_weights_V_q0[0]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/weights0_m_weights_V_q0[1]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/weights0_m_weights_V_q0[2]} ]]
+create_debug_port u_ila_0 probe
+set_property port_width 6 [get_debug_ports u_ila_0/probe3]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe3]
+connect_debug_port u_ila_0/probe3 [get_nets [list {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/weights0_m_weights_V_address0[0]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/weights0_m_weights_V_address0[1]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/weights0_m_weights_V_address0[2]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/weights0_m_weights_V_address0[3]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/weights0_m_weights_V_address0[4]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/weights0_m_weights_V_address0[5]} ]]
+create_debug_port u_ila_0 probe
+set_property port_width 2 [get_debug_ports u_ila_0/probe4]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe4]
+connect_debug_port u_ila_0/probe4 [get_nets [list {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_13_address0[0]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_13_address0[1]} ]]
+create_debug_port u_ila_0 probe
+set_property port_width 24 [get_debug_ports u_ila_0/probe5]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe5]
+connect_debug_port u_ila_0/probe5 [get_nets [list {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[0]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[1]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[2]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[3]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[4]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[5]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[6]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[7]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[8]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[9]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[10]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[11]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[12]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[13]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[14]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[15]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[16]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[17]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[18]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[19]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[20]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[21]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[22]} {design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_q0[23]} ]]
+create_debug_port u_ila_0 probe
+set_property port_width 1 [get_debug_ports u_ila_0/probe6]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe6]
+connect_debug_port u_ila_0/probe6 [get_nets [list design_1_i/BlackBoxJam_0/inst/ap_done ]]
+create_debug_port u_ila_0 probe
+set_property port_width 1 [get_debug_ports u_ila_0/probe7]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe7]
+connect_debug_port u_ila_0/probe7 [get_nets [list design_1_i/BlackBoxJam_0/inst/ap_idle ]]
+create_debug_port u_ila_0 probe
+set_property port_width 1 [get_debug_ports u_ila_0/probe8]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe8]
+connect_debug_port u_ila_0/probe8 [get_nets [list design_1_i/BlackBoxJam_0/inst/ap_ready ]]
+create_debug_port u_ila_0 probe
+set_property port_width 1 [get_debug_ports u_ila_0/probe9]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe9]
+connect_debug_port u_ila_0/probe9 [get_nets [list design_1_i/BlackBoxJam_0/inst/ap_start ]]
+create_debug_port u_ila_0 probe
+set_property port_width 1 [get_debug_ports u_ila_0/probe10]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe10]
+connect_debug_port u_ila_0/probe10 [get_nets [list design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/in_V_V_read ]]
+create_debug_port u_ila_0 probe
+set_property port_width 1 [get_debug_ports u_ila_0/probe11]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe11]
+connect_debug_port u_ila_0/probe11 [get_nets [list design_1_i/BlackBoxJam_0/inst/interrupt ]]
+create_debug_port u_ila_0 probe
+set_property port_width 1 [get_debug_ports u_ila_0/probe12]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe12]
+connect_debug_port u_ila_0/probe12 [get_nets [list design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/out_V_V_write ]]
+create_debug_port u_ila_0 probe
+set_property port_width 1 [get_debug_ports u_ila_0/probe13]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe13]
+connect_debug_port u_ila_0/probe13 [get_nets [list design_1_i/BlackBoxJam_0/inst/grp_DoCompute_fu_1130/Matrix_Vector_Activa_6_U0/threshs0_m_threshold_ce0 ]]
+save_constraints
+launch_runs impl_1 -to_step write_bitstream -jobs 12
+Netlist sorting complete. Time (s): cpu = 00:00:00.07 ; elapsed = 00:00:00.06 . Memory (MB): peak = 13190.766 ; gain = 0.000 ; free physical = 3855 ; free virtual = 8762
+INFO: [Timing 38-480] Writing timing data to binary archive.
+[Sun Nov 17 15:16:58 2019] Launched impl_1...
+Run output will be captured here: /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/impl_1/runme.log
+launch_runs: Time (s): cpu = 00:00:27 ; elapsed = 00:00:23 . Memory (MB): peak = 13190.766 ; gain = 0.000 ; free physical = 3777 ; free virtual = 8712
+file copy -force /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/impl_1/design_1_wrapper.sysdef /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.sdk/design_1_wrapper.hdf
+
+launch_sdk -workspace /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.sdk -hwspec /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.sdk/design_1_wrapper.hdf
+INFO: [Vivado 12-393] Launching SDK...
+INFO: [Vivado 12-417] Running xsdk -workspace /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.sdk -hwspec /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.sdk/design_1_wrapper.hdf
+INFO: [Vivado 12-3157] SDK launch initiated. Please check console for any further messages.
+open_hw
+connect_hw_server -url 121.155.128.106:3121
+INFO: [Labtools 27-2285] Connecting to hw_server url TCP:121.155.128.106:3121
+current_hw_target [get_hw_targets */xilinx_tcf/Xilinx/88281A]
+set_property PARAM.FREQUENCY 15000000 [get_hw_targets */xilinx_tcf/Xilinx/88281A]
+open_hw_target
+INFO: [Labtoolstcl 44-466] Opening hw_target 121.155.128.106:3121/xilinx_tcf/Xilinx/88281A
+open_hw_target: Time (s): cpu = 00:00:00.40 ; elapsed = 00:00:07 . Memory (MB): peak = 13190.766 ; gain = 0.000 ; free physical = 3650 ; free virtual = 7812
+set_property PROGRAM.FILE {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/impl_1/design_1_wrapper.bit} [get_hw_devices xczu7_0]
+set_property PROBES.FILE {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/impl_1/design_1_wrapper.ltx} [get_hw_devices xczu7_0]
+set_property FULL_PROBES.FILE {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/impl_1/design_1_wrapper.ltx} [get_hw_devices xczu7_0]
+current_hw_device [get_hw_devices xczu7_0]
+refresh_hw_device [lindex [get_hw_devices xczu7_0] 0]
+INFO: [Labtools 27-2302] Device xczu7 (JTAG device index = 0) is programmed with a design that has 2 ILA core(s).
+refresh_hw_device: Time (s): cpu = 00:00:06 ; elapsed = 00:00:06 . Memory (MB): peak = 13190.766 ; gain = 0.000 ; free physical = 3633 ; free virtual = 7796
+display_hw_ila_data [ get_hw_ila_data hw_ila_data_1 -of_objects [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}]]
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_ar_ctrl was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_aw_ctrl was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_b_ctrl was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_r_ctrl was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_w_ctrl was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_arprot was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_arready was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_arvalid was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_awprot was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_awready was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_awvalid was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_bready was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_bresp was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_bvalid was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_rready was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_rresp was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_rvalid was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_wready was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_wvalid was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_ar_cnt was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_araddr was not found in the design.
+WARNING: Simulation object AR_Channel_(i1:s1)_(ps8_0_axi_periph_M00_AXI) was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_aw_cnt was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_awaddr was not found in the design.
+WARNING: Simulation object AW_Channel_(i1:s1)_(ps8_0_axi_periph_M00_AXI) was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_b_cnt was not found in the design.
+WARNING: Simulation object B_Channel_(i1:s1)_(ps8_0_axi_periph_M00_AXI) was not found in the design.
+WARNING: Simulation object Interface_(i1:s1)_(ps8_0_axi_periph_M00_AXI) was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_r_cnt was not found in the design.
+WARNING: Simulation object R_Channel_(i1:s1)_(ps8_0_axi_periph_M00_AXI) was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_rdata was not found in the design.
+WARNING: Simulation object W_Channel_(i1:s1)_(ps8_0_axi_periph_M00_AXI) was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_wdata was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_wstrb was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_arvalid was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_arready was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_araddr was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_arprot was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_ar_cnt was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_rvalid was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_rready was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_rdata was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_rresp was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_r_cnt was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_awvalid was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_awready was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_awaddr was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_awprot was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_aw_cnt was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_wvalid was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_wready was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_wdata was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_wstrb was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_bvalid was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_bready was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_bresp was not found in the design.
+WARNING: Simulation object design_1_i/system_ila_0/inst/net_slot_1_axi_b_cnt was not found in the design.
+Processed interface BlackBoxJam_0_m_axi_hostmem_ila1_slot0
+display_hw_ila_data [ get_hw_ila_data hw_ila_data_2 -of_objects [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}]]
+current_hw_device [get_hw_devices arm_dap_1]
+refresh_hw_device -update_hw_probes false [lindex [get_hw_devices arm_dap_1] 0]
+current_hw_device [get_hw_devices xczu7_0]
+set_property TRIGGER_COMPARE_VALUE eq1'bX [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_wvalid -of_objects [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}]]
+set_property TRIGGER_COMPARE_VALUE eq1'bX [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_awvalid -of_objects [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}]]
+add_wave -into {hw_ila_data_1.wcfg} -radix hex { {AW_Channel_(i1:s0)_(BlackBoxJam_0_m_axi_hostmem)} {AR_Channel_(i1:s0)_(BlackBoxJam_0_m_axi_hostmem)} {B_Channel_(i1:s0)_(BlackBoxJam_0_m_axi_hostmem)} {R_Channel_(i1:s0)_(BlackBoxJam_0_m_axi_hostmem)} {W_Channel_(i1:s0)_(BlackBoxJam_0_m_axi_hostmem)} }
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : AW Channel  Events} [get_hw_probes AW_Channel_(i1:s0)_(BlackBoxJam_0_m_axi_hostmem)] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : AR Channel  Events} [get_hw_probes AR_Channel_(i1:s0)_(BlackBoxJam_0_m_axi_hostmem)] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : B Channel  Events} [get_hw_probes B_Channel_(i1:s0)_(BlackBoxJam_0_m_axi_hostmem)] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : R Channel  Events} [get_hw_probes R_Channel_(i1:s0)_(BlackBoxJam_0_m_axi_hostmem)] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : W Channel  Events} [get_hw_probes W_Channel_(i1:s0)_(BlackBoxJam_0_m_axi_hostmem)] 
+add_wave -into {hw_ila_data_1.wcfg} -radix hex { {design_1_i/system_ila_0/inst/net_slot_0_axi_ar_ctrl} {design_1_i/system_ila_0/inst/net_slot_0_axi_aw_ctrl} {design_1_i/system_ila_0/inst/net_slot_0_axi_b_ctrl} {design_1_i/system_ila_0/inst/net_slot_0_axi_r_ctrl} {design_1_i/system_ila_0/inst/net_slot_0_axi_w_ctrl} {design_1_i/system_ila_0/inst/net_slot_0_axi_ar_cnt} {design_1_i/system_ila_0/inst/net_slot_0_axi_araddr} {design_1_i/system_ila_0/inst/net_slot_0_axi_arcache} {AR_Channel_(i1:s0)_(BlackBoxJam_0_m_axi_hostmem)} {design_1_i/system_ila_0/inst/net_slot_0_axi_arlen} {design_1_i/system_ila_0/inst/net_slot_0_axi_arlock} {design_1_i/system_ila_0/inst/net_slot_0_axi_arqos} {design_1_i/system_ila_0/inst/net_slot_0_axi_arregion} {design_1_i/system_ila_0/inst/net_slot_0_axi_arsize} {design_1_i/system_ila_0/inst/net_slot_0_axi_aw_cnt} {design_1_i/system_ila_0/inst/net_slot_0_axi_awaddr} {design_1_i/system_ila_0/inst/net_slot_0_axi_awcache} {AW_Channel_(i1:s0)_(BlackBoxJam_0_m_axi_hostmem)} {design_1_i/system_ila_0/inst/net_slot_0_axi_awlen} {design_1_i/system_ila_0/inst/net_slot_0_axi_awlock} {design_1_i/system_ila_0/inst/net_slot_0_axi_awqos} {design_1_i/system_ila_0/inst/net_slot_0_axi_awregion} {design_1_i/system_ila_0/inst/net_slot_0_axi_awsize} {design_1_i/system_ila_0/inst/net_slot_0_axi_b_cnt} {B_Channel_(i1:s0)_(BlackBoxJam_0_m_axi_hostmem)} {Interface_(i1:s0)_(BlackBoxJam_0_m_axi_hostmem)} {design_1_i/system_ila_0/inst/net_slot_0_axi_r_cnt} {R_Channel_(i1:s0)_(BlackBoxJam_0_m_axi_hostmem)} {design_1_i/system_ila_0/inst/net_slot_0_axi_rdata} {design_1_i/system_ila_0/inst/net_slot_0_axi_rlast} {W_Channel_(i1:s0)_(BlackBoxJam_0_m_axi_hostmem)} {design_1_i/system_ila_0/inst/net_slot_0_axi_wdata} {design_1_i/system_ila_0/inst/net_slot_0_axi_wlast} {design_1_i/system_ila_0/inst/net_slot_0_axi_wstrb} {design_1_i/system_ila_0/inst/net_slot_0_axi_arprot} {design_1_i/system_ila_0/inst/net_slot_0_axi_arready} {design_1_i/system_ila_0/inst/net_slot_0_axi_arvalid} {design_1_i/system_ila_0/inst/net_slot_0_axi_awprot} {design_1_i/system_ila_0/inst/net_slot_0_axi_awready} {design_1_i/system_ila_0/inst/net_slot_0_axi_awvalid} {design_1_i/system_ila_0/inst/net_slot_0_axi_bready} {design_1_i/system_ila_0/inst/net_slot_0_axi_bresp} {design_1_i/system_ila_0/inst/net_slot_0_axi_bvalid} {design_1_i/system_ila_0/inst/net_slot_0_axi_rready} {design_1_i/system_ila_0/inst/net_slot_0_axi_rresp} {design_1_i/system_ila_0/inst/net_slot_0_axi_rvalid} {design_1_i/system_ila_0/inst/net_slot_0_axi_wready} {design_1_i/system_ila_0/inst/net_slot_0_axi_wvalid} }
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : AR_CNT} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_ar_cnt] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : ARADDR} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_araddr] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : ARCACHE} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_arcache] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : AR Channel  Events} [get_hw_probes AR_Channel_(i1:s0)_(BlackBoxJam_0_m_axi_hostmem)] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : ARLEN} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_arlen] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : ARLOCK} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_arlock] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : ARQOS} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_arqos] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : ARREGION} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_arregion] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : ARSIZE} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_arsize] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : AW_CNT} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_aw_cnt] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : AWADDR} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_awaddr] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : AWCACHE} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_awcache] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : AW Channel  Events} [get_hw_probes AW_Channel_(i1:s0)_(BlackBoxJam_0_m_axi_hostmem)] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : AWLEN} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_awlen] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : AWLOCK} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_awlock] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : AWQOS} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_awqos] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : AWREGION} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_awregion] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : AWSIZE} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_awsize] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : B_CNT} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_b_cnt] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : B Channel  Events} [get_hw_probes B_Channel_(i1:s0)_(BlackBoxJam_0_m_axi_hostmem)] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : Interface  Events} [get_hw_probes Interface_(i1:s0)_(BlackBoxJam_0_m_axi_hostmem)] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : R_CNT} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_r_cnt] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : R Channel  Events} [get_hw_probes R_Channel_(i1:s0)_(BlackBoxJam_0_m_axi_hostmem)] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : RDATA} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_rdata] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : RLAST} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_rlast] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : W Channel  Events} [get_hw_probes W_Channel_(i1:s0)_(BlackBoxJam_0_m_axi_hostmem)] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : WDATA} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_wdata] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : WLAST} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_wlast] 
+set_property NAME.CUSTOM {slot_0 : BlackBoxJam_0_m_axi_hostmem : WSTRB} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_wstrb] 
+set_property NAME.CUSTOM {slot_0 : ps8_0_axi_periph_M00_AXI : ARPROT} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_arprot] 
+set_property NAME.CUSTOM {slot_0 : ps8_0_axi_periph_M00_AXI : ARREADY} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_arready] 
+set_property NAME.CUSTOM {slot_0 : ps8_0_axi_periph_M00_AXI : ARVALID} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_arvalid] 
+set_property NAME.CUSTOM {slot_0 : ps8_0_axi_periph_M00_AXI : AWPROT} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_awprot] 
+set_property NAME.CUSTOM {slot_0 : ps8_0_axi_periph_M00_AXI : AWREADY} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_awready] 
+set_property NAME.CUSTOM {slot_0 : ps8_0_axi_periph_M00_AXI : AWVALID} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_awvalid] 
+set_property NAME.CUSTOM {slot_0 : ps8_0_axi_periph_M00_AXI : BREADY} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_bready] 
+set_property NAME.CUSTOM {slot_0 : ps8_0_axi_periph_M00_AXI : BRESP} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_bresp] 
+set_property NAME.CUSTOM {slot_0 : ps8_0_axi_periph_M00_AXI : BVALID} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_bvalid] 
+set_property NAME.CUSTOM {slot_0 : ps8_0_axi_periph_M00_AXI : RREADY} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_rready] 
+set_property NAME.CUSTOM {slot_0 : ps8_0_axi_periph_M00_AXI : RRESP} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_rresp] 
+set_property NAME.CUSTOM {slot_0 : ps8_0_axi_periph_M00_AXI : RVALID} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_rvalid] 
+set_property NAME.CUSTOM {slot_0 : ps8_0_axi_periph_M00_AXI : WREADY} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_wready] 
+set_property NAME.CUSTOM {slot_0 : ps8_0_axi_periph_M00_AXI : WVALID} [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_wvalid] 
+set_property TRIGGER_COMPARE_VALUE eq1'bR [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_awvalid -of_objects [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}]]
+set_property TRIGGER_COMPARE_VALUE eq1'bR [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_wvalid -of_objects [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}]]
+run_hw_ila [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}]
+INFO: [Labtools 27-1964] The ILA core 'hw_ila_1' trigger was armed at 2019-Nov-17 15:52:30
+wait_on_hw_ila [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}]
+display_hw_ila_data [upload_hw_ila_data [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}]]
+INFO: [Labtools 27-1966] The ILA core 'hw_ila_1' triggered at 2019-Nov-17 15:52:37
+Processing Interface BlackBoxJam_0_m_axi_hostmem_ila1_slot0
+INFO: [Labtools 27-3304] ILA Waveform data saved to file /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.hw/backup/hw_ila_data_1.ila. Use Tcl command 'read_hw_ila_data' or Vivado File->Import->Import ILA Data menu item to import the previously saved data.
+set_property TRIGGER_COMPARE_VALUE eq1'bX [get_hw_probes design_1_i/system_ila_0/inst/net_slot_0_axi_awvalid -of_objects [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}]]
+save_wave_config {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.hw/hw_1/wave/hw_ila_data_1/hw_ila_data_1.wcfg}
+save_wave_config {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.hw/hw_1/wave/hw_ila_data_2/hw_ila_data_2.wcfg}
+close_hw
+open_hw
+connect_hw_server -url 121.155.128.106:3121
+INFO: [Labtools 27-2285] Connecting to hw_server url TCP:121.155.128.106:3121
+current_hw_target [get_hw_targets */xilinx_tcf/Xilinx/88281A]
+set_property PARAM.FREQUENCY 15000000 [get_hw_targets */xilinx_tcf/Xilinx/88281A]
+open_hw_target
+INFO: [Labtoolstcl 44-466] Opening hw_target 121.155.128.106:3121/xilinx_tcf/Xilinx/88281A
+set_property PROGRAM.FILE {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/impl_1/design_1_wrapper.bit} [get_hw_devices xczu7_0]
+set_property PROBES.FILE {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/impl_1/design_1_wrapper.ltx} [get_hw_devices xczu7_0]
+set_property FULL_PROBES.FILE {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.runs/impl_1/design_1_wrapper.ltx} [get_hw_devices xczu7_0]
+current_hw_device [get_hw_devices xczu7_0]
+refresh_hw_device [lindex [get_hw_devices xczu7_0] 0]
+INFO: [Labtools 27-2302] Device xczu7 (JTAG device index = 0) is programmed with a design that has 2 ILA core(s).
+refresh_hw_device: Time (s): cpu = 00:00:05 ; elapsed = 00:00:05 . Memory (MB): peak = 13243.043 ; gain = 0.000 ; free physical = 3683 ; free virtual = 7857
+display_hw_ila_data [ get_hw_ila_data hw_ila_data_1 -of_objects [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}]]
+Processed interface BlackBoxJam_0_m_axi_hostmem_ila1_slot0
+display_hw_ila_data [ get_hw_ila_data hw_ila_data_2 -of_objects [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"u_ila_0"}]]
+current_hw_device [get_hw_devices arm_dap_1]
+refresh_hw_device -update_hw_probes false [lindex [get_hw_devices arm_dap_1] 0]
+current_hw_device [get_hw_devices xczu7_0]
+run_hw_ila [get_hw_ilas -of_objects [get_hw_devices xczu7_0] -filter {CELL_NAME=~"design_1_i/system_ila_0/inst/ila_lib"}]
+INFO: [Labtools 27-1964] The ILA core 'hw_ila_1' trigger was armed at 2019-Nov-17 15:58:08
+save_wave_config {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.hw/hw_1/wave/hw_ila_data_1/hw_ila_data_1.wcfg}
+save_wave_config {/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.hw/hw_1/wave/hw_ila_data_2/hw_ila_data_2.wcfg}
+exit
+INFO: [Common 17-206] Exiting Vivado at Sun Nov 17 16:13:12 2019...

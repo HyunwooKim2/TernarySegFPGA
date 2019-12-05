@@ -143,6 +143,9 @@ void Mem2Stream_Batch(ap_uint<DataWidth> * in, hls::stream<ap_uint<DataWidth> > 
 }
 template<unsigned int DataWidth, unsigned int numBytes>
 void Stream2Mem_Batch(hls::stream<ap_uint<DataWidth> > & in, ap_uint<DataWidth> * out, const unsigned int numReps) {
+#ifdef FPGA_DEBUG
+#pragma HLS INLINE
+#endif
   // hwkim modified for indsPerRep with remainder
 	//const unsigned int indsPerRep = numBytes / (DataWidth / 8);
 	const unsigned int indsPerRep = paddedSizeHW(numBytes, (DataWidth / 8)) / (DataWidth / 8);

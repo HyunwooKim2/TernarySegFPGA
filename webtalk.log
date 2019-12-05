@@ -1,0 +1,14 @@
+#-----------------------------------------------------------
+# Webtalk v2019.1.1 (64-bit)
+# SW Build 2580384 on Sat Jun 29 08:04:45 MDT 2019
+# IP Build 2579722 on Sat Jun 29 11:35:40 MDT 2019
+# Start of session at: Thu Nov 28 16:43:14 2019
+# Process ID: 11062
+# Current directory: /home/hwkim/work/pynq-bnn/BNN-PYNQ
+# Command line: wbtcv -mode batch -source /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.tmp/BlackBoxJam_v1_0_project/BlackBoxJam_v1_0_project.hw/webtalk/labtool_webtalk.tcl -notrace
+# Log file: /home/hwkim/work/pynq-bnn/BNN-PYNQ/webtalk.log
+# Journal file: /home/hwkim/work/pynq-bnn/BNN-PYNQ/webtalk.jou
+#-----------------------------------------------------------
+source /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.tmp/BlackBoxJam_v1_0_project/BlackBoxJam_v1_0_project.hw/webtalk/labtool_webtalk.tcl -notrace
+INFO: [Common 17-186] '/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.tmp/BlackBoxJam_v1_0_project/BlackBoxJam_v1_0_project.hw/webtalk/usage_statistics_ext_labtool.xml' has been successfully sent to Xilinx on Thu Nov 28 16:43:17 2019. For additional details about this file, please refer to the WebTalk help file at /home/hwkim/Xilinx/Vivado/2019.1/doc/webtalk_introduction.html.
+INFO: [Common 17-206] Exiting Webtalk at Thu Nov 28 16:43:17 2019...

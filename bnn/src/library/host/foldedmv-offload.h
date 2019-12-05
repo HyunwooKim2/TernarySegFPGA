@@ -218,7 +218,7 @@ void quantiseAndPack(const tiny_cnn::vec_t & in, ExtMemWord * out, unsigned int 
 				}
 //				if((x!=0) && (y!=0) && (x!=33) && (y!=33))	//for \n
 //					golden_file.read(&golden_buf,1);
-				quantise_bin_file << *reinterpret_cast<unsigned char *>(&uValue);
+//				quantise_bin_file << *reinterpret_cast<unsigned char *>(&uValue);
 				quantise_log_file << " | ";
 				quantise_realnum_log_file << fxdValue << " | ";
 			}

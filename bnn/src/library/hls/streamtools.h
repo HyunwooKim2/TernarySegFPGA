@@ -48,6 +48,11 @@
 #ifndef STREAMTOOLS_H
 #define STREAMTOOLS_H
 
+#ifdef FPGA_DEBUG
+template<unsigned int DataWidth, unsigned int numBytes>
+void Stream2Mem_Batch(hls::stream<ap_uint<DataWidth> > & in, ap_uint<DataWidth> * out, const unsigned int numReps);
+#endif
+
 // only let the first X elements of a stream to pass through, the remainder
 // are consumed from input but not re-emitted from the output
 // useful for getting rid of e.g. padding words
@@ -94,6 +99,9 @@ template<unsigned int InWidth,		// width of input stream
 >
 void StreamingDataWidthConverter_Batch(hls::stream<ap_uint<InWidth> > & in,
 		hls::stream<ap_uint<OutWidth> > & out, const unsigned int numReps) {
+#ifdef FPGA_DEBUG
+#pragma HLS INLINE
+#endif
   if (InWidth > OutWidth) {
     // emit multiple output words per input word read
     CASSERT_DATAFLOW(InWidth % OutWidth == 0);
@@ -303,18 +311,24 @@ template<unsigned W, unsigned N>
 
 #ifdef FPGA_DEBUG
 
-template<unsigned IW, unsigned OW, unsigned N>
+template<unsigned IW, unsigned OW, unsigned N, unsigned N_LOG>
 class WidthAdjustedLogStream {
   hls::stream<ap_uint<IW>>  m_buffer;
   hls::stream<ap_uint<OW>> &m_target;
   unsigned const  m_reps;
   unsigned char log_en;
+  ap_uint<64> * out;
+  hls::stream<ap_uint<64>>  out_buffer;
 
  public:
-  WidthAdjustedLogStream(hls::stream<ap_uint<OW> >&  target, unsigned const  reps, unsigned char log_en) :
-	  m_target(target), m_reps(reps), log_en(log_en) {}
+  WidthAdjustedLogStream(hls::stream<ap_uint<OW> >&  target, unsigned const  reps, unsigned const log_en, ap_uint<64> * out) :
+	  m_target(target), m_reps(reps), log_en(log_en), out(out) {}
   ~WidthAdjustedLogStream() {
-	  if(log_en)
+	  if(log_en){
+		  StreamingDataWidthConverter_Batch<IW, 64, N_LOG>(m_buffer, out_buffer, m_reps);
+		  Stream2Mem_Batch<64, (N_LOG*(IW/64)*64)/8>(out_buffer, out, m_reps);
+	  }
+	  else
 		  StreamingDataWidthConverter_Batch<IW, OW, N>(m_buffer, m_target, m_reps);
   }
 
@@ -323,14 +337,15 @@ class WidthAdjustedLogStream {
     return  m_buffer;
   }
 };
-template<unsigned W, unsigned N>
- class WidthAdjustedLogStream<W, W, N> {
+template<unsigned W, unsigned N, unsigned N_LOG>
+ class WidthAdjustedLogStream<W, W, N, N_LOG> {
   hls::stream<ap_uint<W>> &m_target;
   unsigned char log_en;
+  ap_uint<64> * out;
 
  public:
-  WidthAdjustedLogStream(hls::stream<ap_uint<W> >&  target, unsigned const  reps, unsigned char log_en)
-    : m_target(target), log_en(log_en) {}
+  WidthAdjustedLogStream(hls::stream<ap_uint<W> >&  target, unsigned const  reps, unsigned const log_en, ap_uint<64> * out)
+    : m_target(target), log_en(log_en), out(out) {}
   ~WidthAdjustedLogStream() {}
 
  public:
