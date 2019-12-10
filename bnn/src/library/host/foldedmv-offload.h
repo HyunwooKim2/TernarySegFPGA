@@ -449,9 +449,12 @@ std::vector<int>  testPrebuiltCIFAR10_from_image(std::vector<tiny_cnn::vec_t> & 
   }
   // allocate host-side buffers for packed input and outputs
   ExtMemWord * packedImages = new ExtMemWord[(count * psi)];
-  // hwkim modified for fpga debug (temp)
-  //ExtMemWord * packedOut = new ExtMemWord[(count * pso)];
+  // hwkim modified for fpga debug
+#ifdef FPGA_DEBUG
   ExtMemWord * packedOut = new ExtMemWord[(count * pso) + ACT_BASE + 10*ACT_OFFSET + (480*360*5)];	//480*360*5 -> # of 64-bit word of last layer
+#else
+  ExtMemWord * packedOut = new ExtMemWord[(count * pso)];
+#endif
   
   // hwkim fixed bug of padding & modified for segmentation
   //tiny_cnn::chaninterleave_layer<tiny_cnn::activation::identity> interleaver(3, 32 * 32, false);
@@ -565,7 +568,10 @@ std::vector<int> testPrebuiltCIFAR10_multiple_images(std::vector<tiny_cnn::vec_t
   // number of ExtMemWords per image
   const unsigned int psi = paddedSize(imgs[0].size()*inWidth, bitsPerExtMemWord) / bitsPerExtMemWord;
   // number of ExtMemWords per output
-  const unsigned int pso = paddedSize(64*outWidth, bitsPerExtMemWord) / bitsPerExtMemWord;
+  // hwkim modified for segmentation
+  //const unsigned int pso = paddedSize(64*outWidth, bitsPerExtMemWord) / bitsPerExtMemWord;
+  const unsigned int pso = paddedSize(480*360*outWidth, bitsPerExtMemWord) / bitsPerExtMemWord;
+
   if(INPUT_BUF_ENTRIES < count*psi)
     throw "Not enough space in accelBufIn";
   if(OUTPUT_BUF_ENTRIES < count*pso)
@@ -574,7 +580,10 @@ std::vector<int> testPrebuiltCIFAR10_multiple_images(std::vector<tiny_cnn::vec_t
   ExtMemWord * packedImages = new ExtMemWord[(count * psi)];
   ExtMemWord * packedOut = new ExtMemWord[(count * pso)];
   
-  tiny_cnn::chaninterleave_layer<tiny_cnn::activation::identity> interleaver(3, 32 * 32, false);
+  // hwkim modified for multiple image segmentation
+  //tiny_cnn::chaninterleave_layer<tiny_cnn::activation::identity> interleaver(3, 32 * 32, false);
+  tiny_cnn::chaninterleave_layer<tiny_cnn::activation::identity> interleaver(3, 480 * 360, false);
+
   // interleave and pack inputs
   for(unsigned int i = 0; i < count; i++) {
     tiny_cnn::vec_t interleaved = interleaver.forward_propagation(imgs[i], 0);
@@ -586,22 +595,24 @@ std::vector<int> testPrebuiltCIFAR10_multiple_images(std::vector<tiny_cnn::vec_t
   // call the accelerator in compute mode
   BlackBoxJam((ap_uint<64> *)packedImages, (ap_uint<64> *)packedOut, false, 0, 0, 0, 0, 0, count);
   auto t2 = chrono::high_resolution_clock::now();
-  // compare against labels
-  tiny_cnn::vec_t outTest(numCategories, 0);
-  
-  for(unsigned int i = 0; i < count; i++) {
-    copyFromLowPrecBuffer<LowPrecType>(&packedOut[i * pso], outTest);
-    int maxInd = 0;
-    LowPrecType maxVal = 0;
-    for(unsigned int j = 0; j < numCategories; j++) {
-    detailed_results.push_back(outTest[j]);
-      if(outTest[j] > maxVal) {
-        maxVal = outTest[j];
-        maxInd = j;
-      }
-    }
-	results.push_back(maxInd);
-  }  
+
+  // hwkim commented
+////   compare against labels
+//  tiny_cnn::vec_t outTest(numCategories, 0);
+//  for(unsigned int i = 0; i < count; i++) {
+//    copyFromLowPrecBuffer<LowPrecType>(&packedOut[i * pso], outTest);
+//    int maxInd = 0;
+//    LowPrecType maxVal = 0;
+//    for(unsigned int j = 0; j < numCategories; j++) {
+//    detailed_results.push_back(outTest[j]);
+//      if(outTest[j] > maxVal) {
+//        maxVal = outTest[j];
+//        maxInd = j;
+//      }
+//    }
+//	results.push_back(maxInd);
+//  }
+
   auto duration = chrono::duration_cast<chrono::microseconds>(t2 - t1).count();
   usecPerImage = (float)duration / (count);
   cout << "Inference took " << duration << " microseconds, " << usecPerImage << " usec per image" << endl;

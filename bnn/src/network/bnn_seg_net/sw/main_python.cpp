@@ -147,23 +147,27 @@ extern "C" int* inference_multiple(const char* path, int number_class, int* imag
   FoldedMVInit("cnvW1A1");
   network<mse, adagrad> nn;
   makeNetwork(nn);
-  parse_cifar10(path, &test_images, &test_labels, -1.0, 1.0, 0, 0);		
-  all_result=testPrebuiltCIFAR10_multiple_images<8, 16, ap_int<16>>(test_images, number_class, detailed_results, usecPerImage_int);
+  parse_cifar10(path, &test_images, &test_labels, -1.0, 1.0, 0, 0);
+  // hwkim modified
+  //all_result=testPrebuiltCIFAR10_multiple_images<8, 16, ap_int<16>>(test_images, number_class, detailed_results, usecPerImage_int);
+  all_result=testPrebuiltCIFAR10_multiple_images<8, 16, ap_int<16>>(test_images, 0, detailed_results, usecPerImage_int);
 
-  if (image_number) {
-    *image_number = all_result.size();
-  }
-  if (usecPerImage) {
-    *usecPerImage = usecPerImage_int;
-  }
-  if (enable_detail) {
-    result = new int [detailed_results.size()];
-    std::copy(detailed_results.begin(),detailed_results.end(), result);
-  } else {
-    result = new int [all_result.size()];
-    std::copy(all_result.begin(),all_result.end(), result);
-  }	   
-  return result;
+  // hwkim commented
+//  if (image_number) {
+//    *image_number = all_result.size();
+//  }
+//  if (usecPerImage) {
+//    *usecPerImage = usecPerImage_int;
+//  }
+//  if (enable_detail) {
+//    result = new int [detailed_results.size()];
+//    std::copy(detailed_results.begin(),detailed_results.end(), result);
+//  } else {
+//    result = new int [all_result.size()];
+//    std::copy(all_result.begin(),all_result.end(), result);
+//  }
+//  return result;
+  return 0;
 }
 
 extern "C" void free_results(int* result) {
@@ -183,19 +187,31 @@ extern "C" int main(int argc, char** argv) {
     cout << "4 - expected result" << endl;
     return 1;
   }
-  float execution_time = 0;
-  int class_inference = 0;
+  // hwkim modified for multiple image segmentation
+  //float execution_time = 0;
+  //int class_inference = 0;
+  unsigned const num_img = 2;
+  //int class_inference[num_img];
+  int * class_inference;
+  float execution_time[num_img];
+  int image_number_dummy[num_img];
+
   int scores[64];
 
   load_parameters(argv[1]);
-  class_inference = inference(argv[2], scores, atol(argv[3]), &execution_time);
+  //class_inference = inference(argv[2], scores, atol(argv[3]), &execution_time);
+  //extern "C" int* inference_multiple(const char* path, int number_class, int* image_number, float* usecPerImage, int enable_detail = 0) {
+  class_inference = inference_multiple(argv[2], 0, image_number_dummy, execution_time, 0);
 
   cout << "Detected class " << class_inference << endl;
   cout << "in " << execution_time << " microseconds" << endl;
   deinit();
-  if (class_inference != atol(argv[4])) {
-    return 1;
-  } else {
-    return 0;
-  }
+
+  // hwkim commented for multiple image segmentation
+//  if (class_inference != atol(argv[4])) {
+//    return 1;
+//  } else {
+//    return 0;
+//  }
+  return 0;
 }

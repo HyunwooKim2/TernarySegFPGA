@@ -97,26 +97,20 @@ static PassThroughAndBatchNorm<L10_TMEM, L10_PE, L10_API, ap_int<16>, ap_fixed<2
 
 #ifdef ACTIVATION_LOG
 string golden_file_dir = "/home/hwkim/work/params/guinness_params/camvid_params/1017/Activations/";
-string snapshot_dir = "/home/hwkim/work/params/finn_params/camvid_params/1017/snapshots/";
+string snapshot_dir = "/home/hwkim/work/params/finn_params/camvid_params/1017/snapshots/two_images/";
 #endif
 
 // hwkim added to find inferred category
 template <unsigned int InStreamW, unsigned int OutStreamW>
 void infer_category(
 		stream<ap_uint<InStreamW>>& in,
-		stream<ap_uint<OutStreamW>>& out
+		stream<ap_uint<OutStreamW>>& out,
+		// hwkim added for multiple image segmentation
+		unsigned const num_reps
 		)
 {
 #ifdef ACTIVATION_LOG
 		string golden_score_file_name = golden_file_dir + "OutputScaleLayer.txt";
-		ifstream golden_score_file(golden_score_file_name);
-		if(!golden_score_file.is_open()){
-			cout << "golden_score_file open error" << endl;
-		}
-		ofstream computed_score_file("computed_score.txt");
-		if(!computed_score_file.is_open()){
-			cout << "computed_score_file open error" << endl;
-		}
 		ap_fixed<24,16,AP_TRN,AP_SAT> golden_score;
 #endif
 
@@ -127,63 +121,77 @@ void infer_category(
 		ap_uint<16> label=0;
 		ap_uint<64> out_buf=0;
 
-		for(int y=0; y<L10_OFM_HEIGHT; y++){
-			for(int x=0; x<L10_OFM_DIM; x++){
-#pragma HLS PIPELINE II=1 rewind
-				label=0;
-				score_buf=in.read();
-				uscore = score_buf & 0xFFFFFF;
-//				if(uscore&0x800000){
-//					//uscore.VAL = 0xff000000 | uscore.VAL;
-//					uscore = 0xff000000 | uscore;
-//				}
-				cls_p = *reinterpret_cast<ap_fixed<24,16,AP_TRN,AP_SAT> *>(&uscore);
+		// hwkim added for multiple image segmentation
+		for(int img_cnt=0; img_cnt<num_reps; img_cnt++){
 #ifdef ACTIVATION_LOG
-				//cout << setw(15) << setprecision(11) << cls_p << endl;
-				computed_score_file << dec << cls_p << endl;
-				golden_score_file >> golden_score;
-				if((golden_score>>1)!=cls_p){
-					cout << "golden: " << golden_score << ", computed: " << cls_p << endl;
-				}
+			ifstream golden_score_file(golden_score_file_name);
+			if(!golden_score_file.is_open()){
+				cout << "golden_score_file open error" << endl;
+			}
+			string computed_score_file_name = "computed_score_" + to_string(img_cnt) + ".txt";
+			ofstream computed_score_file(computed_score_file_name);
+			if(!computed_score_file.is_open()){
+				cout << "computed_score_file open error" << endl;
+			}
 #endif
-				for(int i=1; i<L10_OFM_CH; i++){
-					score_buf = score_buf >> 24;
+			for(int y=0; y<L10_OFM_HEIGHT; y++){
+				for(int x=0; x<L10_OFM_DIM; x++){
+	#pragma HLS PIPELINE II=1 rewind
+					label=0;
+					score_buf=in.read();
 					uscore = score_buf & 0xFFFFFF;
 //					if(uscore&0x800000){
 //						//uscore.VAL = 0xff000000 | uscore.VAL;
 //						uscore = 0xff000000 | uscore;
 //					}
-					cls_n = *reinterpret_cast<ap_fixed<24,16,AP_TRN,AP_SAT> *>(&uscore);
-#ifdef ACTIVATION_LOG
-					//cout << setw(15) << setprecision(11) << cls_n << endl;
-					computed_score_file << dec << cls_n << endl;
+					cls_p = *reinterpret_cast<ap_fixed<24,16,AP_TRN,AP_SAT> *>(&uscore);
+	#ifdef ACTIVATION_LOG
+					//cout << setw(15) << setprecision(11) << cls_p << endl;
+					computed_score_file << dec << cls_p << endl;
 					golden_score_file >> golden_score;
-					if((golden_score>>1)!=cls_n){
-						cout << "golden: " << golden_score << ", computed: " << cls_n << endl;
+					if((golden_score>>1)!=cls_p){
+						cout << "golden: " << golden_score << ", computed: " << cls_p << endl;
 					}
-#endif
-					if(cls_p < cls_n){
-						label=i;
-						cls_p = cls_n;
+	#endif
+					for(int i=1; i<L10_OFM_CH; i++){
+						score_buf = score_buf >> 24;
+						uscore = score_buf & 0xFFFFFF;
+//						if(uscore&0x800000){
+//							//uscore.VAL = 0xff000000 | uscore.VAL;
+//							uscore = 0xff000000 | uscore;
+//						}
+						cls_n = *reinterpret_cast<ap_fixed<24,16,AP_TRN,AP_SAT> *>(&uscore);
+	#ifdef ACTIVATION_LOG
+						//cout << setw(15) << setprecision(11) << cls_n << endl;
+						computed_score_file << dec << cls_n << endl;
+						golden_score_file >> golden_score;
+						if((golden_score>>1)!=cls_n){
+							cout << "golden: " << golden_score << ", computed: " << cls_n << endl;
+						}
+	#endif
+						if(cls_p < cls_n){
+							label=i;
+							cls_p = cls_n;
+						}
 					}
-				}
-				label++;
-				//cout << dec << "\tlabel: " << label << endl;
+					label++;
+					//cout << dec << "\tlabel: " << label << endl;
 
-				// packing output and write memOutStrm
-				out_buf = out_buf >> 16;
-				out_buf(63,48) = label;
-				if(x%4==3){
-					out.write(out_buf);
-					out_buf=0;
+					// packing output and write memOutStrm
+					out_buf = out_buf >> 16;
+					out_buf(63,48) = label;
+					if(x%4==3){
+						out.write(out_buf);
+						out_buf=0;
+					}
+					//static_cast<hls::stream<ap_uint<16>>&>(wa_out).write(label);
 				}
-				//static_cast<hls::stream<ap_uint<16>>&>(wa_out).write(label);
 			}
-		}
 #ifdef ACTIVATION_LOG
-		golden_score_file.close();
-		computed_score_file.close();
+			golden_score_file.close();
+			computed_score_file.close();
 #endif
+		}
 }
 
 // hwkim modified for average pooling
@@ -254,7 +262,9 @@ template <unsigned int OFMDim,
 
 void activation_log(
 		stream<ap_uint<InWidth>>& in_stream,
-		int layer_cnt){
+		int layer_cnt,
+		int num_reps	// hwkim added for multiple images
+		){
 
 	// hwkim commented for segmentation - there's only conv(tconv) layers
 //	unsigned char layer_type[11] = {1,2,2,2,2,2,2,2,2,2,2};
@@ -290,12 +300,14 @@ void activation_log(
 //	case 16:
 //		break;
 //	}
-	golden_file_name = golden_file_dir + "Sign" + to_string(layer_cnt+1) + ".txt";
-	golden_file = fopen(golden_file_name.c_str(),"rt");
-	if(golden_file==NULL){
-		cout << golden_file_name << " open error!!" << endl;
-		compare_skip = 1;
-	}
+
+	// hwkim commented for multiple images
+//	golden_file_name = golden_file_dir + "Sign" + to_string(layer_cnt+1) + ".txt";
+//	golden_file = fopen(golden_file_name.c_str(),"rt");
+//	if(golden_file==NULL){
+//		cout << golden_file_name << " open error!!" << endl;
+//		compare_skip = 1;
+//	}
 
 	compare_result_file_name = "compare_result_" + to_string(layer_cnt+1) + ".txt";
 	compare_result_file.open(compare_result_file_name);
@@ -310,80 +322,74 @@ void activation_log(
 	char gold_buf_ch64[17];
 	gold_buf_ch64[16] = 0;
 	unsigned long gold_buf_long;
-	//unsigned long long gold_buf;
-//	cout << "inter" << (layer_cnt+1) << " stream size = " << in_stream.size() << endl;
 
 	if(InWidth%8!=0){
 		cout << "Activation log error! InWidth is not a multiple of 8" << endl;
 	}
 
-	// hwkim modified for stride
-	for(int y=0; y<OFMHeight; y++){
-		  for(int x=0; x<OFMDim; x++){
-//	for(int y=0; y<OFMHeight/Stride; y++){
-//		  for(int x=0; x<OFMDim/Stride; x++){
+	// hwkim added for multiple images
+	for(int img_cnt=0; img_cnt<num_reps; img_cnt++){
+		golden_file_name = golden_file_dir + "Sign" + to_string(layer_cnt+1) + ".txt";
+		golden_file = fopen(golden_file_name.c_str(),"rt");
+		if(golden_file==NULL){
+			cout << golden_file_name << " open error!!" << endl;
+			compare_skip = 1;
+		}
 
-			  act_buf = in_stream.read();
-			  if(compare_skip==0){
-
-				  gold_buf = 0;
-				  fscanf(golden_file, "%s", gold_buf_ch);
-				  for(int word_cnt=0; word_cnt<InWidth/64; word_cnt++){
-					  for(int i=0; i<64/4; i++){
-						  gold_buf_ch64[i] = gold_buf_ch[word_cnt*16+i];
-					  }
-					  gold_buf_long = strtoul(gold_buf_ch64, NULL, 16);
-					  gold_buf = gold_buf << 64;
-					  gold_buf = gold_buf | (*reinterpret_cast<ap_uint<64> *>(&gold_buf_long));
-				  }
-
-			  // hwkim added for stride
-//				  for(int stride_cnt=0; stride_cnt<(Stride-1); stride_cnt++){
-//					  fscanf(golden_file, "%s", gold_buf_ch);	//skip one activation read
-//				  }
-
-				  if(act_buf!=gold_buf){
-					  compare_result_file << dec << "@(" << setw(2) << y << "," << setw(2) << x << ")" <<
-							  hex << " golden: ";
-					  if(InWidth>=64){
-						  for(int i=0; i<InWidth/64; i++){
-							  compare_result_file << (unsigned long long )(gold_buf >> 64*(InWidth/64-i-1));
+		for(int y=0; y<OFMHeight; y++){
+			  for(int x=0; x<OFMDim; x++){
+				  act_buf = in_stream.read();
+				  // compare computed activation with golden activaiton
+				  if(compare_skip==0){
+					  gold_buf = 0;
+					  fscanf(golden_file, "%s", gold_buf_ch);
+					  for(int word_cnt=0; word_cnt<InWidth/64; word_cnt++){
+						  for(int i=0; i<64/4; i++){
+							  gold_buf_ch64[i] = gold_buf_ch[word_cnt*16+i];
 						  }
-						  compare_result_file << "," << endl << setw(17) << hex << "act: ";
-						  for(int i=0; i<InWidth/64; i++){
-							  compare_result_file << (unsigned long long )(act_buf >> 64*(InWidth/64-i-1));
-						  }
-						  compare_result_file << endl;
+						  gold_buf_long = strtoul(gold_buf_ch64, NULL, 16);
+						  gold_buf = gold_buf << 64;
+						  gold_buf = gold_buf | (*reinterpret_cast<ap_uint<64> *>(&gold_buf_long));
 					  }
-					  else{
-						  compare_result_file << (unsigned long long )gold_buf << "," << endl
-								  << setw(17) << hex << "act: "  << (unsigned long long )act_buf << endl;
-					  }
-				  }
-			  }
 
-			  if(InWidth>64){
-//				  for(int i=0; i<InWidth/64; i++){
-//					  activation_log_file << uppercase << setfill('0') << setw(16) << hex << (unsigned long long )(act_buf >> 64*(InWidth/64-i-1));
-//				  }
-				  ap_uint<InWidth> log_mask = ((ap_uint<InWidth>)0xF<<(InWidth-4));
-				  for(int i=0; i<InWidth/4; i++){
-					  activation_log_file << uppercase << hex << (unsigned int)((act_buf&log_mask)>>(InWidth-4));
-					  act_buf = act_buf << 4;
+					  if(act_buf!=gold_buf){
+						  compare_result_file << dec << "@(" << setw(2) << y << "," << setw(2) << x << ")" << "of image " <<  img_cnt <<
+								  hex << " golden: ";
+						  if(InWidth>=64){
+							  for(int i=0; i<InWidth/64; i++){
+								  compare_result_file << (unsigned long long )(gold_buf >> 64*(InWidth/64-i-1));
+							  }
+							  compare_result_file << "," << endl << setw(17) << hex << "act: ";
+							  for(int i=0; i<InWidth/64; i++){
+								  compare_result_file << (unsigned long long )(act_buf >> 64*(InWidth/64-i-1));
+							  }
+							  compare_result_file << endl;
+						  }
+						  else{
+							  compare_result_file << (unsigned long long )gold_buf << "," << endl
+									  << setw(17) << hex << "act: "  << (unsigned long long )act_buf << endl;
+						  }
+					  }
 				  }
-				  activation_log_file << endl;	//" | ";				  cout << endl;
+				  // logging computed activation
+				  if(InWidth>64){
+					  ap_uint<InWidth> log_mask = ((ap_uint<InWidth>)0xF<<(InWidth-4));
+					  for(int i=0; i<InWidth/4; i++){
+						  activation_log_file << uppercase << hex << (unsigned int)((act_buf&log_mask)>>(InWidth-4));
+						  act_buf = act_buf << 4;
+					  }
+					  activation_log_file << endl;
+				  }
+				  else{
+					  activation_log_file << uppercase << setfill('0') << setw(16) << hex << (unsigned long long )act_buf << endl;
+				  }
 			  }
-			  else{
-				  activation_log_file << uppercase << setfill('0') << setw(16) << hex << (unsigned long long )act_buf << endl;	//" |\t";
-			  }
-		  }
-		  //activation_log_file << endl;
+		}
+		if(compare_skip==0)
+			fclose(golden_file);
 	}
 
 	activation_log_file.close();
-	//golden_file.close();
-	if(compare_skip==0)
-		fclose(golden_file);
 	compare_result_file.close();
 
 }
@@ -1148,8 +1154,9 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 		Stream2Mem_Batch<64, outBits/8>(memOutStrm, out, numReps);
 	#endif
 #else
-	infer_category<(11*24), 64>(inter11, memOutStrm);
+	infer_category<(11*24), 64>(inter11, memOutStrm, numReps);
 	Stream2Mem_Batch<64, outBits/8>(memOutStrm, out, numReps);
+	cout << memOutStrm.size() << endl;
 #endif
 
 //#ifdef FPGA_DEBUG
@@ -1246,7 +1253,7 @@ void BlackBoxJam(ap_uint<64> *in, ap_uint<64> *out, bool doInit,
   if (doInit) {
     DoMemInit(targetLayer, targetMem, targetInd, targetThresh, val);
   } else {
-//    DoCompute(in, out, numReps);
-	  DoCompute(in, out, 1);
+    DoCompute(in, out, numReps);
+//	  DoCompute(in, out, 1);
   }
 }

@@ -335,24 +335,31 @@ void TConvolutionInputGenerator(
   const unsigned int baseIter = IFMDim * multiplying_factor		// Initial buffer
 		  	  	  	  	  	    + IFMHeight * MAX(cycles_write_block,cycles_read_block);
 
-  unsigned int counter_internal_block = 0;
-  unsigned int current_block_write = 0;
-  unsigned int current_block_read = 0;
-  unsigned int next_block_write = 0;
-  unsigned int current_line = 0;
-  unsigned int read_block = 0;
-  unsigned int inp = 0, ofm_y = 0, ofm_x = 0, k_y = 0, k_x = 0, count_simd =0;
-
-  // hwkim added for debug
-#ifdef ACTIVATION_LOG
-            ofstream conv_in_gen_log_file("tconv_in_gen_log.txt");
-            if(!conv_in_gen_log_file.is_open()){
-            	cout << "conv_in_gen_log_file open error!!" << endl;
-              }
-#endif
+//  unsigned int counter_internal_block = 0;
+//  unsigned int current_block_write = 0;
+//  unsigned int current_block_read = 0;
+//  unsigned int next_block_write = 0;
+//  unsigned int current_line = 0;
+//  unsigned int read_block = 0;
+//  unsigned int inp = 0, ofm_y = 0, ofm_x = 0, k_y = 0, k_x = 0, count_simd =0;
 
 #pragma HLS reset variable=inp
   for (unsigned int count_image = 0; count_image < numReps; count_image++) {
+	  // hwkim added for debug
+#ifdef ACTIVATION_LOG
+	  string conv_in_gen_log_file_name = "tconv_in_gen_log_" + to_string(count_image) + ".txt";
+	  ofstream conv_in_gen_log_file(conv_in_gen_log_file_name);
+	  if(!conv_in_gen_log_file.is_open()){
+		  cout << "conv_in_gen_log_file open error!!" << endl;
+	  }
+#endif
+	unsigned int counter_internal_block = 0;
+	unsigned int current_block_write = 0;
+	unsigned int current_block_read = 0;
+	unsigned int next_block_write = 0;
+	unsigned int current_line = 0;
+	unsigned int read_block = 0;
+	unsigned int inp = 0, ofm_y = 0, ofm_x = 0, k_y = 0, k_x = 0, count_simd =0;
     for (unsigned int i = 0; i < baseIter; i++) {
 #pragma HLS PIPELINE II=1
 
@@ -426,18 +433,18 @@ void TConvolutionInputGenerator(
 			  if (count_simd == multiplying_factor) {
 				  count_simd=0;
 				  k_x++;
-#ifdef ACTIVATION_LOG
-				  conv_in_gen_log_file << " | ";
-#endif
+//#ifdef ACTIVATION_LOG
+//				  conv_in_gen_log_file << " | ";
+//#endif
 				  if (k_x == (!(ofm_x&0x1) + 1)) {
 					  k_x = 0;
 					  k_y++;
-#ifdef ACTIVATION_LOG
-					  conv_in_gen_log_file << endl;
-#endif
+//#ifdef ACTIVATION_LOG
+//					  conv_in_gen_log_file << endl;
+//#endif
 					  if (k_y == (!(ofm_y&0x1) + 1)) {
 #ifdef ACTIVATION_LOG
-						  conv_in_gen_log_file << "x,y=" << (ofm_x) << "," << (ofm_y) << endl;
+						  conv_in_gen_log_file << dec << "x,y=" << (ofm_x) << "," << (ofm_y) << endl;
 #endif
 						  k_y = 0;
 						  ofm_x ++;
@@ -494,11 +501,11 @@ void TConvolutionInputGenerator(
 
     } // End base_iter
 	read_block = 0;
+#ifdef ACTIVATION_LOG
+	conv_in_gen_log_file.close();
+#endif
   } // End count_image
 
-#ifdef ACTIVATION_LOG
-  conv_in_gen_log_file.close();
-#endif
 
 } // End generator
 
