@@ -126,15 +126,19 @@ void copyFromLowPrecBuffer(void * buf, tiny_cnn::vec_t & out) {
 }
 
 template<unsigned int inWidth, unsigned int SIMDWidth>
-void quantiseAndPack(const tiny_cnn::vec_t & in, ExtMemWord * out, unsigned int inBufSize=INPUT_BUF_ENTRIES) {
+void quantiseAndPack(const tiny_cnn::vec_t & in, ExtMemWord * out,
+#ifdef ACTIVATION_LOG
+		string quantise_bin_file_name,
+#endif
+		unsigned int inBufSize=INPUT_BUF_ENTRIES) {
   if((in.size() * inWidth) > (inBufSize * bitsPerExtMemWord)) {
     throw "Not enough space in input buffer";
   }
 #ifdef ACTIVATION_LOG
-	ofstream quantise_bin_file("quantise_bin.bin");
-	if(!quantise_bin_file.is_open()){
-		cout << "quantise_bin_file open error!!" << endl;
-	}
+  ofstream quantise_bin_file(quantise_bin_file_name);
+  if(!quantise_bin_file.is_open()){
+	  cout << "quantise_bin_file open error!!" << endl;
+  }
 #endif
 
   // first, fill the target buffer with padding data
@@ -283,7 +287,11 @@ void FoldedMVOffload(const tiny_cnn::vec_t &in, tiny_cnn::vec_t & out, unsigned 
 template<unsigned int inWidth, unsigned int SIMDWidth, typename LowPrecType>
 void FixedFoldedMVOffload(const tiny_cnn::vec_t &in, tiny_cnn::vec_t &out, unsigned int offloadID, tiny_cnn::OffloadConvParams * convParams) {
   // binarize input and pack into bit stream
-  quantiseAndPack<inWidth, SIMDWidth>(in, bufIn);
+  quantiseAndPack<inWidth, SIMDWidth>(in, bufIn
+#ifdef ACTIVATION_LOG
+		  , (string)NULL
+#endif
+		  );
 
   // call the accelerator in compute mode
   BlackBoxJam((ap_uint<64> *)bufIn, (ap_uint<64> *)bufOut, false, 0, 0, 0, 0, 0, 1);
@@ -468,8 +476,14 @@ std::vector<int>  testPrebuiltCIFAR10_from_image(std::vector<tiny_cnn::vec_t> & 
     /* hwkim commented
      * 기존 x->y->c로 order된 imgs(input)를 c->x->y로 reorder(interleaving)
      */
-
-    quantiseAndPack<inWidth, 1>(interleaved, &packedImages[i * psi], psi);
+#ifdef ACTIVATION_LOG
+    string quantise_bin_file_name = "quantise_bin.bin";
+#endif
+    quantiseAndPack<inWidth, 1>(interleaved, &packedImages[i * psi],
+#ifdef ACTIVATION_LOG
+    		quantise_bin_file_name,
+#endif
+			psi);
     /* hwkim commented
      * -1~1 사이 floating point를 8-bit fixed point로 quantise 후,
      *  단순히 8-bit fixed point를 8-bit int로 변환하고,
@@ -587,7 +601,14 @@ std::vector<int> testPrebuiltCIFAR10_multiple_images(std::vector<tiny_cnn::vec_t
   // interleave and pack inputs
   for(unsigned int i = 0; i < count; i++) {
     tiny_cnn::vec_t interleaved = interleaver.forward_propagation(imgs[i], 0);
-    quantiseAndPack<inWidth, 1>(interleaved, &packedImages[i * psi], psi);
+#ifdef ACTIVATION_LOG
+    string quantise_bin_file_name = "quantise_bin_" + to_string(i) + ".bin";
+#endif
+    quantiseAndPack<inWidth, 1>(interleaved, &packedImages[i * psi],
+#ifdef ACTIVATION_LOG
+    		quantise_bin_file_name,
+#endif
+			psi);
   }
   cout << "Running prebuilt CIFAR-10 test for " << count << " images..." << endl;
   // copy inputs to accelerator

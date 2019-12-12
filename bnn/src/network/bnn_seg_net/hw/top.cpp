@@ -1156,29 +1156,7 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 #else
 	infer_category<(11*24), 64>(inter11, memOutStrm, numReps);
 	Stream2Mem_Batch<64, outBits/8>(memOutStrm, out, numReps);
-	cout << memOutStrm.size() << endl;
 #endif
-
-//#ifdef FPGA_DEBUG
-//Streaming:
-//	switch(targetLayer){
-//	case 0:
-//		if(targetLayer==0){
-//			StreamingDataWidthConverter_Batch<64, 64, (L0_IFM_DIM*L0_IFM_HEIGHT)>(inter1, inter1_64, numReps);
-//			Stream2Mem_Batch<64, (L0_IFM_DIM*L0_IFM_HEIGHT*64)/8>(inter1_64, out, numReps);
-//			break;
-//	case 1:
-//			StreamingDataWidthConverter_Batch<64, 64, (L1_IFM_DIM*L1_IFM_HEIGHT)>(inter2, inter2_64, numReps);
-//			Stream2Mem_Batch<64, (L1_IFM_DIM*L1_IFM_HEIGHT*64)/8>(inter2_64, out, numReps);
-//			break;
-//	case 2:
-//		}
-//		else{
-//			Stream2Mem_Batch<64, outBits/8>(memOutStrm, out, numReps);
-//		}
-//			break;
-//	}
-//#endif
 
 }
 
