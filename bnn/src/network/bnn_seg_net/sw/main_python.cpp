@@ -188,20 +188,18 @@ extern "C" int main(int argc, char** argv) {
     return 1;
   }
   // hwkim modified for multiple image segmentation
-  //float execution_time = 0;
-  //int class_inference = 0;
+  float execution_time = 0;
+//  float execution_time[num_img];
+  int class_inference = 0;
+//  int * class_inference;
   unsigned const num_img = 2;
-  //int class_inference[num_img];
-  int * class_inference;
-  float execution_time[num_img];
   int image_number_dummy[num_img];
 
   int scores[64];
 
   load_parameters(argv[1]);
-  //class_inference = inference(argv[2], scores, atol(argv[3]), &execution_time);
-  //extern "C" int* inference_multiple(const char* path, int number_class, int* image_number, float* usecPerImage, int enable_detail = 0) {
-  class_inference = inference_multiple(argv[2], 0, image_number_dummy, execution_time, 0);
+  class_inference = inference(argv[2], scores, atol(argv[3]), &execution_time);
+  //class_inference = inference_multiple(argv[2], 0, image_number_dummy, execution_time, 0);
 
   cout << "Detected class " << class_inference << endl;
   cout << "in " << execution_time << " microseconds" << endl;

@@ -60,7 +60,10 @@ const unsigned int bitsPerExtMemWord = sizeof(ExtMemWord)*8;
 
 #ifndef VIRTUAL
   #define INPUT_BUF_ENTRIES     3840000
-  #define OUTPUT_BUF_ENTRIES    160000
+// hwkim modified for multiple image segmentation
+  //#define OUTPUT_BUF_ENTRIES    160000
+  #define OUTPUT_BUF_ENTRIES    432000
+
 #else
   #define INPUT_BUF_ENTRIES		8192
   #define OUTPUT_BUF_ENTRIES	1024
