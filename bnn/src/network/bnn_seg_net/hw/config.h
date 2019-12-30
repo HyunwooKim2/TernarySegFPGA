@@ -81,21 +81,34 @@
 
 
 #define L0_SIMD 	3
-#define L1_SIMD 	32
+#define L1_SIMD 	64
 #define L2_SIMD 	32
-#define L3_SIMD 	32
+#define L3_SIMD 	64
 #define L4_SIMD 	32
-#define L5_SIMD 	32
+#define L5_SIMD 	64
 #define L6_SIMD 	32
-#define L7_SIMD 	32
+#define L7_SIMD 	64
 #define L8_SIMD 	32
-#define L9_SIMD 	32
-// modified for 2x perf
-//#define L10_SIMD 	16
-#define L10_SIMD 	32
+#define L9_SIMD 	64
+////#define L10_SIMD 	16
+//// for 2x perf
+////#define L10_SIMD 	32
+//// for 4x perf
+#define L10_SIMD 	64
+// hwkim modified for fast synthesis
+//#define L0_SIMD 	3
+//#define L1_SIMD 	8
+//#define L2_SIMD 	8
+//#define L3_SIMD 	8
+//#define L4_SIMD 	8
+//#define L5_SIMD 	8
+//#define L6_SIMD 	8
+//#define L7_SIMD 	8
+//#define L8_SIMD 	8
+//#define L9_SIMD 	8
+//#define L10_SIMD	8
 
 // hwkim modified for balancing pipeline stage latency
-// modified for 2x perf
 //#define L0_PE 	16
 //#define L1_PE 	32
 //#define L2_PE 	16
@@ -107,17 +120,42 @@
 //#define L8_PE 	16
 //#define L9_PE 	32
 //#define L10_PE 	11
-#define L0_PE 	32
+// for 2x perf
+//#define L0_PE 	32
+//#define L1_PE 	64
+//#define L2_PE 	32
+//#define L3_PE 	64
+//#define L4_PE 	32
+//#define L5_PE 	64
+//#define L6_PE 	32
+//#define L7_PE 	64
+//#define L8_PE 	32
+//#define L9_PE 	64
+//#define L10_PE 	11
+// for 4x performance
+#define L0_PE 	64
 #define L1_PE 	64
-#define L2_PE 	32
+#define L2_PE 	64
 #define L3_PE 	64
-#define L4_PE 	32
+#define L4_PE 	64
 #define L5_PE 	64
-#define L6_PE 	32
+#define L6_PE 	64
 #define L7_PE 	64
-#define L8_PE 	32
+#define L8_PE 	64
 #define L9_PE 	64
 #define L10_PE 	11
+// for fast synthesis
+//#define L0_PE 	8
+//#define L1_PE 	8
+//#define L2_PE 	8
+//#define L3_PE 	8
+//#define L4_PE 	8
+//#define L5_PE 	8
+//#define L6_PE 	8
+//#define L7_PE 	8
+//#define L8_PE 	8
+//#define L9_PE 	8
+//#define L10_PE 	11
 
 // hwkim modified for balancing pipeline stage latency
 //#define L0_WMEM 	36

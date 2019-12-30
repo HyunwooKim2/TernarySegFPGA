@@ -723,3 +723,4 @@ selectButton(RDIResource.BaseDialog_OK, "OK"); // a (aa)
 dismissDialog("Launch SDK"); // aa (cl)
 // Tcl Message: launch_sdk -workspace /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.sdk -hwspec /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.sdk/design_1_wrapper.hdf 
 // Tcl Message: INFO: [Vivado 12-393] Launching SDK... INFO: [Vivado 12-417] Running xsdk -workspace /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.sdk -hwspec /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/network/output/vivado/bnn_seg_net_zcu104/project_1/project_1.sdk/design_1_wrapper.hdf INFO: [Vivado 12-3157] SDK launch initiated. Please check console for any further messages. 
+// HMemoryUtils.trashcanNow. Engine heap size: 6,497 MB. GUI used memory: 258 MB. Current time: 12/16/19, 10:00:35 AM KST

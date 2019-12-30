@@ -1227,11 +1227,35 @@ void BlackBoxJam(ap_uint<64> *in, ap_uint<64> *out, bool doInit,
 #pragma HLS ARRAY_PARTITION variable=threshs10.m_thresholds complete dim=3
 	// hwkim added for batch norm scale
 #pragma HLS ARRAY_PARTITION variable=threshs10.m_scales complete dim=1
+	// hwkim added for lowering BRAM usage
+//#pragma HLS RESOURCE variable=weights0.m_weights core=RAM_1P_LUTRAM
+//#pragma HLS RESOURCE variable=weights1.m_weights core=RAM_1P_LUTRAM
+//#pragma HLS RESOURCE variable=weights2.m_weights core=RAM_1P_LUTRAM
+//#pragma HLS RESOURCE variable=weights3.m_weights core=RAM_1P_LUTRAM
+//#pragma HLS RESOURCE variable=weights4.m_weights core=RAM_1P_LUTRAM
+//#pragma HLS RESOURCE variable=weights5.m_weights core=RAM_1P_LUTRAM
+//#pragma HLS RESOURCE variable=weights6.m_weights core=RAM_1P_LUTRAM
+//#pragma HLS RESOURCE variable=weights7.m_weights core=RAM_1P_LUTRAM
+//#pragma HLS RESOURCE variable=weights8.m_weights core=RAM_1P_LUTRAM
+//#pragma HLS RESOURCE variable=weights9.m_weights core=RAM_1P_LUTRAM
+//#pragma HLS RESOURCE variable=weights10.m_weights core=RAM_1P_LUTRAM
+#pragma HLS RESOURCE variable=threshs0.m_thresholds core=RAM_1P_LUTRAM
+#pragma HLS RESOURCE variable=threshs1.m_thresholds core=RAM_1P_LUTRAM
+#pragma HLS RESOURCE variable=threshs2.m_thresholds core=RAM_1P_LUTRAM
+#pragma HLS RESOURCE variable=threshs3.m_thresholds core=RAM_1P_LUTRAM
+#pragma HLS RESOURCE variable=threshs4.m_thresholds core=RAM_1P_LUTRAM
+#pragma HLS RESOURCE variable=threshs5.m_thresholds core=RAM_1P_LUTRAM
+#pragma HLS RESOURCE variable=threshs6.m_thresholds core=RAM_1P_LUTRAM
+#pragma HLS RESOURCE variable=threshs7.m_thresholds core=RAM_1P_LUTRAM
+#pragma HLS RESOURCE variable=threshs8.m_thresholds core=RAM_1P_LUTRAM
+#pragma HLS RESOURCE variable=threshs9.m_thresholds core=RAM_1P_LUTRAM
+#pragma HLS RESOURCE variable=threshs10.m_thresholds core=RAM_1P_LUTRAM
+//#pragma HLS RESOURCE variable=threshs10.m_scales core=RAM_1P_LUTRAM
 
   if (doInit) {
     DoMemInit(targetLayer, targetMem, targetInd, targetThresh, val);
   } else {
     DoCompute(in, out, numReps);
-//	  DoCompute(in, out, 1);
+//    DoCompute(in, out, 1);
   }
 }
