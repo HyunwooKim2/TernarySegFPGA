@@ -97,7 +97,7 @@ static PassThroughAndBatchNorm<L10_TMEM, L10_PE, L10_API, ap_int<16>, ap_fixed<2
 
 #ifdef ACTIVATION_LOG
 string golden_file_dir = "/home/hwkim/work/params/guinness_params/camvid_params/1017/Activations/";
-string snapshot_dir = "/home/hwkim/work/params/finn_params/camvid_params/1017/snapshots/two_images/";
+string snapshot_dir = "/home/hwkim/work/params/finn_params/camvid_params/1017/snapshots/single_image/";
 #endif
 
 // hwkim added to find inferred category
@@ -574,16 +574,16 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
   const unsigned int outBits = L10_OFM_DIM*L10_OFM_HEIGHT*16;
 
 #ifdef SEP_SIM
-	int sep_sim_layer1_en = 1;
-	int sep_sim_layer2_en = 1;
-	int sep_sim_layer3_en = 1;
-	int sep_sim_layer4_en = 1;
-	int sep_sim_layer5_en = 1;
-	int sep_sim_layer6_en = 1;
-	int sep_sim_layer7_en = 1;
-	int sep_sim_layer8_en = 1;
-	int sep_sim_layer9_en = 1;
-	int sep_sim_layer10_en = 1;
+	int sep_sim_layer1_en = 0;
+	int sep_sim_layer2_en = 0;
+	int sep_sim_layer3_en = 0;
+	int sep_sim_layer4_en = 0;
+	int sep_sim_layer5_en = 0;
+	int sep_sim_layer6_en = 0;
+	int sep_sim_layer7_en = 0;
+	int sep_sim_layer8_en = 0;
+	int sep_sim_layer9_en = 0;
+	int sep_sim_layer10_en = 0;
 	int sep_sim_layer11_en = 1;
 #endif
 
@@ -1255,7 +1255,7 @@ void BlackBoxJam(ap_uint<64> *in, ap_uint<64> *out, bool doInit,
   if (doInit) {
     DoMemInit(targetLayer, targetMem, targetInd, targetThresh, val);
   } else {
-    DoCompute(in, out, numReps);
-//    DoCompute(in, out, 1);
+//    DoCompute(in, out, numReps);
+    DoCompute(in, out, 1);
   }
 }

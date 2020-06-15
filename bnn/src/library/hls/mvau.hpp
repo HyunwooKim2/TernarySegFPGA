@@ -428,12 +428,18 @@ void Matrix_Vector_Activate_Batch_Padding(hls::stream<TI> & in,
   if(!golden_conv_out_file.is_open()){
 	  cout << "golden_conv_out_file open error" << endl;
   }
+  else{
+	  cout << "reading " << golden_conv_out_file_name << " for golden result comparison..." << endl;
+  }
 
   string golden_act_file_name = golden_file_dir + "Sign" + to_string(LayerCnt+1) + ".txt";
   FILE * golden_file = fopen(golden_act_file_name.c_str(),"rt");
   if(golden_file==NULL){
 	  cout << golden_act_file_name << " open error!!" << endl;
 	  compare_skip = 1;
+  }
+  else{
+	  cout << "reading " << golden_act_file_name << " for golden result comparison..." << endl;
   }
 
   string conv_out_comp_file_name = "conv_" + to_string(LayerCnt+1) + "_out_minusBias_comp.txt";
