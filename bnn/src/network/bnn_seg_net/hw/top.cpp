@@ -574,16 +574,16 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
   const unsigned int outBits = L10_OFM_DIM*L10_OFM_HEIGHT*16;
 
 #ifdef SEP_SIM
-	int sep_sim_layer1_en = 0;
-	int sep_sim_layer2_en = 0;
-	int sep_sim_layer3_en = 0;
-	int sep_sim_layer4_en = 0;
-	int sep_sim_layer5_en = 0;
-	int sep_sim_layer6_en = 0;
-	int sep_sim_layer7_en = 0;
-	int sep_sim_layer8_en = 0;
-	int sep_sim_layer9_en = 0;
-	int sep_sim_layer10_en = 0;
+	int sep_sim_layer1_en = 1;
+	int sep_sim_layer2_en = 1;
+	int sep_sim_layer3_en = 1;
+	int sep_sim_layer4_en = 1;
+	int sep_sim_layer5_en = 1;
+	int sep_sim_layer6_en = 1;
+	int sep_sim_layer7_en = 1;
+	int sep_sim_layer8_en = 1;
+	int sep_sim_layer9_en = 1;
+	int sep_sim_layer10_en = 1;
 	int sep_sim_layer11_en = 1;
 #endif
 
