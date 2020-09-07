@@ -129,11 +129,14 @@ void copyFromLowPrecBuffer(void * buf, tiny_cnn::vec_t & out) {
 }
 
 template<unsigned int inWidth, unsigned int SIMDWidth>
-void quantiseAndPack(const tiny_cnn::vec_t & in, ExtMemWord * out,
+void quantiseAndPack(
+		const tiny_cnn::vec_t & in,
+		ExtMemWord * out,
 #ifdef ACTIVATION_LOG
 		string quantise_bin_file_name,
 #endif
-		unsigned int inBufSize=INPUT_BUF_ENTRIES) {
+		unsigned int inBufSize=INPUT_BUF_ENTRIES
+){
   if((in.size() * inWidth) > (inBufSize * bitsPerExtMemWord)) {
     throw "Not enough space in input buffer";
   }
@@ -177,6 +180,17 @@ void quantiseAndPack(const tiny_cnn::vec_t & in, ExtMemWord * out,
      * 64-bit(ExtMemWord) out array에 8-bit int 차곡 차곡 packing
      */
   }
+
+  // hwkim added for ternary
+//  memset(out_mask, 0, inBufSize * sizeof(ExtMemWord));
+//  for(unsigned int i=0; i < in_mask.size(); i++) {
+//	  ap_uint<1> mask_value = in_mask[i];
+//	  ExtMemWord v = (ExtMemWord)mask_value << (bitsPerExtMemWord - 1);
+//	  out_mask[i/bitsPerExtMemWord] = out_mask[i/bitsPerExtMemWord] >> 1;
+//	  out_mask[i/bitsPerExtMemWord] |= v;
+//  }
+
+
 #ifdef	ACTIVATION_LOG
 	ofstream quantise_log_file("quantise_log.txt");
 	if(!quantise_log_file.is_open()){
@@ -232,28 +246,8 @@ void quantiseAndPack(const tiny_cnn::vec_t & in, ExtMemWord * out,
 			quantise_log_file << endl;
 			quantise_realnum_log_file << endl;
 		}
-		quantise_log_file << "==============================================="
-			  << "==============================================="
-			  << "==============================================="
-			  << "==============================================="
-			  << "==============================================="
-			  << "==============================================="
-			  << "==============================================="
-			  << "==============================================="
-			  << "==============================================="
-			  << "==============================================="
-			  << endl;
-		quantise_realnum_log_file << "==============================================="
-			  << "==============================================="
-			  << "==============================================="
-			  << "==============================================="
-			  << "==============================================="
-			  << "==============================================="
-			  << "==============================================="
-			  << "==============================================="
-			  << "==============================================="
-			  << "==============================================="
-			  << endl;
+		quantise_log_file << std::string(100,'=') << endl;
+		quantise_realnum_log_file << std::string(100,'=') << endl;
 	}
 	quantise_log_file.close();
 	quantise_realnum_log_file.close();
@@ -265,18 +259,19 @@ void quantiseAndPack(const tiny_cnn::vec_t & in, ExtMemWord * out,
 
 #include "bnn-library.h"
 
-// hwkim modified for batch norm scale
 //void BlackBoxJam(ap_uint<64> * in, ap_uint<64> * out, bool doInit, unsigned int targetLayer, unsigned int targetMem, unsigned int targetInd, unsigned int targetThresh, ap_uint<64> val, unsigned int numReps);
-void BlackBoxJam(ap_uint<64> * in, ap_uint<64> * out, bool doInit, int targetLayer, unsigned int targetMem, unsigned int targetInd, unsigned int targetThresh, ap_uint<64> val, unsigned int numReps);
+void BlackBoxJam(ap_uint<64> * in, ap_uint<64> * out, bool doInit, int targetLayer, unsigned int targetMem, unsigned int targetInd, unsigned int targetThresh, ap_uint<64> val, unsigned int numReps);	// hwkim modified for batch norm scale
 
 extern ExtMemWord * bufIn, * bufOut;
+// hwkim added for ternary
+extern ExtMemWord * bufInMask;
 
 template<typename LowPrecType>
 void FoldedMVOffload(const tiny_cnn::vec_t &in, tiny_cnn::vec_t & out, unsigned int offloadID, tiny_cnn::OffloadConvParams * convParams) {
   // binarize input and pack into bit stream
   binarizeAndPack(in, bufIn);
 
-  // call the accelerator in compute mode
+  // call the accelerator in compute mode  // hwkim modified for ternary
   BlackBoxJam((ap_uint<64> *)bufIn, (ap_uint<64> *)bufOut, false, 0, 0, 0, 0, 0, 1);
 
   // unpack output bits and convert output back to float
@@ -288,9 +283,12 @@ void FoldedMVOffload(const tiny_cnn::vec_t &in, tiny_cnn::vec_t & out, unsigned 
 }
 
 template<unsigned int inWidth, unsigned int SIMDWidth, typename LowPrecType>
-void FixedFoldedMVOffload(const tiny_cnn::vec_t &in, tiny_cnn::vec_t &out, unsigned int offloadID, tiny_cnn::OffloadConvParams * convParams) {
+void FixedFoldedMVOffload(const tiny_cnn::vec_t &in, tiny_cnn::vec_t &out, unsigned int offloadID, tiny_cnn::OffloadConvParams * convParams)
+{
   // binarize input and pack into bit stream
-  quantiseAndPack<inWidth, SIMDWidth>(in, bufIn
+  quantiseAndPack<inWidth, SIMDWidth>(
+		  in,
+		  bufIn
 #ifdef ACTIVATION_LOG
 		  , (string)NULL
 #endif
@@ -330,7 +328,11 @@ void testPrebuiltCIFAR10(std::vector<tiny_cnn::vec_t> & imgs, std::vector<tiny_c
   // interleave and pack inputs
   for(unsigned int i = 0; i < count; i++) {
     tiny_cnn::vec_t interleaved = interleaver.forward_propagation(imgs[i], 0);
-    quantiseAndPack<inWidth, 1>(interleaved, &packedImages[i * psi], psi);
+
+    quantiseAndPack<inWidth, 1>(
+    		interleaved,
+    		&packedImages[i * psi],
+			psi);
   }
   cout << "Running prebuilt CIFAR-10 test for " << count << " images..." << endl;
   auto t1 = chrono::high_resolution_clock::now();
@@ -425,8 +427,11 @@ template<unsigned int inWidth, unsigned int outWidth, typename LowPrecType>
  * inWidth -> input의 bit width = 8
  * outWidth -> score의 bit width? = 16
  */
-std::vector<int>  testPrebuiltCIFAR10_from_image(std::vector<tiny_cnn::vec_t> & imgs,
-		const unsigned int numCategories, float &usecPerImage) {
+std::vector<int>  testPrebuiltCIFAR10_from_image(
+		std::vector<tiny_cnn::vec_t> & imgs,
+		const unsigned int numCategories,
+		float &usecPerImage)
+{
   const unsigned int count = 1;
   cout << "Packing and interleaving CIFAR-10 inputs..." << endl;
   // number of ExtMemWords per image
@@ -460,6 +465,9 @@ std::vector<int>  testPrebuiltCIFAR10_from_image(std::vector<tiny_cnn::vec_t> & 
   }
   // allocate host-side buffers for packed input and outputs
   ExtMemWord * packedImages = new ExtMemWord[(count * psi)];
+  // hwkim added for ternary
+  ExtMemWord * packedImasks = new ExtMemWord[(count * psi/8)];
+
   // hwkim modified for fpga debug
 #ifdef FPGA_DEBUG
   ExtMemWord * packedOut = new ExtMemWord[(count * pso) + ACT_BASE + 10*ACT_OFFSET + (480*360*5)];	//480*360*5 -> # of 64-bit word of last layer
@@ -475,14 +483,16 @@ std::vector<int>  testPrebuiltCIFAR10_from_image(std::vector<tiny_cnn::vec_t> & 
 
   // interleave and pack inputs
   for(unsigned int i = 0; i < count; i++) {
-    tiny_cnn::vec_t interleaved = interleaver.forward_propagation(imgs[i], 0);
-    /* hwkim commented
-     * 기존 x->y->c로 order된 imgs(input)를 c->x->y로 reorder(interleaving)
-     */
+	  tiny_cnn::vec_t interleaved = interleaver.forward_propagation(imgs[i], 0);
+	  // hwkim: 기존 x->y->c로 order된 imgs(input)를 c->x->y로 reorder(interleaving)
+//	  tiny_cnn::vec_t interleaved_mask = interleaver.forward_propagation(img_mask[i], 0);	// hwkim added for ternary
+
 #ifdef ACTIVATION_LOG
     string quantise_bin_file_name = "quantise_bin.bin";
 #endif
-    quantiseAndPack<inWidth, 1>(interleaved, &packedImages[i * psi],
+    quantiseAndPack<inWidth, 1>(
+    		interleaved,
+			&packedImages[i * psi],
 #ifdef ACTIVATION_LOG
     		quantise_bin_file_name,
 #endif
@@ -497,9 +507,9 @@ std::vector<int>  testPrebuiltCIFAR10_from_image(std::vector<tiny_cnn::vec_t> & 
 
   auto t1 = chrono::high_resolution_clock::now();
   // call the accelerator in compute mode
-  // hkim modified for FPGA debug
   //BlackBoxJam((ap_uint<64> *)packedImages, (ap_uint<64> *)packedOut, false, 0, 0, 0, 0, 0, count);
-  BlackBoxJam((ap_uint<64> *)packedImages, (ap_uint<64> *)packedOut, false, 1, 0, 0, 0, 0, count);
+  BlackBoxJam((ap_uint<64> *)packedImages, (ap_uint<64> *)packedOut, false, 1, 0, 0, 0, 0, count);	// hwkim modified for FPGA debug
+
   /* hwkim commented
    * input, output array의 주소만 전달 -> DRAM 주소
    */
@@ -607,7 +617,10 @@ std::vector<int> testPrebuiltCIFAR10_multiple_images(std::vector<tiny_cnn::vec_t
 #ifdef ACTIVATION_LOG
     string quantise_bin_file_name = "quantise_bin_" + to_string(i) + ".bin";
 #endif
-    quantiseAndPack<inWidth, 1>(interleaved, &packedImages[i * psi],
+
+    quantiseAndPack<inWidth, 1>(
+    		interleaved,
+			&packedImages[i * psi],
 #ifdef ACTIVATION_LOG
     		quantise_bin_file_name,
 #endif
@@ -618,6 +631,7 @@ std::vector<int> testPrebuiltCIFAR10_multiple_images(std::vector<tiny_cnn::vec_t
   auto t1 = chrono::high_resolution_clock::now();
   // call the accelerator in compute mode
   BlackBoxJam((ap_uint<64> *)packedImages, (ap_uint<64> *)packedOut, false, 0, 0, 0, 0, 0, count);
+
   auto t2 = chrono::high_resolution_clock::now();
 
   // hwkim commented
@@ -653,6 +667,8 @@ std::vector<int> testPrebuiltCIFAR10_multiple_images(std::vector<tiny_cnn::vec_t
 extern DonutDriver * thePlatform;
 extern void * accelBufIn, * accelBufOut;
 extern ExtMemWord * bufIn, * bufOut;
+// hwkim added for ternary
+extern ExtMemWord * bufInMask;
 
 void ExecAccel();
 

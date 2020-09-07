@@ -67,6 +67,8 @@ public:
 #else
 // function type for offload handling. args are (input, output, offloadID, conv params if any or 0)	
 typedef void (*OffloadHandler)(const vec_t &, vec_t &, unsigned int, OffloadConvParams *);
+// hwkim added for ternary
+typedef void (*OffloadHandler_Mask)(const vec_c &, vec_c &, unsigned int, OffloadConvParams *);
 
 class offloaded_layer : public layer<activation::identity> {
 public:
@@ -111,6 +113,17 @@ public:
         return next_ ? next_->forward_propagation(out, index) : out;
     }
 
+    // hwkim added for ternary
+    const vec_c& forward_propagation_mask(const vec_c& imask, size_t index) override {
+		vec_c & omask = input_mask_[index];
+#ifdef SOLITAIRE
+		offloadHandler_mask_(imask, omask, offloadID_, offloadConvParams_, targetSet_);
+#else
+	offloadHandler_mask_(imask, omask, offloadID_, offloadConvParams_);
+#endif
+		return next_ ? next_->forward_propagation_mask(omask, index) : omask;
+	}
+
     // offloaded layer is feedforward only, does not support training
     const vec_t& back_propagation(const vec_t& curr_delta, size_t index) override {
         throw "Not implemented";
@@ -124,6 +137,9 @@ public:
 
 protected:
     OffloadHandler offloadHandler_;
+    // hwkim added for ternary
+    OffloadHandler_Mask offloadHandler_mask_;
+
     OffloadConvParams * offloadConvParams_;
     unsigned int offloadID_;
 #ifdef SOLITAIRE

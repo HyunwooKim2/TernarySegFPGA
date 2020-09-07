@@ -95,8 +95,15 @@ config_interface -m_axi_addr64
 
 # syntesize and export
 create_clock -period $config_clkperiod -name default
-csim_design -argv "/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/../params/camvid_params/bnn_seg_net/1017/double_size /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/../params/camvid_params/bnn_seg_net/1017/input.bin 10 3" -compiler clang
+
+# for ternary using camvid input & fake params
+csim_design -argv "/home/hwkim/work/params/finn_ter_params/camvid_params/fake_params/double_size /home/hwkim/work/params/finn_params/camvid_params/1017/input.bin 10 3" -compiler clang	
+# for ternary using fake input & fake params
+#csim_design -argv "/home/hwkim/work/params/finn_ter_params/camvid_params/fake_params/double_size /home/hwkim/work/params/finn_ter_params/camvid_params/fake_params/input.bin 10 3" -compiler clang	
+# for binary
+#csim_design -argv "/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/../params/camvid_params/bnn_seg_net/1017/double_size /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/../params/camvid_params/bnn_seg_net/1017/input.bin 10 3" -compiler clang
 #csim_design -argv "/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/../params/camvid_params/bnn_seg_net/1017 /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/../params/camvid_params/bnn_seg_net/1017/input_multiple.bin 10 3" -compiler clang
+
 #csynth_design
 #cosim_design -argv "/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/../params/camvid_params/bnn_seg_net/1017 /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/../params/camvid_params/bnn_seg_net/1017/input.bin 10 3" -compiler clang
 #export_design -format ip_catalog

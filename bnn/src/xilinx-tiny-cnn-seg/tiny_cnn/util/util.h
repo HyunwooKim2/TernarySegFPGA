@@ -62,6 +62,8 @@ typedef cnn_size_t label_t;
 typedef cnn_size_t layer_size_t; // for backward compatibility
 
 typedef std::vector<float_t, aligned_allocator<float_t, 64>> vec_t;
+// hwkim added for ternary
+typedef std::vector<char, aligned_allocator<char, 8>> vec_c;
 
 enum class net_phase {
     train,
@@ -359,7 +361,7 @@ Stream& operator << (Stream& s, const index3d<T>& d) {
     return s;
 }
 
-
+// hwkim added for ternary - input_mask_ is added
 // boilerplate to resolve dependent name
 #define CNN_USE_LAYER_MEMBERS using layer_base::in_size_;\
     using layer_base::out_size_; \
@@ -368,6 +370,7 @@ Stream& operator << (Stream& s, const index3d<T>& d) {
     using layer_base::prev_; \
     using layer_base::a_; \
     using layer_base::output_; \
+    using layer_base::input_mask_; \
     using layer_base::prev_delta_; \
     using layer_base::W_; \
     using layer_base::b_; \

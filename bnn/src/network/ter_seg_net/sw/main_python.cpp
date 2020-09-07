@@ -99,9 +99,6 @@ extern "C" void load_parameters(const char* path) {
 }
 
 extern "C" int inference(const char* path,
-							// hwkim added for ternary
-							const char* path_mask,
-
 							int results[64],
 							int number_class,
 							float* usecPerImage)
@@ -115,9 +112,6 @@ extern "C" int inference(const char* path,
   std::vector<int> class_result;
   float usecPerImage_int;
 
-  // hwkim added for ternary
-  std::vector<vec_c> test_mask;
-
   FoldedMVInit("cnvW1A1");
   /* hwkim comment
    * input, output buffer new 할당
@@ -130,16 +124,13 @@ extern "C" int inference(const char* path,
   padding = 0;
 
   //parse_cifar10(path, &test_images, &test_labels, -1.0, 1.0, 0, 0);
-  //parse_cifar10(path, &test_images, &test_labels, -1.0, 1.0, padding, padding);	// hwkim modified for padding
-  parse_cifar10(path, &test_images, path_mask, &test_mask, &test_labels, -1.0, 1.0, padding, padding);	// hwkim modified for ternary
+  parse_cifar10(path, &test_images, &test_labels, -1.0, 1.0, padding, padding);	// hwkim modified for padding
   /* hwkim commented
    * 1-byte x->y->c 순서로 씌어진 input file을 읽어,
    * 0~255 input을 -1~1 사이 64-bit floating point로 scaling
    */
 
-  // hwkim modified for ternary
-  //class_result=testPrebuiltCIFAR10_from_image<8, 16, ap_int<16>>(test_images, number_class, usecPerImage_int);
-  class_result=testPrebuiltCIFAR10_from_image<8, 16, ap_int<16>>(test_images, test_mask, number_class, usecPerImage_int);
+  class_result=testPrebuiltCIFAR10_from_image<8, 16, ap_int<16>>(test_images, number_class, usecPerImage_int);
 
   if(results) {
     std::copy(class_result.begin(),class_result.end(), results);
@@ -151,9 +142,6 @@ extern "C" int inference(const char* path,
 }
 
 extern "C" int* inference_multiple(const char* path,
-										// hwkim added for ternary
-										const char* path_mask,
-
 										int number_class,
 										int* image_number,
 										float* usecPerImage,
@@ -164,15 +152,11 @@ extern "C" int* inference_multiple(const char* path,
   std::vector<int> all_result;
   float usecPerImage_int;
   int * result;
-  // hwkim added for ternary
-  std::vector<vec_c> test_masks;
 
   FoldedMVInit("cnvW1A1");
   network<mse, adagrad> nn;
   makeNetwork(nn);
-  // hwkim modified for ternary
-  //parse_cifar10(path, &test_images, &test_labels, -1.0, 1.0, 0, 0);
-  parse_cifar10(path, &test_images, path_mask, &test_masks, &test_labels, -1.0, 1.0, 0, 0); // need to be modified for multiple
+  parse_cifar10(path, &test_images, &test_labels, -1.0, 1.0, 0, 0);
 
   // hwkim modified
   //all_result=testPrebuiltCIFAR10_multiple_images<8, 16, ap_int<16>>(test_images, number_class, detailed_results, usecPerImage_int);
@@ -205,18 +189,12 @@ extern "C" void deinit() {
 }
 
 extern "C" int main(int argc, char** argv) {
-	  // hwkim modified for ternary
-//  if (argc != 5) {
-//    cout << "4 parameters arBSSe needed: " << endl;
-  if (argc != 6) {
-	  cout << "5 parameters arBSSe needed: " << endl;
-
+  if (argc != 5) {
+    cout << "4 parameters arBSSe needed: " << endl;
     cout << "1 - folder for the binarized weights (binparam-***) - full path " << endl;
     cout << "2 - path to image to be classified" << endl;
     cout << "3 - number of classes in the dataset" << endl;
     cout << "4 - expected result" << endl;
-    // hwkim added for ternary
-    cout << "5 - path to image mask of non-zero" << endl;
 
     return 1;
   }
@@ -231,9 +209,7 @@ extern "C" int main(int argc, char** argv) {
   int scores[64];
 
   load_parameters(argv[1]);
-  // hwkim modified for ternary
-  //class_inference = inference(argv[2], scores, atol(argv[3]), &execution_time);
-  class_inference = inference(argv[2], argv[5], scores, atol(argv[3]), &execution_time);
+  class_inference = inference(argv[2], scores, atol(argv[3]), &execution_time);
 
   //class_inference = inference_multiple(argv[2], 0, image_number_dummy, execution_time, 0);
 

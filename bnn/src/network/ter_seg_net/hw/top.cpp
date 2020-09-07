@@ -113,6 +113,28 @@ string golden_file_dir = "/home/hwkim/work/params/guinness_params/camvid_params/
 string snapshot_dir = "/home/hwkim/work/params/finn_params/camvid_params/1017/snapshots/single_image/";
 #endif
 
+// hwkim added for ternary
+template <unsigned int InStreamW, unsigned int OutStreamW>
+void InputMaskGeneration(
+		stream<ap_uint<InStreamW>>& in,
+		stream<ap_uint<InStreamW>>& in_bypass,
+		stream<ap_uint<OutStreamW>>& mask
+		){
+	while(!in.empty()){
+		ap_uint<24> in_tmp=0;
+		ap_uint<3> mask_tmp=0;
+		in_tmp = in.read();
+		in_bypass.write(in_tmp);
+		for(int inf=0; inf<3; inf++){
+			mask_tmp = mask_tmp >> 1;
+			if((in_tmp & 0xff) == 0)
+				mask_tmp = mask_tmp | 0x4;
+			in_tmp = in_tmp >> 8;
+		}
+		mask.write(mask_tmp);
+	}
+}
+
 // hwkim added to find inferred category
 template <unsigned int InStreamW, unsigned int OutStreamW>
 void infer_category(
@@ -522,7 +544,11 @@ void DoMemInit(int targetLayer,
   }
 }
 
-void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
+void DoCompute(
+		ap_uint<64> *in,
+		ap_uint<64>* out,
+		const unsigned int numReps
+) {
 #pragma HLS DATAFLOW
   stream<ap_uint<64>> inter0("DoCompute.inter0");
 #pragma HLS STREAM variable=inter0 //depth=256
@@ -565,31 +591,35 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 #endif
 
   // hwkim added for ternary
-//  stream<ap_uint<64>> inter0("DoCompute.inter0");
-//#pragma HLS STREAM variable=inter0//depth=256
-//  stream<ap_uint<192>> inter0_1("DoCompute.inter0_1");
-//#pragma HLS STREAM variable=inter0_1 //depth=256
-//  stream<ap_uint<24>> inter0_2("DoCompute.inter0_2");
-//#pragma HLS STREAM variable=inter0_2 //depth=256
-  stream<ap_uint<64>> inter1_mask("DoCompute.inter1");
+  stream<ap_uint<24>> inter0_2_maskgen("DoCompute.inter0_2_maskgen");
+#pragma HLS STREAM variable=inter0_2_maskgen //depth=256
+
+  // hwkim added for ternary
+  stream<ap_uint<64>> inter0_mask("DoCompute.inter0_mask");
+#pragma HLS STREAM variable=inter0_mask	//depth=256
+  stream<ap_uint<192>> inter0_1_mask("DoCompute.inter0_1_mask");
+#pragma HLS STREAM variable=inter0_1_mask	//depth=256
+  stream<ap_uint<3>> inter0_2_mask("DoCompute.inter0_2_mask");
+#pragma HLS STREAM variable=inter0_2_mask //depth=256
+  stream<ap_uint<64>> inter1_mask("DoCompute.inter1_mask");
 #pragma HLS STREAM variable=inter1_mask //depth=256
-  stream<ap_uint<64>> inter2_mask("DoCompute.inter2");
+  stream<ap_uint<64>> inter2_mask("DoCompute.inter2_mask");
 #pragma HLS STREAM variable=inter2_mask //depth=256
-  stream<ap_uint<128>> inter3_mask("DoCompute.inter3");
+  stream<ap_uint<128>> inter3_mask("DoCompute.inter3_mask");
 #pragma HLS STREAM variable=inter3_mask //depth=256
-  stream<ap_uint<128>> inter4_mask("DoCompute.inter4");
+  stream<ap_uint<128>> inter4_mask("DoCompute.inter4_mask");
 #pragma HLS STREAM variable=inter4_mask //depth=256
-  stream<ap_uint<256>> inter5_mask("DoCompute.inter5");
+  stream<ap_uint<256>> inter5_mask("DoCompute.inter5_mask");
 #pragma HLS STREAM variable=inter5_mask //depth=256
-  stream<ap_uint<256>> inter6_mask("DoCompute.inter6");
+  stream<ap_uint<256>> inter6_mask("DoCompute.inter6_mask");
 #pragma HLS STREAM variable=inter6_mask //depth=256
-  stream<ap_uint<128>> inter7_mask("DoCompute.inter7");
+  stream<ap_uint<128>> inter7_mask("DoCompute.inter7_mask");
 #pragma HLS STREAM variable=inter7_mask //depth=256
-  stream<ap_uint<128>> inter8_mask("DoCompute.inter8");
+  stream<ap_uint<128>> inter8_mask("DoCompute.inter8_mask");
 #pragma HLS STREAM variable=inter8_mask //depth=256
-  stream<ap_uint<64>> inter9_mask("DoCompute.inter9");
+  stream<ap_uint<64>> inter9_mask("DoCompute.inter9_mask");
 #pragma HLS STREAM variable=inter9_mask //depth=256
-  stream<ap_uint<64>> inter10_mask("DoCompute.inter10");
+  stream<ap_uint<64>> inter10_mask("DoCompute.inter10_mask");
 #pragma HLS STREAM variable=inter10_mask //depth=256
 
   // hwkim modified for padding & segmentation
@@ -618,7 +648,6 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 #endif
 
 	Mem2Stream_Batch<64, inBits / 8>(in, inter0, numReps);
-
 	// hwkim modified for padding & segmentation
 	//StreamingDataWidthConverter_Batch<64, 192, (32 * 32 * 3 * 8) / 64>(inter0, inter0_1, numReps);
 	//StreamingDataWidthConverter_Batch<192, 24, (32 * 32 * 3 * 8) / 192>(inter0_1, inter0_2, numReps);
@@ -626,7 +655,12 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 	//StreamingDataWidthConverter_Batch<64, 192, (L0_IFM_DIM*L0_IFM_HEIGHT*3*8)/64+1>(inter0, inter0_1, numReps);
 	//StreamingDataWidthConverter_Batch<192, 24, (L0_IFM_DIM*L0_IFM_HEIGHT*3*8)/192+1>(inter0_1, inter0_2, numReps);
 	StreamingDataWidthConverter_Batch<64, 192, (L0_IFM_DIM*L0_IFM_HEIGHT*3*8)/64>(inter0, inter0_1, numReps);
-	StreamingDataWidthConverter_Batch<192, 24, (L0_IFM_DIM*L0_IFM_HEIGHT*3*8)/192>(inter0_1, inter0_2, numReps);
+	// hwkim modified for ternary
+	//StreamingDataWidthConverter_Batch<192, 24, (L0_IFM_DIM*L0_IFM_HEIGHT*3*8)/192>(inter0_1, inter0_2, numReps);
+	StreamingDataWidthConverter_Batch<192, 24, (L0_IFM_DIM*L0_IFM_HEIGHT*3*8)/192>(inter0_1, inter0_2_maskgen, numReps);
+
+	// hwkim added for ternary
+	InputMaskGeneration<24, 3>(inter0_2_maskgen, inter0_2, inter0_2_mask);
 
 #ifdef SEP_SIM
 	if(sep_sim_layer1_en)
@@ -636,16 +670,18 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 		//////////////////////////////////////////////////////////////////
 		ConvLayer_Batch
 			<L0_K, L0_IFM_CH, L0_IFM_DIM, L0_OFM_CH, L0_OFM_DIM, L0_IFM_HEIGHT, L0_OFM_HEIGHT,
-				1, 1, 1, 1, 1,
+			1, 1, 1, 1, 1,
 #ifdef ACTIVATION_LOG
-				0,
+			0,
 #endif
-				L0_SIMD, L0_PE,
-				ap_uint<1>,	// hwkim added for batch norm scale
-				Slice<ap_fixed<8, 1, AP_TRN, AP_SAT>>, Identity, Recast<Binary>>
-					(inter0_2, inter1, weights0,
-						wmasks0,	// hwkim added for ternary
-						threshs0, numReps, ap_resource_lut());
+			L0_SIMD, L0_PE,
+			ap_uint<1>,	// hwkim added for batch norm scale
+			Slice<ap_fixed<8, 1, AP_TRN, AP_SAT>>, Identity, Recast<Binary>>
+				(inter0_2,
+				inter0_2_mask,
+				inter1, weights0,
+				wmasks0,	// hwkim added for ternary
+				threshs0, numReps, ap_resource_lut());
 #ifdef SEP_SIM
 	else
 		read_activation_file<L0_OFM_CH>(inter1, 0);
@@ -700,10 +736,10 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 				L1_SIMD, L1_PE,
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
-					(inter1, inter2, weights1,
-					// hwkim added for ternary
-					wmasks1,
-
+					(inter1,
+					inter1_mask,	// hwkim added for ternary
+					inter2, weights1,
+					wmasks1,	// hwkim added for ternary
 					threshs1, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 		else
@@ -757,10 +793,10 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 				L2_SIMD, L2_PE,
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
-					(inter2, inter3, weights2,
-					// hwkim added for ternary
-					wmasks2,
-
+					(inter2,
+					inter2_mask,	// hwkim added for ternary
+					inter3, weights2,
+					wmasks2,	// hwkim added for ternary
 					threshs2, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 		else
@@ -814,10 +850,10 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 				L3_SIMD, L3_PE,
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
-					(inter3, inter4, weights3,
-					// hwkim added for ternary
-					wmasks3,
-
+					(inter3,
+					inter3_mask,	// hwkim added for ternary
+					inter4, weights3,
+					wmasks3,	// hwkim added for ternary
 					threshs3, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 			else
@@ -871,10 +907,10 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 				L4_SIMD, L4_PE,
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
-					(inter4, inter5, weights4,
-					// hwkim added for ternary
-					wmasks4,
-
+					(inter4,
+					inter4_mask,	// hwkim added for ternary
+					inter5, weights4,
+					wmasks4,	// hwkim added for ternary
 					threshs4, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 			else
@@ -928,10 +964,10 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 				L5_SIMD, L5_PE,
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
-					(inter5, inter6, weights5,
-					// hwkim added for ternary
-					wmasks5,
-
+					(inter5,
+					inter5_mask,	// hwkim added for ternary
+					inter6, weights5,
+					wmasks5,	// hwkim added for ternary
 					threshs5, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 			else
@@ -1030,10 +1066,10 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 				L7_SIMD, L7_PE,
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
-					(inter7, inter8, weights7,
-					// hwkim added for ternary
-					wmasks7,
-
+					(inter7,
+					inter7_mask,	// hwkim added for ternary
+					inter8, weights7,
+					wmasks7,	// hwkim added for ternary
 					threshs7, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 			else
@@ -1128,10 +1164,10 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 				L9_SIMD, L9_PE,
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
-					(inter9, inter10, weights9,
-					// hwkim added for ternary
-					wmasks9,
-
+					(inter9,
+					inter9_mask,	// hwkim added for ternary
+					inter10, weights9,
+					wmasks9,	// hwkim added for ternary
 					threshs9, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 		else
@@ -1174,8 +1210,10 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 	#ifdef SEP_SIM
 		if(sep_sim_layer11_en)
 	#endif
-			ConvLayer_Batch<L10_K, L10_IFM_CH, L10_IFM_DIM, L10_OFM_CH, L10_OFM_DIM,
-				L10_IFM_HEIGHT, L10_OFM_HEIGHT, 1, 1, 1, 1, 1,
+			ConvLayer_Batch
+				<L10_K, L10_IFM_CH, L10_IFM_DIM, L10_OFM_CH, L10_OFM_DIM,
+				L10_IFM_HEIGHT, L10_OFM_HEIGHT,
+				1, 1, 1, 1, 1,
 	#ifdef ACTIVATION_LOG
 				10,
 	#endif
@@ -1183,11 +1221,11 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 				ap_fixed<24,16,AP_TRN,AP_SAT>,	// hwkim added for batch norm scale
 				Recast<XnorMul>,
 				Slice<ap_fixed<24,16,AP_TRN,AP_SAT> >>	//Slice<ap_int<16> >>	// hwkim modified for batch norm scale
-				(inter10, inter11, weights10,
-				// hwkim added for ternary
-				wmasks10,
-
-				threshs10, numReps, ap_resource_lut());
+					(inter10,
+					inter10_mask,	// hwkim added for ternary
+					inter11, weights10,
+					wmasks10,	// hwkim added for ternary
+					threshs10, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 		else
 			// hwkim modified for batch norm scale
@@ -1226,15 +1264,18 @@ void DoCompute(ap_uint<64> *in, ap_uint<64>* out, const unsigned int numReps) {
 
 }
 
-void BlackBoxJam(ap_uint<64> *in, ap_uint<64> *out, bool doInit,
-		// hwkim modified for batch norm scale
-		int targetLayer,	//unsigned int targetLayer,
-
+void BlackBoxJam(
+		ap_uint<64> *in,
+		ap_uint<64> *out,
+		bool doInit,
+		/*unsigned*/ int targetLayer,	// hwkim modified for batch norm scale
 		unsigned int targetMem,
-		unsigned int targetInd, unsigned int targetThresh, ap_uint<64> val, unsigned int numReps) {
-	/* hwkim commented
-	 * numReps - number of repetitions? (input image 장 수)
-	 */
+		unsigned int targetInd,
+		unsigned int targetThresh,
+		ap_uint<64> val,
+		unsigned int numReps
+) {
+		// hwkim commented - numReps - input image 장 수
 // pragmas for MLBP jam interface
 // signals to be mapped to the AXI Lite slave port
 #pragma HLS INTERFACE s_axilite port=return bundle=control
@@ -1317,6 +1358,19 @@ void BlackBoxJam(ap_uint<64> *in, ap_uint<64> *out, bool doInit,
 #pragma HLS RESOURCE variable=threshs9.m_thresholds core=RAM_1P_LUTRAM
 #pragma HLS RESOURCE variable=threshs10.m_thresholds core=RAM_1P_LUTRAM
 //#pragma HLS RESOURCE variable=threshs10.m_scales core=RAM_1P_LUTRAM
+
+// hwkim added for ternary
+#pragma HLS ARRAY_PARTITION variable=wmasks0.m_masks complete dim=1
+#pragma HLS ARRAY_PARTITION variable=wmasks1.m_masks complete dim=1
+#pragma HLS ARRAY_PARTITION variable=wmasks2.m_masks complete dim=1
+#pragma HLS ARRAY_PARTITION variable=wmasks3.m_masks complete dim=1
+#pragma HLS ARRAY_PARTITION variable=wmasks4.m_masks complete dim=1
+#pragma HLS ARRAY_PARTITION variable=wmasks5.m_masks complete dim=1
+#pragma HLS ARRAY_PARTITION variable=wmasks6.m_masks complete dim=1
+#pragma HLS ARRAY_PARTITION variable=wmasks7.m_masks complete dim=1
+#pragma HLS ARRAY_PARTITION variable=wmasks8.m_masks complete dim=1
+#pragma HLS ARRAY_PARTITION variable=wmasks9.m_masks complete dim=1
+#pragma HLS ARRAY_PARTITION variable=wmasks10.m_masks complete dim=1
 
   if (doInit) {
     DoMemInit(targetLayer, targetMem, targetInd, targetThresh, val);

@@ -130,6 +130,10 @@ if [[ ("$MODE" == "h") || ("$MODE" == "a")  ]]; then
 	PARAMS="$XILINX_BNN_ROOT/../params/camvid_params/$NETWORK/0829"
 	TEST_INPUT="$XILINX_BNN_ROOT/../params/camvid_params/$NETWORK/0829/input.bin"
 	TEST_RESULT=3
+  elif [[ ("$NETWORK" == "ter_seg_net") ]]; then
+	PARAMS="$XILINX_BNN_ROOT/../params/camvid_params/$NETWORK/fake_params"
+	TEST_INPUT="$XILINX_BNN_ROOT/../params/camvid_params/$NETWORK/fake_params/input.bin"
+	TEST_RESULT=3
   fi
 
   if [[ ("$PLATFORM" == "pynqZ1-Z2") ]]; then

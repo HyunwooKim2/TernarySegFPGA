@@ -73,8 +73,10 @@ template<unsigned int ConvKernelDim,
 		 unsigned int SIMD,
 		 unsigned int Stride = 1>
 void ConvolutionInputGenerator(
-		stream<ap_uint<SIMD*Input_precision> > & in,
-		stream<ap_uint<SIMD*Input_precision> > & out,
+		stream<ap_uint<SIMD*Input_precision>> & in,
+		stream<ap_uint<SIMD>> & in_mask,	//hwkim added for ternary
+		stream<ap_uint<SIMD*Input_precision>> & out,
+		stream<ap_uint<SIMD>> & out_mask,	// hwkim added for ternary
 		const unsigned int numReps = 1) {
   if(IFMChannels % SIMD != 0) {
     cout << "Error: IFM channels has to be a multiple of SIMD" << endl;
@@ -96,6 +98,9 @@ void ConvolutionInputGenerator(
   //ap_uint<SIMD*Input_precision> inputBuf[number_blocks][Stride * IFMDim * multiplying_factor];
   const unsigned int number_blocks = ConvKernelDim + Stride;
   ap_uint<SIMD*Input_precision> inputBuf[number_blocks][IFMDim * multiplying_factor];
+
+  // hwkim added for ternary
+  ap_uint<SIMD> imaskBuf[number_blocks][IFMDim * multiplying_factor];
 
 #pragma HLS ARRAY_PARTITION variable=inputBuf complete dim=1
 #pragma HLS RESOURCE variable inputBuf core=RAM_2P
@@ -131,7 +136,12 @@ void ConvolutionInputGenerator(
 #ifdef ACTIVATION_LOG
 	ofstream conv_in_gen_log_file("conv_in_gen_log.txt");
 	if(!conv_in_gen_log_file.is_open()){
-		cout << "conv_in_gen_log_file open error!!" << endl;
+		cout << "conv_in_gen_log.txt open error!!" << endl;
+	}
+	// hwkim added for ternary
+	ofstream conv_imask_gen_log_file("conv_imask_gen_log.txt");
+	if(!conv_imask_gen_log_file.is_open()){
+		cout << "conv_imask_gen_log.txt open error!!" << endl;
 	}
 #endif
 
@@ -145,9 +155,14 @@ void ConvolutionInputGenerator(
 	  if (inp < IFMDim * (ConvKernelDim - Top) * multiplying_factor) {// Initial buffer of ConvKernelDim lines
 
     	  ap_uint<SIMD*Input_precision> inElem;
-
     	  inElem = in.read();
     	  inputBuf[current_block_write][current_line] = inElem;
+
+
+    	  // hwkim added for ternary
+		  ap_uint<SIMD> imaskElem;
+		  imaskElem = in_mask.read();
+		  imaskBuf[current_block_write][current_line] = imaskElem;
 
     	  current_line++;
     	  inp++;
@@ -187,6 +202,8 @@ void ConvolutionInputGenerator(
 			  // hwkim modified for padding
 			  //ap_uint<SIMD*Input_precision> outElem = inputBuf[current_block_read_kernel][(current_line_in_block)];
 			  ap_uint<SIMD*Input_precision> outElem;
+			  // hwkim added for ternary
+			  ap_uint<SIMD> omaskElem;
 			  if(((ofm_y < 0) && (k_y < -ofm_y)) ||
 				  ((ofm_x < 0) && (k_x < -ofm_x)) ||
 				  ((ofm_y >= (OFMHeight-1-Bottom-1)) && (k_y > OFMHeight-Bottom-Bottom+1-ofm_y+(Bottom-Top))) ||
@@ -197,8 +214,13 @@ void ConvolutionInputGenerator(
 			  else{
 				  outElem = inputBuf[current_block_read_kernel][(current_line_in_block)];
 		    	  out.write(outElem);
+		    	  // hwkim added for ternary
+		    	  omaskElem = imaskBuf[current_block_read_kernel][(current_line_in_block)];
+				  out_mask.write(omaskElem);
+
 #ifdef ACTIVATION_LOG
 		    	  conv_in_gen_log_file << hex << (unsigned int)outElem << " ";
+		    	  conv_imask_gen_log_file << hex << (unsigned int)omaskElem << " ";	// hwkim added for ternary
 #endif
 			  }
     		  // hwkim added for debug
@@ -216,18 +238,21 @@ void ConvolutionInputGenerator(
 				  k_x++;
 #ifdef ACTIVATION_LOG
 				  conv_in_gen_log_file << " | ";
+				  conv_imask_gen_log_file << " | ";	// hwkim added for ternary
 #endif
 				  if (k_x == ConvKernelDim) {
 					  k_x = 0;
 					  k_y++;
 #ifdef ACTIVATION_LOG
 					  conv_in_gen_log_file << endl;
+					  conv_imask_gen_log_file << endl;	// hwkim added for ternary
 #endif
 					  if (k_y == ConvKernelDim) {
 						  // hwkim added for debug
-//						  cout << "=================================================" << endl;
+//						  cout << std::string(30, '=') << endl;
 #ifdef ACTIVATION_LOG
 						  conv_in_gen_log_file << "x,y=" << dec << (ofm_x+Left) << "," << (ofm_y+Top) << endl;
+						  conv_imask_gen_log_file << "x,y=" << dec << (ofm_x+Left) << "," << (ofm_y+Top) << endl;	// hwkim added for ternary
 #endif
 						  k_y = 0;
 						  ofm_x ++;
@@ -252,15 +277,23 @@ void ConvolutionInputGenerator(
 
         	  // In parallel we write in the buffer, in the current block write if we still need to
         	  ap_uint<SIMD*Input_precision> inElem;
+        	  // hwkim modified for ternary
+        	  ap_uint<SIMD*Input_precision> imaskElem;
 
         	  // hwkim modified for debug
-			  if(in.empty())
-				  printf("ConvInpGen stream read empty!!\n");
+			  if(in.empty())	printf("ConvInpGen in stream read empty!!\n");
+			  if(in_mask.empty())	printf("ConvInpGen in_mask stream read empty!!\n");	// hwkim added for ternary
 
         	  inElem = in.read();
         	  inputBuf[current_block_write][current_line] = inElem;
 #pragma AP dependence variable=inputBuf intra false
 #pragma AP dependence variable=inputBuf inter false
+        	  // hwkim added for ternary
+        	  imaskElem = in_mask.read();
+        	  imaskBuf[current_block_write][current_line] = imaskElem;
+#pragma AP dependence variable=imaskBuf intra false
+#pragma AP dependence variable=imaskBuf inter false
+
         	  current_line++;
         	  // hwkim modified for stride
         	  //if (current_line == Stride * IFMDim * multiplying_factor) {// We read the whole block, we change the next block in which we want to we
@@ -292,6 +325,7 @@ void ConvolutionInputGenerator(
   } // End count_image
 #ifdef ACTIVATION_LOG
   conv_in_gen_log_file.close();
+  conv_imask_gen_log_file.close();
 #endif
 } // End generator
 

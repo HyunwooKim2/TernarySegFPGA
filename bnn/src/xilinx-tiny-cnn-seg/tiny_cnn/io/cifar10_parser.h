@@ -62,6 +62,8 @@ namespace tiny_cnn {
  **/
 inline void parse_cifar10(const std::string& filename,
                           std::vector<vec_t> *train_images,
+//						  	  const std::string& filename_mask,	// hwkim added for ternary
+//						  	  std::vector<vec_t> *train_mask,	// hwkim added for ternary
                           std::vector<label_t> *train_labels,
                           float_t scale_min,
                           float_t scale_max,
@@ -77,6 +79,11 @@ inline void parse_cifar10(const std::string& filename,
     if (ifs.fail() || ifs.bad())
         throw nn_error("failed to open file:" + filename);
 
+    // hwkim added for ternary
+//    std::ifstream imaskfs(filename_mask.c_str(), std::ios::in | std::ios::binary);
+//    if (imaskfs.fail() || imaskfs.bad())
+//        throw nn_error("failed to open file:" + filename_mask);
+
     // hwkim commented for segmentation
     //uint8_t label;
     
@@ -85,7 +92,6 @@ inline void parse_cifar10(const std::string& filename,
     // hwkim modified for segmentation - removing category
     //while (ifs.read((char*) &label, 1)) {
     while(!ifs.eof()){
-
         vec_t img;
 
         if (!ifs.read((char*) &buf[0], CIFAR10_IMAGE_SIZE)) break;
@@ -129,18 +135,7 @@ inline void parse_cifar10(const std::string& filename,
             		}
             		parse_cifar10_log_file << std::endl;
             	}
-            	parse_cifar10_log_file << "================================"
-            			<< "================================"
-						<< "================================"
-						<< "================================"
-						<< "================================"
-						<< "================================"
-						<< "================================"
-						<< "================================"
-						<< "================================"
-						<< "================================"
-						<< "================================"
-            			<< std::endl;
+            	parse_cifar10_log_file << std::string(100, '=') << std::endl;
             }
             parse_cifar10_log_file.close();
 #endif
@@ -152,9 +147,24 @@ inline void parse_cifar10(const std::string& filename,
         }
 
         train_images->push_back(img);
-	// hwkim commented for segmentation
+        // hwkim commented for segmentation
         //train_labels->push_back(label);
     }
+
+    // hwkim added for ternary
+//    while(!imaskfs.eof()){
+//        vec_t img_mask;
+//        if (!imaskfs.read((char*) &buf[0], CIFAR10_IMAGE_SIZE)) break;
+//        if (x_padding || y_padding){
+//        	std::cout << "error! padding for mask is not implemented!!" << std::endl;
+//         }
+//        else{
+//            std::transform(buf.begin(), buf.end(), std::back_inserter(img_mask),
+//					[=](unsigned char c) { return c; });
+//         }
+//        train_mask->push_back(img_mask);
+//    }
+
 }
 
 } // namespace tiny_cnn

@@ -243,7 +243,6 @@
 
 // hwkim modified for ternary
 // NumTH
-/*
 #define L0_API 1
 #define L1_API 1
 #define L2_API 1
@@ -255,18 +254,17 @@
 #define L8_API 1
 #define L9_API 1
 #define L10_API 1
-*/
-#define L0_API 2
-#define L1_API 2
-#define L2_API 2
-#define L3_API 2
-#define L4_API 2
-#define L5_API 2
-#define L6_API 2
-#define L7_API 2
-#define L8_API 2
-#define L9_API 2
-#define L10_API 2
+//#define L0_API 2
+//#define L1_API 2
+//#define L2_API 2
+//#define L3_API 2
+//#define L4_API 2
+//#define L5_API 2
+//#define L6_API 2
+//#define L7_API 2
+//#define L8_API 2
+//#define L9_API 2
+//#define L10_API 2
 
 //#define L0_WPF 0
 //#define L0_APF 0

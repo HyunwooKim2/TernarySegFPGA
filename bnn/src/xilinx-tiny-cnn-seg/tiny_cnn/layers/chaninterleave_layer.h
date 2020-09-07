@@ -74,7 +74,8 @@ public:
 
     std::string layer_type() const override { return "chaninterleave_layer"; }
 
-    const vec_t& forward_propagation(const vec_t& in, size_t index) override {
+    const vec_t& forward_propagation(const vec_t& in, size_t index) override
+    {
         vec_t& a = a_[index];
         vec_t& out = output_[index];
 
@@ -102,25 +103,58 @@ public:
 		for(int c=0; c<channels_; c++){
 			for(int pix=0; pix<w*h; pix++){
 				chaninterleave_log_file << std::setw(15) << out[pix*channels_+c] << "|";
-				if(pix%w==(w-1))
+				if(pix%w==(w-1)){
 					chaninterleave_log_file << std::endl;
+				}
 			}
-			chaninterleave_log_file << "================================"
-					<< "================================"
-					<< "================================"
-					<< "================================"
-					<< "================================"
-					<< "================================"
-					<< "================================"
-					<< "================================"
-					<< "================================"
-					<< "================================"
-					<< "================================"
-					<< std::endl;
+			chaninterleave_log_file << std::string(100, '=') << std::endl;
 		}
 		chaninterleave_log_file.close();
 #endif
-        return next_ ? next_->forward_propagation(out, index) : out;
+       return next_ ? next_->forward_propagation(out, index) : out;
+    }
+
+    // hwkim added for ternary
+    const vec_c& forward_propagation_mask(const vec_c& imask, size_t index)	override
+    {
+        //vec_t& a = a_[index];
+        vec_c& mask = input_mask_[index];
+
+        for(unsigned int c = 0; c < channels_; c++){
+        	for(unsigned int pix = 0; pix < pixelsPerChan_; pix++){
+        		if(deinterleave_){
+        			throw "Not implemented";
+        		}
+        		else{
+        			mask[pix*channels_ + c] = imask[c * pixelsPerChan_ + pix];
+        		}
+        	}
+        }
+// hwkim modified for debug
+#ifdef ACTIVAITON_LOG
+        // hwkim modified for padding
+//		int w = 480+2;
+//		int h = 360+2;
+		int w = 480;
+		int h = 360;
+
+		std::ofstream chaninterleave_mask_log_file("chaninterleave_mask_log.txt");
+		if(!chaninterleave_mask_log_file.is_open()){
+			std::cout << "chaninterleave_mask_log_file open error!!" << std::endl;
+		}
+
+		for(int c=0; c<channels_; c++){
+			for(int pix=0; pix<w*h; pix++){
+				chaninterleave_mask_log_file << std::setw(15) << mask[pix*channels_+c] << "|";
+				if(pix%w==(w-1)){
+					chaninterleave_mask_log_file << std::endl;
+				}
+			}
+			chaninterleave_mask_log_file << std::string(100, '=') << std::endl;
+		}
+		chaninterleave_mask_log_file.close();
+#endif
+		return next_ ? next_->forward_propagation_mask(mask, index) : mask;
     }
 
     virtual const vec_t& back_propagation(const vec_t& current_delta, size_t index) override {

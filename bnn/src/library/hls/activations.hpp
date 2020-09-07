@@ -125,13 +125,15 @@ template<unsigned NF, unsigned PE, unsigned NumTH,
 	 typename TA, typename TR, int ActVal = 0, typename Compare = std::less<TA>>
 class ThresholdsActivation {
 public:
-  TA m_thresholds[PE][NF][NumTH];
+  //TA m_thresholds[PE][NF][NumTH];
   /* hwkim commented
    * TA
    * 	layer 0 -> ap_fixed<24,16>
    * 	other layers -> ap_int<16>
-   * NumTH -> threshold 개수?
+   * NumTH -> threshold 개수 -> API가 2이면 2-bit(ternary) 의미 -> threshold가 2개 필요
    */
+  // hwkim modified for ternary
+  TA m_thresholds[PE][NF][NumTH];
   
 public:
   TA init(unsigned const  nf, unsigned const  pe) const {
@@ -143,25 +145,30 @@ public:
 //  TR activate(unsigned const  nf, unsigned const  pe,  TA const &accu) const {
     TR activate(unsigned const  nf, unsigned const  pe,  TA const &accu, TA const fan_in) const {
 #pragma HLS inline
-    TR result=ActVal;
-
-    // hwkim modified for positive only accum
-    //TA act = accu + m_thresholds[pe][nf][0];
-    TA act = accu + (m_thresholds[pe][nf][0]>>1);
-
-    // hwkim modified for positive only accum
-    //if(act >= (TR)0)
-    if(act >= (fan_in>>1))
-    	result = (TR)1;
-    else
-    	result = (TR)0;
-
-//	for(unsigned int i=0; i< NumTH; i++){
-//#pragma HLS unroll
-//      result+=Compare()(m_thresholds[pe][nf][i], accu);
-//    }
-    return result;
-  }
+		TR result=ActVal;
+		// original code
+		/*
+		for(unsigned int i=0; i< NumTH; i++){
+#pragma HLS unroll
+		  result+=Compare()(m_thresholds[pe][nf][i], accu);
+		}
+		*/
+		// hwkim modified for ternary
+		TA act = accu + (m_thresholds[pe][nf][0]>>1);	// sign of thres is inverted by trainer
+		if(act >= (fan_in>>1))
+			result = (TR)1;
+		else
+			result = (TR)0;
+//		TA thres_p_new =  (-m_thresholds[pe][nf][0])>>1 + fan_in>>1;	//threshold scaling and shift
+//		TA thres_n_new =  (-m_thresholds[pe][nf][1])>>1 + fan_in>>1;
+//		if(accu >= thres_p_new)
+//			result = (TR)1;
+//		else if(accu < thres_n_new)
+//			result = (TR)(-1);
+//		else
+//			result = (TR)0;
+		return result;
+    }
 };
 
 // hwkim added for last fc layer
@@ -227,7 +234,7 @@ public:
 
     // hwkim modified for positive only accum
     TA act = accu + m_thresholds[pe][nf][0];
-//    cout << setprecision(9) << "accu" << pe << "=" << act << endl;
+    //cout << setprecision(9) << act << " "; //<< "accu" << pe << "=" << act << endl;
 
     // hwkim modified for positive only accum
     if(act >= (TA)0)

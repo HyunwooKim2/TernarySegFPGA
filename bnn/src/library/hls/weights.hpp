@@ -146,4 +146,48 @@ class FixedPointWeights {
     return  TileIndex(*this, tile);
   }
 };
+
+// hwkim modified for ternary
+template<unsigned SIMD, unsigned PE, unsigned TILES>
+class BinaryMasks {
+ public:
+  ap_uint<SIMD>  m_masks[PE][TILES];
+
+ private:
+  /**
+   * Temporary container for the tile index to implement the
+   * memory access in pe -> tile order.
+   */
+  class TileIndex {
+	  BinaryMasks const &m_par;
+    /* hwkim commented
+     * BinaryWeights의 참조자
+     * 	-> BinaryWeights class instance(object)가 아님!!!
+     */
+    unsigned      const  m_idx;
+
+   public:
+    TileIndex(BinaryMasks const &par, unsigned const  idx)
+      : m_par(par), m_idx(idx) {
+#pragma HLS inline
+    }
+
+   public:
+    ap_uint<SIMD> operator[](unsigned const  pe) const {
+#pragma HLS inline
+    	// hwkim added for pipeline lack of memory port
+//#pragma HLS ARRAY_PARTITION variable=m_par.m_weights complete dim=1
+
+      return  m_par.m_masks[pe][m_idx];
+    }
+  };
+
+ public:
+  TileIndex masks(unsigned const  tile) const {
+#pragma HLS inline
+    return  TileIndex(*this, tile);
+  }
+};
+
+
 #endif

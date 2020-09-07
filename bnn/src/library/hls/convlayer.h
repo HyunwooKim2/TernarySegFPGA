@@ -66,39 +66,38 @@ template<
 		unsigned int IFMDim,			// width of input feature map (assumed square)
 		unsigned int OFMChannels,		// number of output feature maps
 		unsigned int OFMDim,			// IFMDim-ConvKernelDim+1 or less
-		
-		// hwkim added for segmentation
-		unsigned int IFMHeight,
-		unsigned int OFMHeight,
-		unsigned int Stride,
-		unsigned int Top,
-		unsigned int Bottom,
-		unsigned int Left,
-		unsigned int Right,
+		unsigned int IFMHeight,	// hwkim added for segmentation
+		unsigned int OFMHeight,	// hwkim added for segmentation
+		unsigned int Stride,	// hwkim added for segmentation
+		unsigned int Top,	// hwkim added for segmentation
+		unsigned int Bottom,	// hwkim added for segmentation
+		unsigned int Left,	// hwkim added for segmentation
+		unsigned int Right,	// hwkim added for segmentation
 #ifdef ACTIVATION_LOG
 		unsigned int LayerCnt,
 #endif
-
-		unsigned int SIMD, 				// number of SIMD lanes
-		unsigned int PE,				// number of PEs
-		
-		// hwkim added for batch norm scale
-		typename TDstElem,
-
+		unsigned int SIMD,	// number of SIMD lanes
+		unsigned int PE,		// number of PEs
+		typename TDstElem,	// hwkim added for batch norm scale
 		typename TSrcI = Identity,      // redefine I/O interpretation as needed for input activations
 		typename TDstI = Identity,		// redefine I/O interpretation as needed for output activations
 		typename TWeightI = Identity,	// redefine I/O interpretation as needed for weigths
-
 		int InStreamW, int OutStreamW,  // safely deducible (stream width must be int though!)
-		typename TW,   typename TA,  typename R
->
-void ConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
-			    hls::stream<ap_uint<OutStreamW>> &out,
-			    TW const        &weights,
-			    TA const        &activation,
-			    unsigned const   reps,
+		int InMaskStreamW,	// hwkim added for ternary
+		typename TW,
+		typename TM,	// hwkim added for ternary
+		typename TA,
+		typename R>
+void ConvLayer_Batch(
+				hls::stream<ap_uint<InStreamW>> &in,
+				hls::stream<ap_uint<InMaskStreamW>> &in_mask,	// hwkim added for ternary
+				hls::stream<ap_uint<OutStreamW>> &out,
+				TW const &weights,
+				TM const &wmasks,	// hwkim added for ternary
+				TA const &activation,
+				unsigned const   reps,
 				R const &r
-				) {
+) {
 #pragma HLS INLINE
 
   unsigned const MatrixW = ConvKernelDim * ConvKernelDim * IFMChannels;
@@ -118,31 +117,56 @@ void ConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
 
   hls::stream<ap_uint<SIMD*TSrcI::width> > convInp("StreamingConvLayer_Batch.convInp");
 
+  // hwkim added for ternary
+  WidthAdjustedInputStream <InMaskStreamW, SIMD, InpPerImage>  wa_in_mask (in_mask,  reps);
+  hls::stream<ap_uint<SIMD>> convInp_mask("StreamingConvLayer_Batch.convInp_mask");
+
   ConvolutionInputGenerator<ConvKernelDim, IFMChannels, TSrcI::width, IFMDim, OFMDim,
 	  IFMHeight, OFMHeight, Top, Bottom, Left, Right,	// hwkim added for segmentation
   	  SIMD,
 	  Stride>	//1>	// hwkim modified for segmentation
-  (wa_in, convInp, reps);
+  	  	  (wa_in,
+		  wa_in_mask,	// hwkim added for ternary
+		  convInp,
+		  convInp_mask,	// hwkim added for ternary
+		  reps);
 
   // hwkim modified for padding
-//  Matrix_Vector_Activate_Batch<MatrixW, MatrixH, SIMD, PE, TSrcI, TDstI, TWeightI>
-//    (static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>&>(convInp),
-//     static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>  (mvOut),
-//     weights, activation, reps* OFMDim * OFMDim, r);
+  /*
+  Matrix_Vector_Activate_Batch<MatrixW, MatrixH, SIMD, PE, TSrcI, TDstI, TWeightI>
+    (static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>&>(convInp),
+     static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>  (mvOut),
+     weights, activation, reps* OFMDim * OFMDim, r);
+     */
+  // hwkim modified for ternary
+  /*
 	Matrix_Vector_Activate_Batch_Padding<MatrixW, MatrixH, SIMD, PE, OFMDim,
 		OFMHeight, Top, Bottom, Left, Right,	// hwkim modified for segmentation
 #ifdef ACTIVATION_LOG
 		LayerCnt, (PE*TDstI::width),
 #endif
-		// hwkim added for batch norm scale
-		TDstElem,
-
+		TDstElem,	// hwkim added for batch norm scale
 		TSrcI, TDstI, TWeightI>
 			(static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>&>(convInp),
-			static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>  (mvOut),
-			// hwkim modified for segmentation
-//			weights, activation, reps* OFMDim * OFMDim, r);
-			weights, activation, reps* OFMDim * OFMHeight, r);
+			static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>(mvOut),
+			weights,
+			activation,
+			reps* OFMDim * OFMHeight, r);	//reps* OFMDim * OFMDim, r);	// hwkim modified for segmentation
+			*/
+	Matrix_Vector_Activate_Batch_SkipSeparately<MatrixW, MatrixH, SIMD, PE, OFMDim,
+		OFMHeight, Top, Bottom, Left, Right,	// hwkim modified for segmentation
+#ifdef ACTIVATION_LOG
+		LayerCnt, (PE*TDstI::width),
+#endif
+		TDstElem,	// hwkim added for batch norm scale
+		TSrcI, TDstI, TWeightI>
+			(static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>&>(convInp),
+			static_cast<hls::stream<ap_uint<SIMD>>&>(convInp_mask),	// hwkim added for ternary
+			static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>(mvOut),
+			weights,
+			wmasks,	// hwkim added for ternary
+			activation,
+			reps* OFMDim * OFMHeight, r);	//reps* OFMDim * OFMDim, r);	// hwkim modified for segmentation
 }
 
 

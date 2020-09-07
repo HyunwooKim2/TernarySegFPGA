@@ -47,6 +47,11 @@ public:
         output_[index] = in;
         return next_ ? next_->forward_propagation(in, index) : output_[index];
     }
+    // hwkim modified for ternary
+    const vec_c& forward_propagation_mask(const vec_c& imask, size_t index) override {
+    	input_mask_[index] = imask;
+		return next_ ? next_->forward_propagation_mask(imask, index) : input_mask_[index];
+	}
 
     const vec_t& back_propagation(const vec_t& current_delta, size_t /*index*/) override {
         return current_delta;

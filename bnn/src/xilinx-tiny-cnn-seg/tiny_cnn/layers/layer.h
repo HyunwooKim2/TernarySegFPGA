@@ -180,6 +180,8 @@ public:
      * output vector must be stored to output_[worker_index]
      **/
     virtual const vec_t& forward_propagation(const vec_t& in, size_t worker_index) = 0;
+    // hwkim modified for ternary
+    virtual const vec_c& forward_propagation_mask(const vec_c& imask, size_t worker_index) = 0;
 
     /**
      * return delta of previous layer (delta=\frac{dE}{da}, a=wx in fully-connected layer)
@@ -241,6 +243,9 @@ protected:
     layer_base* prev_;
     vec_t a_[CNN_TASK_SIZE];          // w * x
     vec_t output_[CNN_TASK_SIZE];     // last output of current layer, set by fprop
+    // hwkim added for ternary - non-zero masks
+    vec_c input_mask_[CNN_TASK_SIZE];
+
     vec_t prev_delta_[CNN_TASK_SIZE]; // last delta of previous layer, set by bprop
     vec_t W_;          // weight vector
     vec_t b_;          // bias vector

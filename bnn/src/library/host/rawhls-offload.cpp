@@ -50,6 +50,8 @@ using namespace std;
 using namespace tiny_cnn;
 
 ExtMemWord * bufIn, * bufOut;
+// hwkim added for ternary
+ExtMemWord * bufInMask;
 
 void FoldedMVInit(const char * attachName) {
   if (!bufIn) {
@@ -64,6 +66,13 @@ void FoldedMVInit(const char * attachName) {
       throw "Failed to allocate host buffer";
     }
   }
+  // hwkim added for ternary
+  if (!bufInMask) {
+	  bufInMask = new ExtMemWord[INPUT_BUF_ENTRIES];
+    if (!bufInMask) {
+      throw "Failed to allocate host buffer";
+    }
+  }
 }
 
 void FoldedMVDeinit() {
@@ -71,6 +80,9 @@ void FoldedMVDeinit() {
   delete bufOut;
   bufIn = 0;
   bufOut = 0;
+  // hwkim added for ternary
+  delete bufInMask;
+  bufInMask = 0;
 }
 
 void FoldedMVMemSet(
@@ -88,8 +100,7 @@ void FoldedMVMemSet(
 	 * 		-> targetMem에서 64-bit 단위 index
 	 * val - 64-bit word
 	 */
-  BlackBoxJam((ap_uint<64> *)bufIn, (ap_uint<64> *)bufOut, true, targetLayer,
-		  targetMem, targetInd, targetThresh, val, 0);
+  BlackBoxJam((ap_uint<64> *)bufIn, (ap_uint<64> *)bufOut, true, targetLayer, targetMem, targetInd, targetThresh, val, 0);
   /* hwkim commented
    * bufIn/bufOut - testbench buffer의 주소 -> DRAM의 주소
    * true -> memory init 수행한다는 의미
