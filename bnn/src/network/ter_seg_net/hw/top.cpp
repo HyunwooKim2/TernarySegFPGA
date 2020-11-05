@@ -656,11 +656,11 @@ void DoCompute(
 	//StreamingDataWidthConverter_Batch<192, 24, (L0_IFM_DIM*L0_IFM_HEIGHT*3*8)/192+1>(inter0_1, inter0_2, numReps);
 	StreamingDataWidthConverter_Batch<64, 192, (L0_IFM_DIM*L0_IFM_HEIGHT*3*8)/64>(inter0, inter0_1, numReps);
 	// hwkim modified for ternary
-	//StreamingDataWidthConverter_Batch<192, 24, (L0_IFM_DIM*L0_IFM_HEIGHT*3*8)/192>(inter0_1, inter0_2, numReps);
-	StreamingDataWidthConverter_Batch<192, 24, (L0_IFM_DIM*L0_IFM_HEIGHT*3*8)/192>(inter0_1, inter0_2_maskgen, numReps);
+	StreamingDataWidthConverter_Batch<192, 24, (L0_IFM_DIM*L0_IFM_HEIGHT*3*8)/192>(inter0_1, inter0_2, numReps);
+//	StreamingDataWidthConverter_Batch<192, 24, (L0_IFM_DIM*L0_IFM_HEIGHT*3*8)/192>(inter0_1, inter0_2_maskgen, numReps);
 
 	// hwkim added for ternary
-	InputMaskGeneration<24, 3>(inter0_2_maskgen, inter0_2, inter0_2_mask);
+//	InputMaskGeneration<24, 3>(inter0_2_maskgen, inter0_2, inter0_2_mask);
 
 #ifdef SEP_SIM
 	if(sep_sim_layer1_en)
@@ -678,9 +678,9 @@ void DoCompute(
 			ap_uint<1>,	// hwkim added for batch norm scale
 			Slice<ap_fixed<8, 1, AP_TRN, AP_SAT>>, Identity, Recast<Binary>>
 				(inter0_2,
-				inter0_2_mask,
+//				inter0_2_mask,
 				inter1, weights0,
-				wmasks0,	// hwkim added for ternary
+//				wmasks0,	// hwkim added for ternary
 				threshs0, numReps, ap_resource_lut());
 #ifdef SEP_SIM
 	else
@@ -737,9 +737,9 @@ void DoCompute(
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
 					(inter1,
-					inter1_mask,	// hwkim added for ternary
+//					inter1_mask,	// hwkim added for ternary
 					inter2, weights1,
-					wmasks1,	// hwkim added for ternary
+//					wmasks1,	// hwkim added for ternary
 					threshs1, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 		else
@@ -794,9 +794,9 @@ void DoCompute(
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
 					(inter2,
-					inter2_mask,	// hwkim added for ternary
+//					inter2_mask,	// hwkim added for ternary
 					inter3, weights2,
-					wmasks2,	// hwkim added for ternary
+//					wmasks2,	// hwkim added for ternary
 					threshs2, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 		else
@@ -851,9 +851,9 @@ void DoCompute(
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
 					(inter3,
-					inter3_mask,	// hwkim added for ternary
+//					inter3_mask,	// hwkim added for ternary
 					inter4, weights3,
-					wmasks3,	// hwkim added for ternary
+//					wmasks3,	// hwkim added for ternary
 					threshs3, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 			else
@@ -908,9 +908,9 @@ void DoCompute(
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
 					(inter4,
-					inter4_mask,	// hwkim added for ternary
+//					inter4_mask,	// hwkim added for ternary
 					inter5, weights4,
-					wmasks4,	// hwkim added for ternary
+//					wmasks4,	// hwkim added for ternary
 					threshs4, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 			else
@@ -965,9 +965,9 @@ void DoCompute(
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
 					(inter5,
-					inter5_mask,	// hwkim added for ternary
+//					inter5_mask,	// hwkim added for ternary
 					inter6, weights5,
-					wmasks5,	// hwkim added for ternary
+//					wmasks5,	// hwkim added for ternary
 					threshs5, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 			else
@@ -1067,9 +1067,9 @@ void DoCompute(
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
 					(inter7,
-					inter7_mask,	// hwkim added for ternary
+//					inter7_mask,	// hwkim added for ternary
 					inter8, weights7,
-					wmasks7,	// hwkim added for ternary
+//					wmasks7,	// hwkim added for ternary
 					threshs7, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 			else
@@ -1165,9 +1165,9 @@ void DoCompute(
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
 					(inter9,
-					inter9_mask,	// hwkim added for ternary
+//					inter9_mask,	// hwkim added for ternary
 					inter10, weights9,
-					wmasks9,	// hwkim added for ternary
+//					wmasks9,	// hwkim added for ternary
 					threshs9, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 		else
@@ -1222,9 +1222,9 @@ void DoCompute(
 				Recast<XnorMul>,
 				Slice<ap_fixed<24,16,AP_TRN,AP_SAT> >>	//Slice<ap_int<16> >>	// hwkim modified for batch norm scale
 					(inter10,
-					inter10_mask,	// hwkim added for ternary
+//					inter10_mask,	// hwkim added for ternary
 					inter11, weights10,
-					wmasks10,	// hwkim added for ternary
+//					wmasks10,	// hwkim added for ternary
 					threshs10, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 		else

@@ -58,9 +58,10 @@ MODE=$3
 PATH_TO_VIVADO=$(which vivado)
 PATH_TO_VIVADO_HLS=$(which vivado_hls)
 
-if [ -z "$XILINX_BNN_ROOT" ]; then
+# hwkim modified
+#if [ -z "$XILINX_BNN_ROOT" ]; then
     export XILINX_BNN_ROOT="$( ( cd "$(dirname "$0")/.."; pwd) )"
-fi
+#fi
 
 if [ -z "$PATH_TO_VIVADO" ]; then
     echo "Error: Vivado not found."
