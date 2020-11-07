@@ -67,24 +67,24 @@ set config_clkperiod [lindex $argv 8]
 open_project $config_proj_name
 
 # hwkim modified for activation log for csim
-#add_files $config_hwsrcdir/top.cpp -cflags "-std=c++0x -I$config_bnnlibdir -DACTIVATION_LOG -DSEP_SIM" 
+add_files $config_hwsrcdir/top.cpp -cflags "-std=c++0x -I$config_bnnlibdir -DACTIVATION_LOG -DSEP_SIM" 
 # for synthesis
 #add_files $config_hwsrcdir/top.cpp -cflags "-std=c++0x -I$config_bnnlibdir -DFPGA_DEBUG"	#for FPGA debug
-add_files $config_hwsrcdir/top.cpp -cflags "-std=c++0x -I$config_bnnlibdir"
+#add_files $config_hwsrcdir/top.cpp -cflags "-std=c++0x -I$config_bnnlibdir"
 
 # hwkim modified for activation log for csim
-#add_files -tb $config_hwsrcdir/../sw/main_python.cpp -cflags "-DOFFLOAD -DRAWHLS -DACTIVATION_LOG -DSEP_SIM -std=c++0x -I$config_bnnhostlibdir -I$config_bnnlibdir -I$config_tinycnn -I$config_hwsrcdir"
-#add_files -tb $config_bnnhostlibdir/foldedmv-offload.cpp -cflags "-DOFFLOAD -DRAWHLS -DACTIVATION_LOG -DSEP_SIM -std=c++0x -I$config_bnnhostlibdir -I$config_bnnlibdir -I$config_tinycnn"
-#add_files -tb $config_bnnhostlibdir/rawhls-offload.cpp -cflags "-DOFFLOAD -DRAWHLS -DACTIVATION_LOG -DSEP_SIM -std=c++0x -I$config_bnnhostlibdir -I$config_bnnlibdir -I$config_tinycnn"
+add_files -tb $config_hwsrcdir/../sw/main_python.cpp -cflags "-DOFFLOAD -DRAWHLS -DACTIVATION_LOG -DSEP_SIM -std=c++0x -I$config_bnnhostlibdir -I$config_bnnlibdir -I$config_tinycnn -I$config_hwsrcdir"
+add_files -tb $config_bnnhostlibdir/foldedmv-offload.cpp -cflags "-DOFFLOAD -DRAWHLS -DACTIVATION_LOG -DSEP_SIM -std=c++0x -I$config_bnnhostlibdir -I$config_bnnlibdir -I$config_tinycnn"
+add_files -tb $config_bnnhostlibdir/rawhls-offload.cpp -cflags "-DOFFLOAD -DRAWHLS -DACTIVATION_LOG -DSEP_SIM -std=c++0x -I$config_bnnhostlibdir -I$config_bnnlibdir -I$config_tinycnn"
 # for synthesis
 # 	for FPGA debug
 #add_files -tb $config_hwsrcdir/../sw/main_python.cpp -cflags "-DOFFLOAD -DRAWHLS -DFPGA_DEBUG -std=c++0x -I$config_bnnhostlibdir -I$config_bnnlibdir -I$config_tinycnn -I$config_hwsrcdir"
 #add_files -tb $config_bnnhostlibdir/foldedmv-offload.cpp -cflags "-DOFFLOAD -DRAWHLS -DFPGA_DEBUG -std=c++0x -I$config_bnnhostlibdir -I$config_bnnlibdir -I$config_tinycnn"
 #add_files -tb $config_bnnhostlibdir/rawhls-offload.cpp -cflags "-DOFFLOAD -DRAWHLS -DFPGA_DEBUG -std=c++0x -I$config_bnnhostlibdir -I$config_bnnlibdir -I$config_tinycnn"
 #	for normal operation
-add_files -tb $config_hwsrcdir/../sw/main_python.cpp -cflags "-DOFFLOAD -DRAWHLS -std=c++0x -I$config_bnnhostlibdir -I$config_bnnlibdir -I$config_tinycnn -I$config_hwsrcdir"
-add_files -tb $config_bnnhostlibdir/foldedmv-offload.cpp -cflags "-DOFFLOAD -DRAWHLS -std=c++0x -I$config_bnnhostlibdir -I$config_bnnlibdir -I$config_tinycnn"
-add_files -tb $config_bnnhostlibdir/rawhls-offload.cpp -cflags "-DOFFLOAD -DRAWHLS -std=c++0x -I$config_bnnhostlibdir -I$config_bnnlibdir -I$config_tinycnn"
+#add_files -tb $config_hwsrcdir/../sw/main_python.cpp -cflags "-DOFFLOAD -DRAWHLS -std=c++0x -I$config_bnnhostlibdir -I$config_bnnlibdir -I$config_tinycnn -I$config_hwsrcdir"
+#add_files -tb $config_bnnhostlibdir/foldedmv-offload.cpp -cflags "-DOFFLOAD -DRAWHLS -std=c++0x -I$config_bnnhostlibdir -I$config_bnnlibdir -I$config_tinycnn"
+#add_files -tb $config_bnnhostlibdir/rawhls-offload.cpp -cflags "-DOFFLOAD -DRAWHLS -std=c++0x -I$config_bnnhostlibdir -I$config_bnnlibdir -I$config_tinycnn"
 
 set_top $config_toplevelfxn
 open_solution sol1
@@ -97,14 +97,14 @@ config_interface -m_axi_addr64
 create_clock -period $config_clkperiod -name default
 
 # for ternary using camvid input & fake params
-#csim_design -argv "/home/hwkim/work/params/finn_ter_params/camvid_params/fake_params/single_size /home/hwkim/work/params/finn_params/camvid_params/1017/input.bin 10 3" -compiler clang	
+csim_design -argv "/home/hwkim/work/params/finn_ter_params/camvid_params/fake_params/single_size /home/hwkim/work/params/finn_params/camvid_params/1017/input.bin 10 3" -compiler clang	
 # for ternary using fake input & fake params
 #csim_design -argv "/home/hwkim/work/params/finn_ter_params/camvid_params/fake_params/double_size /home/hwkim/work/params/finn_ter_params/camvid_params/fake_params/input.bin 10 3" -compiler clang	
 # for binary
 #csim_design -argv "/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/../params/camvid_params/bnn_seg_net/1017/double_size /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/../params/camvid_params/bnn_seg_net/1017/input.bin 10 3" -compiler clang
 #csim_design -argv "/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/../params/camvid_params/bnn_seg_net/1017 /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/../params/camvid_params/bnn_seg_net/1017/input_multiple.bin 10 3" -compiler clang
 
-csynth_design
+#csynth_design
 #cosim_design -argv "/home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/../params/camvid_params/bnn_seg_net/1017 /home/hwkim/work/pynq-bnn/BNN-PYNQ/bnn/src/../params/camvid_params/bnn_seg_net/1017/input.bin 10 3" -compiler clang
 #export_design -format ip_catalog
 exit 0

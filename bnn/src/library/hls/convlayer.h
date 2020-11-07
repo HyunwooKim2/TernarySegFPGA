@@ -136,6 +136,9 @@ void ConvLayer_Batch(
 #pragma HLS STREAM variable=packed_input //depth=256
 	hls::stream<ap_uint<SIMD>> packed_weight[PE];
 #pragma HLS STREAM variable=packed_weight //depth=256
+	hls::stream<unsigned char> sf_num[PE];
+#pragma HLS STREAM variable=sf_num //depth=256
+
   nonzero_activation_weight_stream_gen<MatrixW, MatrixH, SIMD, PE, OFMDim,
   	  OFMHeight,
   	  Top, Bottom, Left, Right>
@@ -144,6 +147,7 @@ void ConvLayer_Batch(
 		  weights,
 		  static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>*>(packed_input),
 		  static_cast<hls::stream<ap_uint<SIMD>>*>(packed_weight),
+		  static_cast<hls::stream<unsigned char>*>(sf_num),
 		  reps * OFMDim * OFMHeight
   	  );
 
@@ -186,6 +190,7 @@ void ConvLayer_Batch(
 			static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>*>(packed_input),
 			static_cast<hls::stream<ap_uint<SIMD>>*>(packed_weight),
 			//wmasks,	// hwkim added for ternary
+			static_cast<hls::stream<unsigned char>*>(sf_num),
 
 			activation,
 			reps * OFMDim * OFMHeight, r);	//reps* OFMDim * OFMDim, r);	// hwkim modified for segmentation
