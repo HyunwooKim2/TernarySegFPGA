@@ -1114,29 +1114,13 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
   unsigned const fan_in_step = MatrixW/9;
   unsigned const sf_ch = SF/9;
   unsigned short fan_in=0;
-  unsigned short fan_in_pe[PE];
-#pragma HLS ARRAY_PARTITION variable=fan_in_pe complete dim=1
-  unsigned char sf_ch_cnt=0;
-  unsigned char sf_pe[PE];
-#pragma HLS ARRAY_PARTITION variable=sf_pe complete dim=1
-  unsigned char tile_pe[PE];
-#pragma HLS ARRAY_PARTITION variable=tile_pe complete dim=1
-  unsigned char sf_ch_cnt_pe[PE];
-#pragma HLS ARRAY_PARTITION variable=sf_ch_cnt_pe complete dim=1
-  ap_uint<2> kx_pe[PE];
-#pragma HLS ARRAY_PARTITION variable=kx_pe complete dim=1
-  ap_uint<2> ky_pe[PE];
-#pragma HLS ARRAY_PARTITION variable=ky_pe complete dim=1
+//  unsigned char sf_pe[PE];
+//#pragma HLS ARRAY_PARTITION variable=sf_pe complete dim=1
 
-  for(unsigned pe=0; pe<PE; pe++){
-#pragma HLS UNROLL
-	  sf_pe[pe] = 0;
-	  tile_pe[pe] = 0;
-	  fan_in_pe[pe] = 0;
-	  sf_ch_cnt_pe[pe] = 0;
-	  kx_pe[pe] = 0;
-	  ky_pe[pe] = 0;
-  }
+//  for(unsigned pe=0; pe<PE; pe++){
+//#pragma HLS UNROLL
+//	  sf_pe[pe] = 0;
+//  }
 
   x = 0;
   y = 0;
@@ -1153,15 +1137,15 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 #pragma HLS ARRAY_PARTITION variable=inElem_pe complete dim=1
 //	  TIM imaskElem;
 	  unsigned char sf_num_buf[PE];
-#pragma HLS ARRAY_PARTITION variable=sf_max complete dim=1
+#pragma HLS ARRAY_PARTITION variable=sf_num_buf complete dim=1
 	  unsigned char sf_max = 0;
 
 	  sf = 0;
 	  // hwkim added for sf separation
-	  for(unsigned char pe=0; pe<PE; pe++){
-#pragma HLS UNROLL
-		  sf_pe[pe] = 0;
-	  }
+//	  for(unsigned char pe=0; pe<PE; pe++){
+//#pragma HLS UNROLL
+//		  sf_pe[pe] = 0;
+//	  }
 
 	  // hwkim added for ternary
 	  auto  outElem = TDstI().template operator()<TO>();
@@ -1184,15 +1168,21 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 
 		  for(unsigned char pe = 0; pe < PE; pe++) {
 #pragma HLS UNROLL
-			  if(sf_pe[pe] == 0) {
+//			  if(sf_pe[pe] == 0) {
+			  if(sf == 0) {
 
 				  accu[pe] = activation.init(nf, pe);
 #ifdef ACTIVATION_LOG
 				  accu_pm[pe] = activation.init(nf, pe);
 #endif
 			  }
+		  }
 
-			  if(sf_pe[pe] < sf_num_buf[pe]){
+		  for(unsigned char pe = 0; pe < PE; pe++) {
+#pragma HLS UNROLL
+
+//			  if(sf_pe[pe] < sf_num_buf[pe]){
+			  if(sf < sf_num_buf[pe]){
 				  inElem_pe[pe] = packed_input[pe].read();
 
 				  auto const  wgt = TWeightI()(packed_weight[pe].read());
@@ -1216,9 +1206,11 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 #ifdef ACTIVATION_LOG
 				  accu_pm[pe] = mac<SIMD>(accu_pm[pe], wgt, act, r, 1);
 #endif
-				  // hwkim added for size optimization
-				  fan_in_pe[pe] += (unsigned short)SIMD;
 			  }
+		  }
+/*
+		  for(unsigned char pe = 0; pe < PE; pe++) {
+#pragma HLS UNROLL
 
 //			  if(~sf_sync_flag[pe])
 //				  sf_pe[pe]++;
@@ -1226,7 +1218,9 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 //			  if(sf_pe[pe] == (SF-1)) {
 //			  if(sf_pe[pe] == SF) {
 //			  if(++sf_pe[pe] == SF)	{	// && (~sf_sync_flag[pe])) {
-			  if(++sf_pe[pe] == sf_num_buf[pe])	{	// && (~sf_sync_flag[pe])) {
+//			  if(++sf_pe[pe] == sf_num_buf[pe])	{	// && (~sf_sync_flag[pe])) {
+//			  if(sf == (sf_num_buf[pe] - 1)){
+			  if(sf == (sf_max - 1)){
 
 // hwkim modified for debug
 // hwkim commented for 0-1 accumulation - not +- accum
@@ -1251,7 +1245,10 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 				  }
 #endif
 				  TDstElem outElem_unit;
-				  outElem_unit = activation.activate(nf, pe, accu[pe], fan_in_pe[pe]);
+				  // hwkim modified for sf separation
+//				  outElem_unit = activation.activate(nf, pe, accu[pe], fan_in_pe[pe]);
+				  outElem_unit = activation.activate(nf, pe, accu[pe], sf_num_buf[pe]*SIMD);
+
 				  outElem[pe] = *reinterpret_cast<ap_uint<TDstI::width> *>(&outElem_unit);
 
 //				  sf_sync_flag[pe]=1;
@@ -1260,25 +1257,45 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 //			  if(!sf_sync_flag[pe])
 //				  sf_pe[pe]++;
 
-			  // hwkim modified for sf separation
-			  if(++sf_ch_cnt_pe[pe]==sf_ch){
-				  sf_ch_cnt_pe[pe]=0;
-				  if(++kx_pe[pe]==3){
-					  kx_pe[pe]=0;
-					  if(++ky_pe[pe]==3){
-						  ky_pe[pe]=0;
-					  }
-				  }
-			  }
 		  }
+		  */
+	  }
+
+	  for(unsigned char pe = 0; pe < PE; pe++) {
+#pragma HLS UNROLL
+//		  if(sf == (sf_max - 1)){
+
+// hwkim modified for debug
+// hwkim commented for 0-1 accumulation - not +- accum
+#ifdef ACTIVATION_LOG
+			  // write conv_out_minus_bias
+			  conv_out_log_file << fixed;
+			  conv_out_log_file.precision(8);
+			  conv_out_log_file.setf(ios_base::showpoint);
+			  conv_out_log_file <<  accu_pm[pe] << endl;//" | ";
+			  //compare golden with computed
+			  decltype(activation.init(0,0))	golden_buf;
+//				  float golden_buf;
+			  golden_conv_out_file >> golden_buf;
+//				  float accu_pm_tmp = accu[pe].to_float();
+			  if(accu[pe]!=golden_buf){
+//				  if(accu_pm_tmp!=golden_buf){
+				  conv_out_comp_file << fixed;
+				  conv_out_comp_file.precision(8);
+				  conv_out_comp_file.setf(ios_base::showpoint);
+				  conv_out_comp_file << "differ @ (" << y << "," << x << ")";
+				  conv_out_comp_file << "gold: " << golden_buf << ", accu[" << nf << ", " << pe << "]: " << accu[pe] << endl;
+			  }
+#endif
+			  TDstElem outElem_unit;
+			  outElem_unit = activation.activate(nf, pe, accu[pe], sf_num_buf[pe]*SIMD);
+
+			  outElem[pe] = *reinterpret_cast<ap_uint<TDstI::width> *>(&outElem_unit);
+//		  }
 	  }
 
 	  // sync all PE here - per every sliding window
 	  out.write(outElem);
-	  for(unsigned char pe=0; pe<PE; pe++){
-#pragma HLS UNROLL
-		  fan_in_pe[pe] = 0;
-	  }
 
 // hwkim added for debug
 #ifdef ACTIVATION_LOG
@@ -1391,9 +1408,9 @@ void nonzero_activation_weight_stream_gen(
 	unsigned char nf   = 0;
 	unsigned char sf   = 0;
 	unsigned char const sf_ch = SF/9;
-	unsigned char tile_pe[PE];
-#pragma HLS ARRAY_PARTITION variable=tile_pe complete dim=1
-
+	unsigned char tile = 0;
+//	unsigned char tile_pe[PE];
+//#pragma HLS ARRAY_PARTITION variable=tile_pe complete dim=1
 	unsigned char sf_cnt[PE];
 #pragma HLS ARRAY_PARTITION variable=sf_cnt complete dim=1
 
@@ -1403,10 +1420,12 @@ void nonzero_activation_weight_stream_gen(
 #pragma HLS LOOP_FLATTEN off
 		unsigned char sf_ch_cnt=0;
 
-		for(unsigned char pe=0; pe<PE; pe++){
-#pragma HLS UNROLL
-			if(nf==0)
-			tile_pe[pe] = 0;
+		if(nf==0){
+//			for(unsigned char pe=0; pe<PE; pe++){
+//#pragma HLS UNROLL
+//					tile_pe[pe] = 0;
+//			}
+			tile = 0;
 		}
 
 	  // hwkim modified for ternary
@@ -1434,6 +1453,9 @@ void nonzero_activation_weight_stream_gen(
 		  // hwkim: SIMD lane workload balancing
 		  for(unsigned char pe=0; pe<PE; pe++){
 #pragma HLS UNROLL
+
+			  auto const &w = weights.weights(tile);
+
 			  if((x<Left && kx<Left)
 				  ||(y<Top && ky<Top)
 				  ||(x>(OFMDim-1-Right) && kx>(3-1-Right))
@@ -1443,13 +1465,15 @@ void nonzero_activation_weight_stream_gen(
 			  else{
 				  packed_input[pe].write(inputBuf[sf]);
 
-				  auto const &w = weights.weights(tile_pe[pe]);
+//				  auto const &w = weights.weights(tile_pe[pe]);
 				  packed_weight[pe].write((ap_uint<SIMD>)w[pe]);
-				  tile_pe[pe]++;
 
 				  sf_cnt[pe]++;
 			  }
+//			  tile_pe[pe]++;
 		  }
+
+		  tile++;
 
 		  // hwkim moved for ternary
 		  if(++sf_ch_cnt==sf_ch){
@@ -1458,10 +1482,6 @@ void nonzero_activation_weight_stream_gen(
 				  kx=0;
 				  if(++ky==3){
 					  ky=0;
-					  for(unsigned char pe=0; pe<PE; pe++){
-#pragma HLS UNROLL
-						  sf_num[pe].write(sf_cnt[pe]);
-					  }
 					  if(nf==(NF-1)){
 						  if(++x==OFMDim){
 							  x=0;
@@ -1475,6 +1495,11 @@ void nonzero_activation_weight_stream_gen(
 		  }
 		  // hwkim moved for ternary
 		  if(sf == (SF-1)) {
+			  for(unsigned char pe=0; pe<PE; pe++){
+#pragma HLS UNROLL
+				  sf_num[pe].write(sf_cnt[pe]);
+				  sf_cnt[pe] = 0;
+			  }
 			  if(++nf == NF) {
 				  nf   = 0;
 			  }

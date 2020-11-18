@@ -44,7 +44,9 @@
 
 NETWORKS=$(ls -d *W*A*/ | cut -f1 -d'/' | tr "\n" " ")
 
-if [ "$#" -ne 3 ]; then
+# hwkim modified
+#if [ "$#" -ne 3 ]; then
+if [ "$#" -ne 4 ]; then
   echo "Usage: $0 <network> <platform> <mode>" >&2
   echo "where <network> = $NETWORKS" >&2
   echo "<platform> = pynqZ1-Z2 ultra96" >&2
@@ -57,6 +59,9 @@ PLATFORM=$2
 MODE=$3
 PATH_TO_VIVADO=$(which vivado)
 PATH_TO_VIVADO_HLS=$(which vivado_hls)
+
+# hwkim added
+HWKIM_HLS_MODE=$4
 
 # hwkim modified
 #if [ -z "$XILINX_BNN_ROOT" ]; then
@@ -95,8 +100,14 @@ BNN_PATH=$XILINX_BNN_ROOT/network
 HLS_SRC_DIR="$BNN_PATH/$NETWORK/hw"
 HLS_OUT_DIR="$BNN_PATH/output/hls-syn/$NETWORK-$PLATFORM"
 
+# hwkim modified
 #HLS_SCRIPT=$BNN_PATH/hls-syn.tcl
-HLS_SCRIPT=$BNN_PATH/kjh-hls-syn.tcl
+if [[ ("$HWKIM_HLS_MODE" == "sim") ]]; then
+	HLS_SCRIPT=$BNN_PATH/kjh-hls-sim.tcl
+else
+	HLS_SCRIPT=$BNN_PATH/kjh-hls-syn.tcl
+fi
+
 HLS_IP_REPO="$HLS_OUT_DIR/sol1/impl/ip"
 
 VIVADO_HLS_LOG="$BNN_PATH/output/hls-syn/vivado_hls.log"
