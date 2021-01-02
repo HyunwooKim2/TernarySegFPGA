@@ -179,7 +179,7 @@ template<unsigned NF, unsigned PE, unsigned NumTH,
 >
 class PassThroughAndBatchNorm {
 public:
-  TA m_thresholds[PE][NF][NumTH];
+  TA m_thresholds[PE][NF][NumTH];	// hwkim commented: NumTH index - 0 for P(ositive), 1 for N(egative) threshold
   // hwkim added for batch norm scale
   TS m_scales[PE];
 

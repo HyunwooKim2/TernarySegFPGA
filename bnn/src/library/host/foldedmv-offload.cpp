@@ -381,8 +381,15 @@ void FoldedMVLoadLayerMem(std::string dir, unsigned int layerNo,
   }
 }
 
-void FoldedMVLoadScaleMem()
+void FoldedMVLoadLLayerMem(std::string dir,
+								unsigned int layerNo,
+								unsigned int peCount,
+								unsigned int linesWMem,
+								unsigned int linesTMem,
+								unsigned int cntThresh
+								)	// scale and offset(bias) load for the last layer
 {
+	/*
 	//ap_uint<8> uValue[11] = {0x53, 0x1d, 0x21, 0x34, 0x3f, 0x20, 0x25, 0x1d, 0x19, 0x18, 0x17};
 	// half scale
 	ap_uint<8> uValue[11] = {0x54, 0x1e, 0x21, 0x34, 0x3f, 0x20, 0x25, 0x1d, 0x1a, 0x18, 0x18};
@@ -412,25 +419,128 @@ void FoldedMVLoadScaleMem()
 			0.09375,
 			0.09375
 	};
+	*/
+
+	ap_uint<24> uValue;
+	ap_fixed<24,16,AP_TRN,AP_SAT> fxdValue;
+	float fltValue;
+
+// hwkim added for debug
 #ifdef ACTIVATION_LOG
-		ofstream scale_bin_file("scale_bin.bin", ios::binary);
-		if(!scale_bin_file.is_open()){
-			cout << "scale_bin_file open error" << endl;
-		}
+	ofstream scale_bin_file("llayer_scale_log.bin", ios::binary);
+	if(!scale_bin_file.is_open())	cout << "log file for writing scale open error" << endl;
+
+	ofstream offset_bin_file("llayer_offset_log.bin", ios::binary);
+	if(!offset_bin_file.is_open())	cout << "log file for writing offset open error" << endl;
 #endif
+
+
+	/*
 	for (int tmp_i=0; tmp_i<11; tmp_i++){
+
 		uValue[tmp_i] = *reinterpret_cast<ap_uint<8> *>(&fxdValue[tmp_i]);
 		//cout << setprecision(10) << "Scale " << tmp_i << ": "<< dec << fxdValue[tmp_i] << ", "<< hex << uValue[tmp_i] << endl;
 #ifdef ACTIVATION_LOG
 		scale_bin_file.write(reinterpret_cast<const char*>(&uValue[tmp_i]), sizeof(ap_uint<8>));
 #endif
 	}
+	*/
+
+	//-------------------------------------------
+	// hwkim commented: scale, offset load
+	//-------------------------------------------
+	ifstream scale_txt_file(dir + "/" + "scale_24bit.txt");
+	if(!scale_txt_file.is_open())	cout << dir << "/scale_24bit.txt file open error" << endl;
+
+	ifstream offset_txt_file(dir + "/" + "offset_24bit.txt");
+	if(!offset_txt_file.is_open())	cout << dir << "/offset_24bit.txt file open error" << endl;
+
 	for(unsigned int pe=0; pe<11; pe++){
-		FoldedMVMemSet(-1, pe, 0, 0, uValue[pe]);
+		// writing scale
+		scale_txt_file >> fxdValue;
+		uValue = *reinterpret_cast<ap_uint<24> *>(&fxdValue);
+
+#ifdef ACTIVATION_LOG
+		scale_bin_file.write(reinterpret_cast<const char*>(&uValue), sizeof(ap_uint<24>));
+#endif
+		FoldedMVMemSet(-1, pe, 0, 0, uValue);
+
+		// writing offset
+		offset_txt_file >> fxdValue;
+		uValue = *reinterpret_cast<ap_uint<24> *>(&fxdValue);
+
+#ifdef ACTIVATION_LOG
+		offset_bin_file.write(reinterpret_cast<const char*>(&uValue), sizeof(ap_uint<24>));
+#endif
+		FoldedMVMemSet(-2, pe, 0, 0, uValue);
+
 	}
+	scale_txt_file.close();
+	offset_txt_file.close();
 #ifdef ACTIVATION_LOG
 	scale_bin_file.close();
+	offset_bin_file.close();
 #endif
+
+
+	//---------------------------------------------------
+	// hwkim commented: weight & weight mask load
+	//---------------------------------------------------
+// hwkim added for debug
+#ifdef ACTIVATION_LOG
+	ofstream weight_read_log_file("weight_read_log.txt");
+	if(!weight_read_log_file.is_open())	cout << "weight_read_log_file open error!!" << endl;
+
+	ofstream weight_mask_log_file("weight_mask_log.txt");
+	if(!weight_mask_log_file.is_open())	cout << "weight_mask_log_file open error!!" << endl;
+#endif
+	for(unsigned int pe = 0; pe < peCount; pe++) {
+
+		//---------------------------------------
+		// hwkim commented: weight load
+		//---------------------------------------
+		ifstream wf(dir + "/" + to_string(layerNo) + "-" + to_string(pe) + "-weights.bin", ios::binary | ios::in);
+		if(!wf.is_open()) {
+		  throw "Could not open file";
+		}
+	  	for(unsigned int line = 0 ; line < linesWMem; line++) {
+			ExtMemWord e = 0;
+			wf.read((char *)&e, sizeof(ExtMemWord));
+			// hwkim added for debug
+#ifdef ACTIVATION_LOG
+			weight_read_log_file << setw(10) << hex << e << endl;
+#endif
+			// hwkim modified for ternary
+			//FoldedMVMemSet(layerNo * 2, pe, line, 0, e);
+			FoldedMVMemSet(layerNo * 3, pe, line, 0, e);
+	  	}
+	    wf.close();
+
+	    //---------------------------------------
+	    // hwkim commented: weight mask load
+	    //---------------------------------------
+	    ifstream wmf(dir + "/" + to_string(layerNo) + "-" + to_string(pe) + "-wmasks.bin", ios::binary | ios::in);
+	    if(!wmf.is_open()) {
+	    	throw "Could not open file";
+	    }
+		for(unsigned int line = 0 ; line < linesWMem; line++) {
+			ExtMemWord e = 0;
+			wmf.read((char *)&e, sizeof(ExtMemWord));
+			// hwkim added for debug
+#ifdef ACTIVATION_LOG
+			weight_mask_log_file << setw(10) << hex << e << endl;
+#endif
+			FoldedMVMemSet(layerNo*3+1, pe, line, 0, e);
+		}
+		wmf.close();
+
+	}
+#ifdef ACTIVATION_LOG
+	weight_read_log_file.close();
+	weight_mask_log_file.close();
+#endif
+
+	// hwkim commented: last layer has no threshold (no activation funciton)
 }
 
 #endif

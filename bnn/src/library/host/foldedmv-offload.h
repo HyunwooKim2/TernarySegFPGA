@@ -82,15 +82,21 @@ void FoldedMVInit(const char * attachName);
 void FoldedMVDeinit();
 
 void FoldedMVLoadLayerMem(std::string dir, 
-                          unsigned int peCount,
 						  unsigned int layerNo,
+						  unsigned int peCount,
 						  unsigned int linesWMem, 
 						  unsigned int linesTMem, 
 						  unsigned int numThresh
 						  );
 
 // hwkim added for batch norm scale
-void FoldedMVLoadScaleMem();
+void FoldedMVLoadLLayerMem(std::string dir,
+								unsigned int layerNo,
+								unsigned int peCount,
+								unsigned int linesWMem,
+								unsigned int linesTMem,
+								unsigned int cntThresh
+								);
 
 void FoldedMVMemSet(int targetLayer,	//unsigned int targetLayer,	// hwkim modified for batch norm scale
                     unsigned int targetMem, 
@@ -163,6 +169,7 @@ void quantiseAndPack(
      */
     ap_uint<inWidth> uValue = *reinterpret_cast<ap_uint<inWidth> *>(&fxdValue); // Interpret the fixed value as an integer.
 #ifdef ACTIVATION_LOG
+//    cout << "fixed: " << fxdValue << ", usigned: " << uValue << endl;
     quantise_bin_file.write(reinterpret_cast<const char *>(&uValue), sizeof(ap_uint<inWidth>));
 #endif
     /* hwkim commented
@@ -240,7 +247,10 @@ void quantiseAndPack(
 //				if((x!=0) && (y!=0) && (x!=33) && (y!=33))	//for \n
 //					golden_file.read(&golden_buf,1);
 //				quantise_bin_file << *reinterpret_cast<unsigned char *>(&uValue);
+
 				quantise_log_file << " | ";
+//				quantise_log_file << endl;
+
 				quantise_realnum_log_file << fxdValue << " | ";
 			}
 			quantise_log_file << endl;

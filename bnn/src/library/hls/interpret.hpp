@@ -103,6 +103,7 @@ class Binary {
   template<typename T>
   auto operator*(T const &b) const -> decltype(ap_int<2>(1)*b) {
 #pragma HLS inline
+	  // hwkim commented: mul for 1st layer
     return  m_val? static_cast<decltype(-b)>(b) : -b;
   }
   friend std::ostream& operator<<(std::ostream&, Binary const&);

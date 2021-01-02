@@ -62,6 +62,8 @@
 #include <fstream>
 #include <stdio.h>
 //extern int weighted_layer_cnt;
+
+//#define DEBUG
 #endif
 
 template<
@@ -1034,7 +1036,7 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 		hls::stream<PI> * packed_input,	// hwkim added for ternary
 		hls::stream<ap_uint<SIMD>> * packed_weight,	// hwkim added for ternary
 		//TWM const &wmasks,	//hwkim added for ternary
-		hls::stream<unsigned char> * sf_num,	// hwkim added for ternary
+		hls::stream<unsigned short> * sf_num,	// hwkim added for ternary
 
 		TA  const &activation,
 		int const  reps,
@@ -1051,7 +1053,13 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
    * -> SF = 3 * 3 * (IFMChannels / SIMD)
    */
 
-  // hwkim modified for debug
+  // hwkim added for debug
+//  for(unsigned char pe=0; pe<PE; pe++){
+//	  cout << packed_input[pe].size();
+//  }
+
+
+  // hwkim added for debug
 #ifdef ACTIVATION_LOG
   extern string snapshot_dir;
   extern string golden_file_dir;
@@ -1136,7 +1144,7 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 	  TI  inElem_pe[PE];
 #pragma HLS ARRAY_PARTITION variable=inElem_pe complete dim=1
 //	  TIM imaskElem;
-	  unsigned char sf_num_buf[PE];
+	  unsigned short sf_num_buf[PE];
 #pragma HLS ARRAY_PARTITION variable=sf_num_buf complete dim=1
 	  unsigned char sf_max = 0;
 
@@ -1160,11 +1168,11 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 			  sf_max = sf_num_buf[pe];
 	  }
 
-	  for(sf=0; sf<SF; sf++){
+	  for(sf=0; sf<SF*SIMD; sf+=SIMD){
 #pragma HLS PIPELINE II=1 rewind
 //		  if((~sf_sync_flag)==0)
-		  if(sf_max == sf)
-			  break;
+//		  if(sf_max < sf)
+//			  break;
 
 		  for(unsigned char pe = 0; pe < PE; pe++) {
 #pragma HLS UNROLL
@@ -1180,13 +1188,23 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 
 		  for(unsigned char pe = 0; pe < PE; pe++) {
 #pragma HLS UNROLL
-
 //			  if(sf_pe[pe] < sf_num_buf[pe]){
 			  if(sf < sf_num_buf[pe]){
-				  inElem_pe[pe] = packed_input[pe].read();
 
-				  auto const  wgt = TWeightI()(packed_weight[pe].read());
+				  // should be modified for WAY
+				  ap_uint<SIMD> mask;
+				  if((sf+SIMD) <= sf_num_buf[pe])
+					  mask = ~0x0;
+				  else
+					  mask = (~(ap_uint<SIMD>)0x0) >> (SIMD - sf_num_buf[pe]%SIMD);
+
+				  // hwkim added and modified for debug
+//				  auto const  act = TSrcI()(packed_input[pe].read());
+//				  auto const  wgt = TWeightI()(packed_weight[pe].read());
+				  inElem_pe[pe] = packed_input[pe].read();
 				  auto const  act = TSrcI()(inElem_pe[pe]);
+				  ap_uint<SIMD> dummy_w = packed_weight[pe].read();
+				  auto const  wgt = TWeightI()(dummy_w);
 
 //			  if((x<Left && kx_pe[pe]<Left)
 //				  ||(y<Top && ky_pe[pe]<Top)
@@ -1198,14 +1216,21 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 //			  }
 //			  else{
 				  // hwkim modified for activation comparison using +- accumulation
-				  accu[pe] = mac<SIMD>(accu[pe], wgt, act, r
-#ifdef ACTIVATION_LOG
-						  	  	  	  	  , 0
-#endif
-				  	  	  	  	  	  	  );
+//				  accu[pe] = mac<SIMD>(accu[pe], wgt, act, r
+//#ifdef ACTIVATION_LOG
+//						  	  	  	  	  , 0
+//#endif
+//				  	  	  	  	  	  	  );
+				  accu[pe] = mac_masked<SIMD, SIMD>(accu[pe], wgt, act, r, mask);		// should be modified for WAY
+
 #ifdef ACTIVATION_LOG
 				  accu_pm[pe] = mac<SIMD>(accu_pm[pe], wgt, act, r, 1);
 #endif
+				  // hwkim added for debug
+//				  cout << fixed;
+//				  cout.precision(8);
+//				  cout << "nf " << (int)nf << ", accu[" << (int)pe << "]: " << accu[pe];
+//				  cout << hex << "\tact: " << inElem_pe[pe] << "\twgt: " << dummy_w << endl;
 			  }
 		  }
 /*
@@ -1259,6 +1284,9 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 
 		  }
 		  */
+
+		  if(sf_max <= sf)
+			  break;
 	  }
 
 	  for(unsigned char pe = 0; pe < PE; pe++) {
@@ -1273,6 +1301,7 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 			  conv_out_log_file.precision(8);
 			  conv_out_log_file.setf(ios_base::showpoint);
 			  conv_out_log_file <<  accu_pm[pe] << endl;//" | ";
+
 			  //compare golden with computed
 			  decltype(activation.init(0,0))	golden_buf;
 //				  float golden_buf;
@@ -1283,8 +1312,13 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 				  conv_out_comp_file << fixed;
 				  conv_out_comp_file.precision(8);
 				  conv_out_comp_file.setf(ios_base::showpoint);
-				  conv_out_comp_file << "differ @ (" << y << "," << x << ")";
-				  conv_out_comp_file << "gold: " << golden_buf << ", accu[" << nf << ", " << pe << "]: " << accu[pe] << endl;
+				  conv_out_comp_file << "differ @ (y " << y << ",x " << x << ")";
+				  conv_out_comp_file << "gold: " << golden_buf << ", accu[nf " << (int)nf << ",pe " << (int)pe << "]: " << accu[pe] << endl;
+
+				  cout.fixed;
+				  cout.precision(8);
+				  cout << "differ @ (y " << y << ",x " << x << "), " << "nf " << (int)nf;
+				  cout << "accu[" << (int)pe << "]: " << accu[pe] << endl;
 			  }
 #endif
 			  TDstElem outElem_unit;
@@ -1373,26 +1407,24 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 #endif
 }
 
-template<unsigned MatrixW, unsigned MatrixH, unsigned SIMD, unsigned PE, unsigned OFMDim,
-  unsigned OFMHeight,	// hwkim added for segmentation
-  unsigned Top, unsigned Bottom, unsigned Left, unsigned Right,	// hwkim modified for padding
-  typename TI, typename TW, typename PI
+template<unsigned MatrixW, unsigned MatrixH, unsigned SIMD, unsigned PE, unsigned OFMDim, unsigned OFMHeight,
+  unsigned Top, unsigned Bottom, unsigned Left, unsigned Right,
+  unsigned SrcWidth,
+  typename TI, typename TW, typename PI, typename TIM, typename TM
   >
 void nonzero_activation_weight_stream_gen(
 		hls::stream<TI> & in,
-//		hls::stream<TIM> & in_mask,
+		hls::stream<TIM> & in_mask,
 		TW  const &weights,
-		//hls::stream<PI> packed_input[PE],
-		//hls::stream<ap_uint<SIMD>> packed_weight[PE],
+		TM  const &wmasks,
 		hls::stream<PI>* packed_input,
 		hls::stream<ap_uint<SIMD>>* packed_weight,
-		hls::stream<unsigned char>* sf_num,
+		hls::stream<unsigned short>* sf_num,
 		int const reps
 )
 {
 //#pragma HLS STREAM variable=packed_input //depth=256
 //#pragma HLS STREAM variable=packed_weight //depth=256
-
 
 	unsigned char const  NF = MatrixH / PE;
 	unsigned char const  SF = MatrixW / SIMD;
@@ -1400,8 +1432,23 @@ void nonzero_activation_weight_stream_gen(
 
 	TI	inputBuf[SF];
 #pragma HLS ARRAY_PARTITION variable=inputBuf complete dim=1
-//	TIM	imaskBuf[SF];
-//#pragma HLS ARRAY_PARTITION variable=imaskBuf complete dim=1
+	TIM	imaskBuf[SF];
+#pragma HLS ARRAY_PARTITION variable=imaskBuf complete dim=1
+
+	ap_uint<SIMD>	z_mask[PE];
+#pragma HLS ARRAY_PARTITION variable=z_mask complete dim=1
+	ap_uint<SIMD>	mask_delay_buf[PE];
+#pragma HLS ARRAY_PARTITION variable=mask_delay_buf complete dim=1
+
+	TI	input_pack_buf[PE];
+#pragma HLS ARRAY_PARTITION variable=input_pack_buf complete dim=1
+	TI	input_delay_buf[PE];
+#pragma HLS ARRAY_PARTITION variable=input_delay_buf complete dim=1
+
+	ap_uint<SIMD> w_pack_buf[PE];
+#pragma HLS ARRAY_PARTITION variable=w_pack_buf complete dim=1
+	ap_uint<SIMD> w_delay_buf[PE];
+#pragma HLS ARRAY_PARTITION variable=w_delay_buf complete dim=1
 
 	unsigned short x=0, y=0;
 	ap_uint<2> kx=0, ky=0;
@@ -1411,7 +1458,7 @@ void nonzero_activation_weight_stream_gen(
 	unsigned char tile = 0;
 //	unsigned char tile_pe[PE];
 //#pragma HLS ARRAY_PARTITION variable=tile_pe complete dim=1
-	unsigned char sf_cnt[PE];
+	unsigned short sf_cnt[PE];
 #pragma HLS ARRAY_PARTITION variable=sf_cnt complete dim=1
 
 	// hwkim modified for dependency
@@ -1428,85 +1475,267 @@ void nonzero_activation_weight_stream_gen(
 			tile = 0;
 		}
 
+		for(unsigned char pe=0; pe<PE; pe++){
+#pragma HLS UNROLL
+			sf_cnt[pe] = 0;
+
+			mask_delay_buf[pe] = 0;
+			input_delay_buf[pe] = 0;
+			w_delay_buf[pe] = 0;
+			z_mask[pe] = 0;
+			input_pack_buf[pe] = 0;
+			w_pack_buf[pe] = 0;
+		}
+
+		ap_uint<PE>	pack_en = 0;
+//		ap_uint<PE>	swu_init_flag = ~0x0;
+
 	  // hwkim modified for ternary
 //	  sf = 0;
 //	  while(sf < SF){
 		for(sf=0; sf<SF; sf++){
 #pragma HLS PIPELINE II=1
 
-		  if(nf == 0) {
-			  if((x<Left && kx<Left)
-				  ||(y<Top && ky<Top)
-				  ||(x>(OFMDim-1-Right) && kx>(3-1-Right))
-				  ||(y>(OFMHeight-1-Bottom) && ky>(3-1-Bottom))){
-				  ;	// hwkim: skip
-			  }
-			  else{
-				  // hwkim modified for ternary
-//				  inElem = in.read();
-//				  inputBuf[sf] = inElem;
-				  inputBuf[sf] = in.read();
-//				  imaskBuf[sf] = in_mask.read();	// hwkim added for ternary
-			  }
-		  }
+			// ***hwkim: should be merged to nonzero skip scheme of ternary architecture
+			if(nf == 0) {
+				if((x<Left && kx<Left)
+						||(y<Top && ky<Top)
+						||(x>(OFMDim-1-Right) && kx>(3-1-Right))
+						||(y>(OFMHeight-1-Bottom) && ky>(3-1-Bottom))){
+					inputBuf[sf] = TI(~0x0);	// hwkim: skip
+					imaskBuf[sf] = 0;
+				}
+				else{
+					// hwkim modified for ternary
+//					inElem = in.read();
+//					inputBuf[sf] = inElem;
+					inputBuf[sf] = in.read();
+					imaskBuf[sf] = in_mask.read();	// hwkim added for ternary
+				}
+			}
 
-		  // hwkim: SIMD lane workload balancing
-		  for(unsigned char pe=0; pe<PE; pe++){
+			auto const &w = weights.weights(tile);
+			auto const &wm = wmasks.masks(tile);
+
+			for(unsigned char pe=0; pe<PE; pe++){
 #pragma HLS UNROLL
 
-			  auto const &w = weights.weights(tile);
+			// ***hwkim: should be merged to nonzero skip scheme of ternary architecture
+				if((x<Left && kx<Left)
+						||(y<Top && ky<Top)
+						||(x>(OFMDim-1-Right) && kx>(3-1-Right))
+						||(y>(OFMHeight-1-Bottom) && ky>(3-1-Bottom))){
+					;	// hwkim: skip
+				}
+				else{
 
-			  if((x<Left && kx<Left)
-				  ||(y<Top && ky<Top)
-				  ||(x>(OFMDim-1-Right) && kx>(3-1-Right))
-				  ||(y>(OFMHeight-1-Bottom) && ky>(3-1-Bottom))){
-				  ;	// hwkim: skip
-			  }
-			  else{
-				  packed_input[pe].write(inputBuf[sf]);
+					mask_delay_buf[pe] = wm[pe] | imaskBuf[sf];
+					input_delay_buf[pe] = inputBuf[sf];
+					w_delay_buf[pe] = w[pe];
 
-//				  auto const &w = weights.weights(tile_pe[pe]);
-				  packed_weight[pe].write((ap_uint<SIMD>)w[pe]);
+					// hwkim added for debug
+#ifdef DEBUG
+					cout << dec;
+					cout << "yx " << "(" << y << "," << x << ")" << ", ";
+					cout << "kyx " << "(" << ky << "," << kx << ")" << ", ";
+					cout << "nf: " << (int)nf << ", ";
+					cout << "sf: " << (int)sf << ", ";
+					cout << "pe: " << (int)pe << "------------------" << endl;
+					cout << hex;
+					cout << "new input to buffer" << endl;
+					cout << "mbuf: " << mask_delay_buf[pe] << ",\t";
+					cout << "wbuf: "  << w_delay_buf[pe] << ",\t";
+					cout << "inbuf: " << input_delay_buf[pe] << endl;
+					cout << "zm: " << z_mask[pe] << ",\t";
+					cout << "wpack: "  << w_pack_buf[pe] << ",\t";
+					cout << "inpack: " << input_pack_buf[pe] << endl;
+#endif
 
-				  sf_cnt[pe]++;
-			  }
-//			  tile_pe[pe]++;
-		  }
+//				}
+//
+//				for(unsigned char pe=0; pe<PE; pe++){
+//#pragma HLS UNROLL
 
-		  tile++;
+					if(pack_en[pe]==1){
+//						mask_delay_buf[pe] = wm[pe] | imaskBuf[sf];
+//						input_delay_buf[pe] = inputBuf[sf];
+//						w_delay_buf[pe] = w[pe];
+						for(unsigned char prev_bit_cnt=0; prev_bit_cnt<SIMD; prev_bit_cnt++){
+//						for(unsigned char prev_bit_cnt=0; prev_bit_cnt<WAY; prev_bit_cnt++){	// WAY should be small enough to unroll
+							if(z_mask[pe][prev_bit_cnt]){
+								for(unsigned char next_bit_cnt=0; next_bit_cnt<SIMD; next_bit_cnt++){
+//								for(unsigned char next_bit_cnt=0; next_bit_cnt<WAY; next_bit_cnt++){
+									if(mask_delay_buf[pe][next_bit_cnt]==0){
+										z_mask[pe][prev_bit_cnt] = 0;
+										mask_delay_buf[pe][next_bit_cnt] = 1;
+										input_pack_buf[pe](prev_bit_cnt*SrcWidth+(SrcWidth-1), prev_bit_cnt*SrcWidth)
+												= input_delay_buf[pe](next_bit_cnt*SrcWidth+(SrcWidth-1), next_bit_cnt*SrcWidth);
+										w_pack_buf[pe][prev_bit_cnt] = w_delay_buf[pe][next_bit_cnt];
+										break;
+									}
+								}
+							}
+						}
+					}
+					else{
+//						if(swu_init_flag[pe]){
+							z_mask[pe] = mask_delay_buf[pe];
+							input_pack_buf[pe] = input_delay_buf[pe];
+							w_pack_buf[pe] = w_delay_buf[pe];
+//							swu_init_flag[pe] = 0;
+//						}
+//						mask_delay_buf[pe] = wm[pe] | imaskBuf[sf];
+//						input_delay_buf[pe] = inputBuf[sf];
+//						w_delay_buf[pe] = w[pe];
+					}
 
-		  // hwkim moved for ternary
-		  if(++sf_ch_cnt==sf_ch){
-			  sf_ch_cnt=0;
-			  if(++kx==3){
-				  kx=0;
-				  if(++ky==3){
-					  ky=0;
-					  if(nf==(NF-1)){
-						  if(++x==OFMDim){
-							  x=0;
-							  if(++y==OFMHeight){
-								  y=0;
-							  }
-						  }
-					  }
-				  }
-			  }
-		  }
-		  // hwkim moved for ternary
-		  if(sf == (SF-1)) {
-			  for(unsigned char pe=0; pe<PE; pe++){
+					// hwkim added for debug
+#ifdef DEBUG
+					cout << hex;
+					cout << "pack_en==1 > fill, else > stage to pack buf" << endl;
+					cout << "mbuf: " << mask_delay_buf[pe] << ",\t";
+					cout << "wbuf: "  << w_delay_buf[pe] << ",\t";
+					cout << "inbuf: " << input_delay_buf[pe] << endl;
+					cout << "zm: " << z_mask[pe] << ",\t";
+					cout << "wpack: "  << w_pack_buf[pe] << ",\t";
+					cout << "inpack: " << input_pack_buf[pe] << endl;
+#endif
+
+//			}
+//
+//			// hwkim: SIMD lane workload balancing
+//			for(unsigned char pe=0; pe<PE; pe++){
+//#pragma HLS UNROLL
+
+//				auto const &w = weights.weights(tile);
+
+				// ***hwkim: should be merged to nonzero skip scheme of ternary architecture
+//				if((x<Left && kx<Left)
+//						||(y<Top && ky<Top)
+//						||(x>(OFMDim-1-Right) && kx>(3-1-Right))
+//						||(y>(OFMHeight-1-Bottom) && ky>(3-1-Bottom))){
+//					;	// hwkim: skip
+//				}
+//				else{
+
+					if(z_mask[pe]==0){
+//						packed_input[pe].write(inputBuf[sf]);
+						packed_input[pe].write(input_pack_buf[pe]);
+//						packed_weight[pe].write((ap_uint<SIMD>)w[pe]);
+						packed_weight[pe].write(w_pack_buf[pe]);
+
+//						sf_cnt[pe]++;	// should be changed - there's fan-in which is not multiple of SIMD (the last one of stream)
+						sf_cnt[pe]+=SIMD;
+
+						pack_en[pe] = 0;
+						z_mask[pe] = mask_delay_buf[pe];
+						input_pack_buf[pe] = input_delay_buf[pe];
+						w_pack_buf[pe] = w_delay_buf[pe];
+
+#ifdef DEBUG
+						// hwkim added for debug
+						cout << hex;
+						cout << "pushed to FIFO and staged to pack buf" << endl;
+						cout << "mbuf: " << mask_delay_buf[pe] << ",\t";
+						cout << "wbuf: "  << w_delay_buf[pe] << ",\t";
+						cout << "inbuf: " << input_delay_buf[pe] << endl;
+						cout << "zm: " << z_mask[pe] << ",\t";
+						cout << "wpack: "  << w_pack_buf[pe] << ",\t";
+						cout << "inpack: " << input_pack_buf[pe] << endl;
+#endif
+					}
+//					else{	// packed buffer for stream is not full with nonzero values
+					if(z_mask[pe]!=0){
+						// hwkim added for debug
+#ifdef ACTIVATION_LOG
+						if(pack_en[pe]==1){	// already attempted but still not full
+//							cout << "still not full" << endl;
+							if((~mask_delay_buf[pe])!=0){
+								cout << "error case" << endl;
+								throw 1;
+							}
+						}
+#endif
+
+						pack_en[pe] = 1;
+					}
+				}
+				// hwkim added for debug
+//				cout << "pack_en: " << hex << pack_en << endl;
+			}
+
+			tile++;
+
+			// hwkim moved for ternary
+			if(++sf_ch_cnt==sf_ch){
+				sf_ch_cnt=0;
+				if(++kx==3){
+					kx=0;
+					if(++ky==3){
+						ky=0;
+						if(nf==(NF-1)){
+							if(++x==OFMDim){
+								x=0;
+								if(++y==OFMHeight){
+									y=0;
+								}
+							}
+						}
+					}
+				}
+			}
+
+			// hwkim moved for ternary
+			if(sf == (SF-1)) {
+				for(unsigned char pe=0; pe<PE; pe++){
 #pragma HLS UNROLL
-				  sf_num[pe].write(sf_cnt[pe]);
-				  sf_cnt[pe] = 0;
-			  }
-			  if(++nf == NF) {
-				  nf   = 0;
-			  }
-		  }
 
-//		  sf++;
-	  }
+					// hwkim added for debug
+//					mask_delay_buf[pe] = 0;
+//					input_delay_buf[pe] = 0;
+//					w_delay_buf[pe] = 0;
+
+					if(pack_en[pe]==1 && (~z_mask[pe])!=0){
+						unsigned char next_bit_cnt=0;
+						for(unsigned char prev_bit_cnt=0; prev_bit_cnt<SIMD; prev_bit_cnt++){
+							if(z_mask[pe][prev_bit_cnt]==0){
+								mask_delay_buf[pe] = 1;	// for debug
+								input_delay_buf[pe](next_bit_cnt*SrcWidth+(SrcWidth-1), next_bit_cnt*SrcWidth)
+										= input_pack_buf[pe](prev_bit_cnt*SrcWidth+(SrcWidth-1), prev_bit_cnt*SrcWidth);
+								w_delay_buf[pe][next_bit_cnt] = w_pack_buf[pe][prev_bit_cnt];
+
+								sf_cnt[pe]++;
+								next_bit_cnt++;
+							}
+
+						}
+						packed_input[pe].write(input_delay_buf[pe]);
+						packed_weight[pe].write(w_delay_buf[pe]);
+
+#ifdef DEBUG
+						// hwkim added for debug
+						cout << "last SIMD pe: " << dec << (int)pe << "-----------" << endl;
+						cout << hex;
+						cout << "mbuf: " << mask_delay_buf[pe] << ",\t";
+						cout << "wbuf: "  << w_delay_buf[pe] << ",\t";
+						cout << "inbuf: " << input_delay_buf[pe] << endl;
+						cout << "zm: " << z_mask[pe] << ",\t";
+						cout << "wpack: "  << w_pack_buf[pe] << ",\t";
+						cout << "inpack: " << input_pack_buf[pe] << endl;
+#endif
+					}
+
+					sf_num[pe].write(sf_cnt[pe]);
+					// hwkim added for debug
+//					cout << "sf_cnt: " << dec << sf_cnt[pe] << endl;
+				}
+				if(++nf == NF) {
+					nf   = 0;
+				}
+			}
+
+//			sf++;
+		}
 	}
 }
 

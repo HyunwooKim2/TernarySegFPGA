@@ -74,9 +74,9 @@ template<unsigned int ConvKernelDim,
 		 unsigned int Stride = 1>
 void ConvolutionInputGenerator(
 		stream<ap_uint<SIMD*Input_precision>> & in,
-//		stream<ap_uint<SIMD>> & in_mask,	//hwkim added for ternary
+		stream<ap_uint<SIMD>> & in_mask,	//hwkim added for ternary
 		stream<ap_uint<SIMD*Input_precision>> & out,
-//		stream<ap_uint<SIMD>> & out_mask,	// hwkim added for ternary
+		stream<ap_uint<SIMD>> & out_mask,	// hwkim added for ternary
 		const unsigned int numReps = 1) {
   if(IFMChannels % SIMD != 0) {
     cout << "Error: IFM channels has to be a multiple of SIMD" << endl;
@@ -160,9 +160,9 @@ void ConvolutionInputGenerator(
 
 
     	  // hwkim added for ternary
-//		  ap_uint<SIMD> imaskElem;
-//		  imaskElem = in_mask.read();
-//		  imaskBuf[current_block_write][current_line] = imaskElem;
+		  ap_uint<SIMD> imaskElem;
+		  imaskElem = in_mask.read();
+		  imaskBuf[current_block_write][current_line] = imaskElem;
 
     	  current_line++;
     	  inp++;
@@ -203,7 +203,7 @@ void ConvolutionInputGenerator(
 			  //ap_uint<SIMD*Input_precision> outElem = inputBuf[current_block_read_kernel][(current_line_in_block)];
 			  ap_uint<SIMD*Input_precision> outElem;
 			  // hwkim added for ternary
-//			  ap_uint<SIMD> omaskElem;
+			  ap_uint<SIMD> omaskElem;
 			  if(((ofm_y < 0) && (k_y < -ofm_y)) ||
 				  ((ofm_x < 0) && (k_x < -ofm_x)) ||
 				  ((ofm_y >= (OFMHeight-1-Bottom-1)) && (k_y > OFMHeight-Bottom-Bottom+1-ofm_y+(Bottom-Top))) ||
@@ -215,12 +215,12 @@ void ConvolutionInputGenerator(
 				  outElem = inputBuf[current_block_read_kernel][(current_line_in_block)];
 		    	  out.write(outElem);
 		    	  // hwkim added for ternary
-//		    	  omaskElem = imaskBuf[current_block_read_kernel][(current_line_in_block)];
-//				  out_mask.write(omaskElem);
+		    	  omaskElem = imaskBuf[current_block_read_kernel][(current_line_in_block)];
+				  out_mask.write(omaskElem);
 
 #ifdef ACTIVATION_LOG
 		    	  conv_in_gen_log_file << hex << (unsigned int)outElem << " ";
-//		    	  conv_imask_gen_log_file << hex << (unsigned int)omaskElem << " ";	// hwkim added for ternary
+		    	  conv_imask_gen_log_file << hex << (unsigned int)omaskElem << " ";	// hwkim added for ternary
 #endif
 			  }
     		  // hwkim added for debug
@@ -282,17 +282,17 @@ void ConvolutionInputGenerator(
 
         	  // hwkim modified for debug
 			  if(in.empty())	printf("ConvInpGen in stream read empty!!\n");
-//			  if(in_mask.empty())	printf("ConvInpGen in_mask stream read empty!!\n");	// hwkim added for ternary
+			  if(in_mask.empty())	printf("ConvInpGen in_mask stream read empty!!\n");	// hwkim added for ternary
 
         	  inElem = in.read();
         	  inputBuf[current_block_write][current_line] = inElem;
 #pragma AP dependence variable=inputBuf intra false
 #pragma AP dependence variable=inputBuf inter false
         	  // hwkim added for ternary
-//        	  imaskElem = in_mask.read();
-//        	  imaskBuf[current_block_write][current_line] = imaskElem;
-//#pragma AP dependence variable=imaskBuf intra false
-//#pragma AP dependence variable=imaskBuf inter false
+        	  imaskElem = in_mask.read();
+        	  imaskBuf[current_block_write][current_line] = imaskElem;
+#pragma AP dependence variable=imaskBuf intra false
+#pragma AP dependence variable=imaskBuf inter false
 
         	  current_line++;
         	  // hwkim modified for stride

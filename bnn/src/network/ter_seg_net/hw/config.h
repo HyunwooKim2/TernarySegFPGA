@@ -229,8 +229,7 @@
 
 //#define L0_WPI 1
 
-// hwkim modified for ternary
-// NumTH
+// hwkim commented: activation accumulation precision
 #define L0_API 1
 #define L1_API 1
 #define L2_API 1
@@ -242,17 +241,19 @@
 #define L8_API 1
 #define L9_API 1
 #define L10_API 1
-//#define L0_API 2
-//#define L1_API 2
-//#define L2_API 2
-//#define L3_API 2
-//#define L4_API 2
-//#define L5_API 2
-//#define L6_API 2
-//#define L7_API 2
-//#define L8_API 2
-//#define L9_API 2
-//#define L10_API 2
+
+// hwkim added for ternary
+#define L0_NUMTH	2
+#define L1_NUMTH	2
+#define L2_NUMTH	2
+#define L3_NUMTH	2
+#define L4_NUMTH	2
+#define L5_NUMTH	2
+#define L6_NUMTH	2
+#define L7_NUMTH	2
+#define L8_NUMTH	2
+#define L9_NUMTH	2
+#define L10_NUMTH	1	// there's no activation function, threshold is offset (bias)
 
 //#define L0_WPF 0
 //#define L0_APF 0

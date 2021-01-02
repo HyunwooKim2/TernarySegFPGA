@@ -86,31 +86,33 @@ static BinaryWeights< L8_SIMD,  L8_PE,  L8_WMEM>  weights8;
 static BinaryWeights< L9_SIMD,  L9_PE,  L9_WMEM>  weights9;
 static BinaryWeights<L10_SIMD, L10_PE, L10_WMEM>  weights10;
 
-// hwkim modified for positive only accumulation
-//static ThresholdsActivation< L0_TMEM,  L0_PE,  L0_API, ap_fixed<24, 16>, ap_uint<L0_API> > threshs0;
-static InputLayerActivation< L0_TMEM,  L0_PE,  L0_API, ap_fixed<24, 16>, ap_uint<L0_API> > threshs0;
-
-static ThresholdsActivation< L1_TMEM,  L1_PE,  L1_API, ap_int<16>, ap_uint<L1_API>>  		threshs1;
-static ThresholdsActivation< L2_TMEM,  L2_PE,  L2_API, ap_int<16>, ap_uint<L2_API>>  		threshs2;
-static ThresholdsActivation< L3_TMEM,  L3_PE,  L3_API, ap_int<16>, ap_uint<L3_API>>  		threshs3;
-static ThresholdsActivation< L4_TMEM,  L4_PE,  L4_API, ap_int<16>, ap_uint<L4_API>>  		threshs4;
-static ThresholdsActivation< L5_TMEM,  L5_PE,  L5_API, ap_int<16>, ap_uint<L5_API>>  		threshs5;
-static ThresholdsActivation< L6_TMEM,  L6_PE,  L6_API, ap_int<16>, ap_uint<L6_API>>  		threshs6;
-static ThresholdsActivation< L7_TMEM,  L7_PE,  L7_API, ap_int<16>, ap_uint<L7_API>>  		threshs7;
-static ThresholdsActivation< L8_TMEM,  L8_PE,  L8_API, ap_int<16>, ap_uint<L8_API>>  		threshs8;
-static ThresholdsActivation< L9_TMEM,  L9_PE,  L9_API, ap_int<16>, ap_uint<L9_API>>  		threshs9;
-// hwkim modified for last fc layer & batch norm scale
-//static PassThroughAndBatchNorm<L10_TMEM, L10_PE, L10_API, ap_int<16>, ap_int<16>>			threshs10;
-static PassThroughAndBatchNorm<L10_TMEM, L10_PE, L10_API, ap_int<16>, ap_fixed<24,16,AP_TRN,AP_SAT>, ap_ufixed<8,0,AP_TRN,AP_SAT>>	threshs10;
-//static PassThroughAndBatchNorm<L10_TMEM, L10_PE, L10_API, ap_int<16>, ap_int<16>, ap_ufixed<8,0,AP_TRN,AP_SAT>>	threshs10;
-/* hwkim commented
- * 마지막 layer라 thresholding(activation) 안 하고,
- * pass through activation
- */
+// hwkim modified for ternary - NumTH modified
+//static InputLayerActivation< L0_TMEM,  L0_PE,  L0_API, ap_fixed<24, 16>, ap_uint<L0_API> > threshs0;
+//static ThresholdsActivation< L1_TMEM,  L1_PE,  L1_API, ap_int<16>, ap_uint<L1_API>>  		threshs1;
+//static ThresholdsActivation< L2_TMEM,  L2_PE,  L2_API, ap_int<16>, ap_uint<L2_API>>  		threshs2;
+//static ThresholdsActivation< L3_TMEM,  L3_PE,  L3_API, ap_int<16>, ap_uint<L3_API>>  		threshs3;
+//static ThresholdsActivation< L4_TMEM,  L4_PE,  L4_API, ap_int<16>, ap_uint<L4_API>>  		threshs4;
+//static ThresholdsActivation< L5_TMEM,  L5_PE,  L5_API, ap_int<16>, ap_uint<L5_API>>  		threshs5;
+//static ThresholdsActivation< L6_TMEM,  L6_PE,  L6_API, ap_int<16>, ap_uint<L6_API>>  		threshs6;
+//static ThresholdsActivation< L7_TMEM,  L7_PE,  L7_API, ap_int<16>, ap_uint<L7_API>>  		threshs7;
+//static ThresholdsActivation< L8_TMEM,  L8_PE,  L8_API, ap_int<16>, ap_uint<L8_API>>  		threshs8;
+//static ThresholdsActivation< L9_TMEM,  L9_PE,  L9_API, ap_int<16>, ap_uint<L9_API>>  		threshs9;
+//static PassThroughAndBatchNorm<L10_TMEM, L10_PE, L10_API, ap_int<16>, ap_fixed<24,16,AP_TRN,AP_SAT>, ap_ufixed<8,0,AP_TRN,AP_SAT>>	threshs10;
+static InputLayerActivation< L0_TMEM,  L0_PE,  L0_NUMTH, ap_fixed<24, 16>, ap_uint<L0_API> > threshs0;
+static ThresholdsActivation< L1_TMEM,  L1_PE,  L1_NUMTH, ap_int<16>, ap_uint<L1_API>>  		threshs1;
+static ThresholdsActivation< L2_TMEM,  L2_PE,  L2_NUMTH, ap_int<16>, ap_uint<L2_API>>  		threshs2;
+static ThresholdsActivation< L3_TMEM,  L3_PE,  L3_NUMTH, ap_int<16>, ap_uint<L3_API>>  		threshs3;
+static ThresholdsActivation< L4_TMEM,  L4_PE,  L4_NUMTH, ap_int<16>, ap_uint<L4_API>>  		threshs4;
+static ThresholdsActivation< L5_TMEM,  L5_PE,  L5_NUMTH, ap_int<16>, ap_uint<L5_API>>  		threshs5;
+static ThresholdsActivation< L6_TMEM,  L6_PE,  L6_NUMTH, ap_int<16>, ap_uint<L6_API>>  		threshs6;
+static ThresholdsActivation< L7_TMEM,  L7_PE,  L7_NUMTH, ap_int<16>, ap_uint<L7_API>>  		threshs7;
+static ThresholdsActivation< L8_TMEM,  L8_PE,  L8_NUMTH, ap_int<16>, ap_uint<L8_API>>  		threshs8;
+static ThresholdsActivation< L9_TMEM,  L9_PE,  L9_NUMTH, ap_int<16>, ap_uint<L9_API>>  		threshs9;
+static PassThroughAndBatchNorm<L10_TMEM, L10_PE, L10_NUMTH, ap_int<16>, ap_fixed<24,16,AP_TRN,AP_SAT>, ap_ufixed<8,0,AP_TRN,AP_SAT>>	threshs10;
 
 #ifdef ACTIVATION_LOG
-string golden_file_dir = "/home/hwkim/work/params/guinness_params/camvid_params/1017/Activations/";
-string snapshot_dir = "/home/hwkim/work/params/finn_params/camvid_params/1017/snapshots/single_image/";
+string golden_file_dir = "/home/hwkim/work/params/matlab_ter_params/camvid/1123/Activations/";
+string snapshot_dir = "/home/hwkim/work/params/finn_ter_params/camvid_params/1123/base_config/snapshots/single_image/";
 #endif
 
 // hwkim added for ternary
@@ -538,9 +540,10 @@ void DoMemInit(int targetLayer,
 
     case 30: weights10.m_weights[targetMem][targetInd] = val; break;
     case 31: wmasks10.m_masks[targetMem][targetInd] = val; break;
-    case 32: threshs10.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
+//    case 32: threshs10.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
 
     case -1: threshs10.m_scales[targetMem] = *reinterpret_cast<ap_ufixed<8, 0, AP_TRN, AP_SAT> *>(&val); break;
+    case -2: threshs10.m_thresholds[targetMem][targetInd][targetThresh] = val; break;
   }
 }
 
@@ -656,11 +659,11 @@ void DoCompute(
 	//StreamingDataWidthConverter_Batch<192, 24, (L0_IFM_DIM*L0_IFM_HEIGHT*3*8)/192+1>(inter0_1, inter0_2, numReps);
 	StreamingDataWidthConverter_Batch<64, 192, (L0_IFM_DIM*L0_IFM_HEIGHT*3*8)/64>(inter0, inter0_1, numReps);
 	// hwkim modified for ternary
-	StreamingDataWidthConverter_Batch<192, 24, (L0_IFM_DIM*L0_IFM_HEIGHT*3*8)/192>(inter0_1, inter0_2, numReps);
-//	StreamingDataWidthConverter_Batch<192, 24, (L0_IFM_DIM*L0_IFM_HEIGHT*3*8)/192>(inter0_1, inter0_2_maskgen, numReps);
+//	StreamingDataWidthConverter_Batch<192, 24, (L0_IFM_DIM*L0_IFM_HEIGHT*3*8)/192>(inter0_1, inter0_2, numReps);
+	StreamingDataWidthConverter_Batch<192, 24, (L0_IFM_DIM*L0_IFM_HEIGHT*3*8)/192>(inter0_1, inter0_2_maskgen, numReps);
 
 	// hwkim added for ternary
-//	InputMaskGeneration<24, 3>(inter0_2_maskgen, inter0_2, inter0_2_mask);
+	InputMaskGeneration<24, 3>(inter0_2_maskgen, inter0_2, inter0_2_mask);
 
 #ifdef SEP_SIM
 	if(sep_sim_layer1_en)
@@ -678,9 +681,9 @@ void DoCompute(
 			ap_uint<1>,	// hwkim added for batch norm scale
 			Slice<ap_fixed<8, 1, AP_TRN, AP_SAT>>, Identity, Recast<Binary>>
 				(inter0_2,
-//				inter0_2_mask,
+				inter0_2_mask,
 				inter1, weights0,
-//				wmasks0,	// hwkim added for ternary
+				wmasks0,	// hwkim added for ternary
 				threshs0, numReps, ap_resource_lut());
 #ifdef SEP_SIM
 	else
@@ -737,9 +740,9 @@ void DoCompute(
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
 					(inter1,
-//					inter1_mask,	// hwkim added for ternary
+					inter1_mask,	// hwkim added for ternary
 					inter2, weights1,
-//					wmasks1,	// hwkim added for ternary
+					wmasks1,	// hwkim added for ternary
 					threshs1, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 		else
@@ -794,9 +797,9 @@ void DoCompute(
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
 					(inter2,
-//					inter2_mask,	// hwkim added for ternary
+					inter2_mask,	// hwkim added for ternary
 					inter3, weights2,
-//					wmasks2,	// hwkim added for ternary
+					wmasks2,	// hwkim added for ternary
 					threshs2, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 		else
@@ -851,9 +854,9 @@ void DoCompute(
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
 					(inter3,
-//					inter3_mask,	// hwkim added for ternary
+					inter3_mask,	// hwkim added for ternary
 					inter4, weights3,
-//					wmasks3,	// hwkim added for ternary
+					wmasks3,	// hwkim added for ternary
 					threshs3, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 			else
@@ -908,9 +911,9 @@ void DoCompute(
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
 					(inter4,
-//					inter4_mask,	// hwkim added for ternary
+					inter4_mask,	// hwkim added for ternary
 					inter5, weights4,
-//					wmasks4,	// hwkim added for ternary
+					wmasks4,	// hwkim added for ternary
 					threshs4, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 			else
@@ -965,9 +968,9 @@ void DoCompute(
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
 					(inter5,
-//					inter5_mask,	// hwkim added for ternary
+					inter5_mask,	// hwkim added for ternary
 					inter6, weights5,
-//					wmasks5,	// hwkim added for ternary
+					wmasks5,	// hwkim added for ternary
 					threshs5, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 			else
@@ -1067,9 +1070,9 @@ void DoCompute(
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
 					(inter7,
-//					inter7_mask,	// hwkim added for ternary
+					inter7_mask,	// hwkim added for ternary
 					inter8, weights7,
-//					wmasks7,	// hwkim added for ternary
+					wmasks7,	// hwkim added for ternary
 					threshs7, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 			else
@@ -1165,9 +1168,9 @@ void DoCompute(
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
 					(inter9,
-//					inter9_mask,	// hwkim added for ternary
+					inter9_mask,	// hwkim added for ternary
 					inter10, weights9,
-//					wmasks9,	// hwkim added for ternary
+					wmasks9,	// hwkim added for ternary
 					threshs9, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 		else
@@ -1222,9 +1225,9 @@ void DoCompute(
 				Recast<XnorMul>,
 				Slice<ap_fixed<24,16,AP_TRN,AP_SAT> >>	//Slice<ap_int<16> >>	// hwkim modified for batch norm scale
 					(inter10,
-//					inter10_mask,	// hwkim added for ternary
+					inter10_mask,	// hwkim added for ternary
 					inter11, weights10,
-//					wmasks10,	// hwkim added for ternary
+					wmasks10,	// hwkim added for ternary
 					threshs10, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 		else

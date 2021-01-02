@@ -93,9 +93,10 @@ extern "C" void load_parameters(const char* path) {
   FoldedMVLoadLayerMem(path,  7,  L7_PE,  L7_WMEM,  L7_TMEM, L7_API);
   FoldedMVLoadLayerMem(path,  8,  L8_PE,  L8_WMEM,  L8_TMEM, L8_API);
   FoldedMVLoadLayerMem(path,  9,  L9_PE,  L9_WMEM,  L9_TMEM, L9_API);
-  FoldedMVLoadLayerMem(path, 10, L10_PE, L10_WMEM, L10_TMEM, L10_API);
-  // hwkim added for batch norm scale
-  FoldedMVLoadScaleMem();
+
+  // hwkim modified for batch normalization without activation function
+//  FoldedMVLoadLayerMem(path, 10, L10_PE, L10_WMEM, L10_TMEM, L10_API);
+  FoldedMVLoadLLayerMem(path, 10, L10_PE, L10_WMEM, L10_TMEM, L10_API);
 }
 
 extern "C" int inference(const char* path,

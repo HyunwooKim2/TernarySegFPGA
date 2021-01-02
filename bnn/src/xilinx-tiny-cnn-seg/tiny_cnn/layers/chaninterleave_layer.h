@@ -102,6 +102,7 @@ public:
 		}
 		for(int c=0; c<channels_; c++){
 			for(int pix=0; pix<w*h; pix++){
+				chaninterleave_log_file.precision(7);
 				chaninterleave_log_file << std::setw(15) << out[pix*channels_+c] << "|";
 				if(pix%w==(w-1)){
 					chaninterleave_log_file << std::endl;
