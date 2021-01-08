@@ -83,7 +83,7 @@ template<
 		typename TDstI = Identity,		// redefine I/O interpretation as needed for output activations
 		typename TWeightI = Identity,	// redefine I/O interpretation as needed for weigths
 		int InStreamW, int OutStreamW,  // safely deducible (stream width must be int though!)
-		int InMaskStreamW,	// hwkim added for ternary
+		int InMaskStreamW, int OutMaskStreamW,	// hwkim added for ternary
 		typename TW,
 		typename TM,	// hwkim added for ternary
 		typename TA,
@@ -92,6 +92,7 @@ void ConvLayer_Batch(
 				hls::stream<ap_uint<InStreamW>> &in,
 				hls::stream<ap_uint<InMaskStreamW>> &in_mask,	// hwkim added for ternary
 				hls::stream<ap_uint<OutStreamW>> &out,
+				hls::stream<ap_uint<OutMaskStreamW>> &out_mask,
 				TW const &weights,
 				TM const &wmasks,	// hwkim added for ternary
 				TA const &activation,
@@ -114,6 +115,12 @@ void ConvLayer_Batch(
   // hwkim modified for segmentation
   	  //OFMDim * OFMDim * (OFMChannels / PE)> mvOut (out,  reps);
   	  OFMDim * OFMHeight * (OFMChannels / PE)> mvOut (out,  reps);
+
+  // hwkim added for ternary
+  WidthAdjustedOutputStream <PE, OutMaskStreamW,
+  // hwkim modified for segmentation
+  	  //OFMDim * OFMDim * (OFMChannels / PE)> mvOut (out,  reps);
+  	  OFMDim * OFMHeight * (OFMChannels / PE)> mvOutMask (out_mask,  reps);
 
   hls::stream<ap_uint<SIMD*TSrcI::width> > convInp("StreamingConvLayer_Batch.convInp");
 
@@ -186,6 +193,7 @@ void ConvLayer_Batch(
 			(static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>&>(convInp),
 //			static_cast<hls::stream<ap_uint<SIMD>>&>(convInp_mask),	// hwkim added for ternary
 			static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>(mvOut),
+			static_cast<hls::stream<ap_uint<PE>>&>(mvOutMask),
 
 			// hwkim modifeid for ternary
 			//weights,

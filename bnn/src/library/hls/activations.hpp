@@ -216,6 +216,7 @@ template<unsigned NF, unsigned PE, unsigned NumTH,
 class InputLayerActivation {
 public:
   TA m_thresholds[PE][NF][NumTH];
+  // hwkim: NumTH 0 -> positive, 1 -> negative threshold
 
 public:
   TA init(unsigned const  nf, unsigned const  pe) const {
@@ -228,23 +229,36 @@ public:
     TR activate(unsigned const  nf, unsigned const  pe,  TA const &accu, TA const fan_in) const {
 #pragma HLS inline
     TR result=ActVal;
-    // hwkim modified for II violation
-//#pragma HLS ARRAY_PARTITION variable=m_thresholds complete dim=1
-//#pragma HLS ARRAY_PARTITION variable=m_thresholds complete dim=3
 
-    // hwkim modified for positive only accum
-    TA act = accu + m_thresholds[pe][nf][0];
+    // hwkim modified for unsigned popcount
+//    TA act = accu + m_thresholds[pe][nf][0];
     //cout << setprecision(9) << act << " "; //<< "accu" << pe << "=" << act << endl;
 
-    // hwkim modified for positive only accum
-    if(act >= (TA)0)
-    	result = (TR)1;
-    else
-    	result = (TR)0;
+    // hwkim modified for unsigned popcount
+//    if(act >= (TA)0)
+//    	result = (TR)1;
+//    else
+//    	result = (TR)0;
+
+    // hwkim modified for ternary
+    result[0] = Compare()(m_thresholds[pe][nf][0], accu);
+    result[1] = Compare()(m_thresholds[pe][nf][1], accu) & (~result[0]);	// zero mask
+
+    // hwkim added for debug
+//    cout << "pe: " << (int)pe;
+//    cout << fixed;
+//    cout.precision(8);
+//    cout << ", th[0]: " << m_thresholds[pe][nf][0];
+//    cout << ", th[1]: " << m_thresholds[pe][nf][1];
+//    cout << ", accu: " << accu;
+//    cout << hex << ", result: " << result << endl;
+
+    // hwkim: original code
 //	for(unsigned int i=0; i< NumTH; i++){
 //#pragma HLS unroll
-//      result+=Compare()(m_thresholds[pe][nf][i], accu);
+//      result+=Compare()(m_thresholds[pe][nf][i], accu);	// inequality sign "<="
 //    }
+
     return result;
   }
 };

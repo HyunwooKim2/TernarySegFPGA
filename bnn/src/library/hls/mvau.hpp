@@ -1025,11 +1025,13 @@ template<unsigned MatrixW, unsigned MatrixH, unsigned SIMD, unsigned PE, unsigne
   typename TA, typename PI,
   //typename TWM,
 //  typename TIM, // type mask	// hwkim added for ternary
+  typename TOM,	// hwkim added for ternary
   typename R>
 void Matrix_Vector_Activate_Batch_SkipSeparately(
 		hls::stream<TI> & in,
 //		hls::stream<TIM> & in_mask,
 		hls::stream<TO> &out,
+		hls::stream<TOM> &out_mask,
 
 		// hwkim modified for ternary
 		//TW  const &weights,
@@ -1065,31 +1067,43 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
   extern string golden_file_dir;
   int compare_skip = 0;
   ap_uint<OutWidth> act_buf_arr[NF];
+  ap_uint<PE> act_mask_buf_arr[NF];
   ap_uint<NF*OutWidth> act_buf=0;
+  ap_uint<NF*PE> act_mask_buf=0;
+
   string conv_out_file_name = snapshot_dir + "conv_" + to_string(LayerCnt+1) + "_out_minusBias.txt";
   string act_file_name = snapshot_dir + "activation_" + to_string(LayerCnt+1) + "_log.txt";
+  string act_mask_file_name = snapshot_dir + "activation_mask_" + to_string(LayerCnt+1) + "_log.txt";
   string golden_conv_out_file_name = golden_file_dir + "binConv" + to_string(LayerCnt+1) + "_minusBias.txt";
   string golden_act_file_name = golden_file_dir + "Sign" + to_string(LayerCnt+1) + ".txt";
+  string golden_mask_file_name = golden_file_dir + "Sign" + to_string(LayerCnt+1) + "_flag.txt";
   string conv_out_comp_file_name = "conv_" + to_string(LayerCnt+1) + "_out_minusBias_comp.txt";
   string act_comp_file_name = "act_" + to_string(LayerCnt+1) + "_comp.txt";
+  string mask_comp_file_name = "mask_" + to_string(LayerCnt+1) + "_comp.txt";
 
   ofstream conv_out_log_file(conv_out_file_name);
   ofstream activation_log_file(act_file_name);
+  ofstream activation_mask_log_file(act_mask_file_name);
   ifstream golden_conv_out_file(golden_conv_out_file_name);
   FILE * golden_file = fopen(golden_act_file_name.c_str(),"rt");
+  FILE * golden_mask_file = fopen(golden_mask_file_name.c_str(),"rt");
   ofstream conv_out_comp_file(conv_out_comp_file_name);
   ofstream act_comp_file(act_comp_file_name);
+  ofstream mask_comp_file(mask_comp_file_name);
   ofstream last_layer_scaled_file("last_layer_scaled_log.log");
 
   if(!conv_out_log_file.is_open())	cout << "conv_out_log_file open error" << endl;
   if(!activation_log_file.is_open())	cout << act_file_name << " open error!!" << endl;
+  if(!activation_mask_log_file.is_open())	cout << act_mask_file_name << " open error!!" << endl;
   if(!golden_conv_out_file.is_open())	cout << "golden_conv_out_file open error" << endl;
   if(golden_file==NULL){
 	  cout << golden_act_file_name << " open error!!" << endl;
 	  compare_skip = 1;
   }
+  if(golden_mask_file==NULL)	cout << golden_mask_file_name << " open error!!" << endl;
   if(!conv_out_comp_file.is_open())	cout << "conv_out_comp_file open error" << endl;
   if(!act_comp_file.is_open())	cout << act_comp_file_name << " open error!" << endl;
+  if(!mask_comp_file.is_open())	cout << mask_comp_file_name << " open error!" << endl;
   if(!last_layer_scaled_file.is_open())	cout << "last_layer_scaled_file open error" << endl;
 #endif
 
@@ -1157,6 +1171,7 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 
 	  // hwkim added for ternary
 	  auto  outElem = TDstI().template operator()<TO>();
+	  TOM outMaskElem;
 
 	  // hwkim modified for sf separation
 //	  ap_uint<PE> sf_sync_flag = 0;
@@ -1206,15 +1221,6 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 				  ap_uint<SIMD> dummy_w = packed_weight[pe].read();
 				  auto const  wgt = TWeightI()(dummy_w);
 
-//			  if((x<Left && kx_pe[pe]<Left)
-//				  ||(y<Top && ky_pe[pe]<Top)
-//				  ||(x>(OFMDim-1-Right) && kx_pe[pe]>(3-1-Right))
-//				  ||(y>(OFMHeight-1-Bottom) && ky_pe[pe]>(3-1-Bottom))
-//				  ||(sf_sync_flag[pe])	// hwkim added for sf separation
-//				  ){
-//				  ;	//skip pad from accumulation
-//			  }
-//			  else{
 				  // hwkim modified for activation comparison using +- accumulation
 //				  accu[pe] = mac<SIMD>(accu[pe], wgt, act, r
 //#ifdef ACTIVATION_LOG
@@ -1233,58 +1239,6 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 //				  cout << hex << "\tact: " << inElem_pe[pe] << "\twgt: " << dummy_w << endl;
 			  }
 		  }
-/*
-		  for(unsigned char pe = 0; pe < PE; pe++) {
-#pragma HLS UNROLL
-
-//			  if(~sf_sync_flag[pe])
-//				  sf_pe[pe]++;
-
-//			  if(sf_pe[pe] == (SF-1)) {
-//			  if(sf_pe[pe] == SF) {
-//			  if(++sf_pe[pe] == SF)	{	// && (~sf_sync_flag[pe])) {
-//			  if(++sf_pe[pe] == sf_num_buf[pe])	{	// && (~sf_sync_flag[pe])) {
-//			  if(sf == (sf_num_buf[pe] - 1)){
-			  if(sf == (sf_max - 1)){
-
-// hwkim modified for debug
-// hwkim commented for 0-1 accumulation - not +- accum
-#ifdef ACTIVATION_LOG
-				  // write conv_out_minus_bias
-				  conv_out_log_file << fixed;
-				  conv_out_log_file.precision(8);
-				  conv_out_log_file.setf(ios_base::showpoint);
-				  conv_out_log_file <<  accu_pm[pe] << endl;//" | ";
-				  //compare golden with computed
-				  decltype(activation.init(0,0))	golden_buf;
-//				  float golden_buf;
-				  golden_conv_out_file >> golden_buf;
-//				  float accu_pm_tmp = accu[pe].to_float();
-				  if(accu[pe]!=golden_buf){
-//				  if(accu_pm_tmp!=golden_buf){
-					  conv_out_comp_file << fixed;
-					  conv_out_comp_file.precision(8);
-					  conv_out_comp_file.setf(ios_base::showpoint);
-					  conv_out_comp_file << "differ @ (" << y << "," << x << ")";
-					  conv_out_comp_file << "gold: " << golden_buf << ", accu[" << nf << ", " << pe << "]: " << accu[pe] << endl;
-				  }
-#endif
-				  TDstElem outElem_unit;
-				  // hwkim modified for sf separation
-//				  outElem_unit = activation.activate(nf, pe, accu[pe], fan_in_pe[pe]);
-				  outElem_unit = activation.activate(nf, pe, accu[pe], sf_num_buf[pe]*SIMD);
-
-				  outElem[pe] = *reinterpret_cast<ap_uint<TDstI::width> *>(&outElem_unit);
-
-//				  sf_sync_flag[pe]=1;
-			  }
-
-//			  if(!sf_sync_flag[pe])
-//				  sf_pe[pe]++;
-
-		  }
-		  */
-
 		  if(sf_max <= sf)
 			  break;
 	  }
@@ -1321,43 +1275,80 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 				  cout << "accu[" << (int)pe << "]: " << accu[pe] << endl;
 			  }
 #endif
-			  TDstElem outElem_unit;
-			  outElem_unit = activation.activate(nf, pe, accu[pe], sf_num_buf[pe]*SIMD);
+			  // hwkim modified for ternary
+//			  TDstElem outElem_unit;
+//			  outElem_unit = activation.activate(nf, pe, accu[pe], sf_num_buf[pe]);
+			  ap_uint<TDstElem::width+1> outElem_ter_unit;	// include zero mask
+			  outElem_ter_unit = activation.activate(nf, pe, accu[pe], sf_num_buf[pe]);
 
+			  ap_uint<1> outMaskElem_unit;
+			  outMaskElem_unit = (ap_uint<1>)outElem_ter_unit[TDstI::width];
+			  TDstElem outElem_unit;
+			  outElem_unit = (TDstElem)outElem_ter_unit[TDstI::width-1];
+
+			  // hwkim modified for ternary
 			  outElem[pe] = *reinterpret_cast<ap_uint<TDstI::width> *>(&outElem_unit);
+			  outMaskElem[pe] = outMaskElem_unit;
 //		  }
 	  }
 
 	  // sync all PE here - per every sliding window
 	  out.write(outElem);
+	  out_mask.write(outMaskElem);
 
 // hwkim added for debug
 #ifdef ACTIVATION_LOG
 		  act_buf_arr[nf] = outElem;
+		  act_mask_buf_arr[nf] = outMaskElem;
 //			  cout << hex << (unsigned int)act_buf_arr[nf] << endl;
 		  if(nf==(NF-1)){
-	  		// write activation log - OutWidth(PE*TDst::width) is under 32 for conv(tconv) layers
 	  		act_buf = 0;
+	  		act_mask_buf = 0;
 	  		for(int nf_cnt=NF-1; nf_cnt>=0; nf_cnt--){
-	  			for(int word_cnt=0; word_cnt<OutWidth/4; word_cnt++){
-	  				activation_log_file << uppercase << hex << ((unsigned int)(act_buf_arr[nf_cnt]>>(OutWidth-4*(word_cnt+1)))&0xF);
-	  			}
-	  			// filling act_buf
+	  			// hwkim: filling act_buf
 	  			act_buf = act_buf << OutWidth;	//OutWidth or PE
 	  			act_buf = act_buf | act_buf_arr[nf_cnt];
-	  		}
-	  		activation_log_file  << endl;
 
-	  		// compare activation with gold result
+	  			act_mask_buf = act_mask_buf << PE;	//OutWidth or PE
+				act_mask_buf = act_mask_buf | act_mask_buf_arr[nf_cnt];
+	  		}
+
+	  		// hwkim: compare activation with gold result
 	  		ap_uint<NF*OutWidth> gold_buf = 0;
 	  		char gold_buf_ch[(NF*OutWidth)/4+1];
 	  		char gold_buf_ch64[17];
 	  		gold_buf_ch64[16] = 0;
 	  		unsigned long gold_buf_long;
+
 	  		if(compare_skip==0){
+
+	  			// hwkim: write activation log
+	  			activation_log_file << uppercase << hex;
+  				if((NF*OutWidth)>=64){
+  					for(int i=0; i<(NF*OutWidth)/64; i++){
+  						activation_log_file << (unsigned long long )(act_buf >> 64*(NF*OutWidth/64-i-1));
+  					}
+  					activation_log_file << endl;
+  				}
+  				else{
+  					activation_log_file << (unsigned long long )act_buf << endl;
+  				}
+
+  				// hwkim: write activation mask log
+	  			activation_mask_log_file << uppercase << hex;
+  				if((NF*PE)>=64){
+  					for(int i=0; i<(NF*PE)/64; i++){
+  						activation_mask_log_file << (unsigned long long )(act_mask_buf >> 64*(NF*PE/64-i-1));
+  					}
+  					activation_mask_log_file << endl;
+  				}
+  				else{
+  					activation_mask_log_file << (unsigned long long )act_mask_buf << endl;
+  				}
+
+	  			// read golden results (activation)
 	  			fscanf(golden_file, "%s", gold_buf_ch);
-	  			// there's no layers with channel count smaller than 64
-	  			for(int word_cnt=0; word_cnt<(NF*OutWidth)/64; word_cnt++){
+	  			for(int word_cnt=0; word_cnt<(NF*OutWidth)/64; word_cnt++){	// there's no layers with channel count smaller than 64
 	  				for(int i=0; i<64/4; i++){
 	  					gold_buf_ch64[i] = gold_buf_ch[word_cnt*16+i];
 	  				}
@@ -1380,10 +1371,41 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 	  					act_comp_file << endl;
 	  				}
 	  				else{
-	  					act_comp_file << (unsigned long long )gold_buf << "," << endl
-	  							<< setw(17) << hex << "act: "  << (unsigned long long )act_buf << endl;
+	  					act_comp_file << (unsigned long long )gold_buf << "," << setw(17);
+	  					act_comp_file << hex << "act: "  << (unsigned long long )act_buf << endl;
 	  				}
 	  			}
+
+	  			// read golden results (zero mask)
+	  			fscanf(golden_mask_file, "%s", gold_buf_ch);
+	  			for(int word_cnt=0; word_cnt<(NF*OutWidth)/64; word_cnt++){	// there's no layers with channel count smaller than 64
+	  				for(int i=0; i<64/4; i++){
+	  					gold_buf_ch64[i] = gold_buf_ch[word_cnt*16+i];
+	  				}
+	  				gold_buf_long = strtoul(gold_buf_ch64, NULL, 16);
+	  				gold_buf = gold_buf << 64;
+	  				gold_buf = gold_buf | (*reinterpret_cast<ap_uint<64> *>(&gold_buf_long));
+	  			}
+
+	  			if(act_mask_buf!=gold_buf){
+	  				mask_comp_file << dec << "@(" << setw(2) << y << "," << setw(2) << x << ")";
+	  				mask_comp_file << hex << " golden: ";
+	  				if((NF*PE)>=64){
+	  					for(int i=0; i<(NF*PE)/64; i++){
+	  						mask_comp_file << (unsigned long long )(gold_buf >> 64*(NF*PE/64-i-1));
+	  					}
+	  					mask_comp_file << "," << endl << setw(17) << hex << "act: ";
+	  					for(int i=0; i<(NF*PE)/64; i++){
+	  						mask_comp_file << (unsigned long long )(act_mask_buf >> 64*(NF*PE/64-i-1));
+	  					}
+	  					mask_comp_file << endl;
+	  				}
+	  				else{
+	  					mask_comp_file << (unsigned long long )gold_buf << "," << setw(17);
+	  					mask_comp_file << hex << "act: "  << (unsigned long long )act_mask_buf << endl;
+	  				}
+	  			}
+
 	  		}
 	  		if(x==0)
 				cout << dec << y << "/" << OFMHeight << endl;
@@ -1423,8 +1445,6 @@ void nonzero_activation_weight_stream_gen(
 		int const reps
 )
 {
-//#pragma HLS STREAM variable=packed_input //depth=256
-//#pragma HLS STREAM variable=packed_weight //depth=256
 
 	unsigned char const  NF = MatrixH / PE;
 	unsigned char const  SF = MatrixW / SIMD;
@@ -1456,8 +1476,6 @@ void nonzero_activation_weight_stream_gen(
 	unsigned char sf   = 0;
 	unsigned char const sf_ch = SF/9;
 	unsigned char tile = 0;
-//	unsigned char tile_pe[PE];
-//#pragma HLS ARRAY_PARTITION variable=tile_pe complete dim=1
 	unsigned short sf_cnt[PE];
 #pragma HLS ARRAY_PARTITION variable=sf_cnt complete dim=1
 
@@ -1467,32 +1485,27 @@ void nonzero_activation_weight_stream_gen(
 #pragma HLS LOOP_FLATTEN off
 		unsigned char sf_ch_cnt=0;
 
+		ap_uint<PE>	pack_en = 0;
+//		ap_uint<WAY>	pack_en[PE];
+
 		if(nf==0){
-//			for(unsigned char pe=0; pe<PE; pe++){
-//#pragma HLS UNROLL
-//					tile_pe[pe] = 0;
-//			}
 			tile = 0;
 		}
 
 		for(unsigned char pe=0; pe<PE; pe++){
 #pragma HLS UNROLL
 			sf_cnt[pe] = 0;
-
 			mask_delay_buf[pe] = 0;
 			input_delay_buf[pe] = 0;
 			w_delay_buf[pe] = 0;
 			z_mask[pe] = 0;
 			input_pack_buf[pe] = 0;
 			w_pack_buf[pe] = 0;
+
+			pack_en[pe] = 0;
 		}
 
-		ap_uint<PE>	pack_en = 0;
-//		ap_uint<PE>	swu_init_flag = ~0x0;
 
-	  // hwkim modified for ternary
-//	  sf = 0;
-//	  while(sf < SF){
 		for(sf=0; sf<SF; sf++){
 #pragma HLS PIPELINE II=1
 
@@ -1520,7 +1533,7 @@ void nonzero_activation_weight_stream_gen(
 			for(unsigned char pe=0; pe<PE; pe++){
 #pragma HLS UNROLL
 
-			// ***hwkim: should be merged to nonzero skip scheme of ternary architecture
+				// ***hwkim: should be merged to nonzero skip scheme of ternary architecture
 				if((x<Left && kx<Left)
 						||(y<Top && ky<Top)
 						||(x>(OFMDim-1-Right) && kx>(3-1-Right))
@@ -1557,14 +1570,9 @@ void nonzero_activation_weight_stream_gen(
 //#pragma HLS UNROLL
 
 					if(pack_en[pe]==1){
-//						mask_delay_buf[pe] = wm[pe] | imaskBuf[sf];
-//						input_delay_buf[pe] = inputBuf[sf];
-//						w_delay_buf[pe] = w[pe];
-						for(unsigned char prev_bit_cnt=0; prev_bit_cnt<SIMD; prev_bit_cnt++){
-//						for(unsigned char prev_bit_cnt=0; prev_bit_cnt<WAY; prev_bit_cnt++){	// WAY should be small enough to unroll
+						for(unsigned char prev_bit_cnt=0; prev_bit_cnt<SIMD; prev_bit_cnt++){	// SIMD should be small enough to unroll
 							if(z_mask[pe][prev_bit_cnt]){
 								for(unsigned char next_bit_cnt=0; next_bit_cnt<SIMD; next_bit_cnt++){
-//								for(unsigned char next_bit_cnt=0; next_bit_cnt<WAY; next_bit_cnt++){
 									if(mask_delay_buf[pe][next_bit_cnt]==0){
 										z_mask[pe][prev_bit_cnt] = 0;
 										mask_delay_buf[pe][next_bit_cnt] = 1;
@@ -1578,15 +1586,9 @@ void nonzero_activation_weight_stream_gen(
 						}
 					}
 					else{
-//						if(swu_init_flag[pe]){
-							z_mask[pe] = mask_delay_buf[pe];
-							input_pack_buf[pe] = input_delay_buf[pe];
-							w_pack_buf[pe] = w_delay_buf[pe];
-//							swu_init_flag[pe] = 0;
-//						}
-//						mask_delay_buf[pe] = wm[pe] | imaskBuf[sf];
-//						input_delay_buf[pe] = inputBuf[sf];
-//						w_delay_buf[pe] = w[pe];
+						z_mask[pe] = mask_delay_buf[pe];
+						input_pack_buf[pe] = input_delay_buf[pe];
+						w_pack_buf[pe] = w_delay_buf[pe];
 					}
 
 					// hwkim added for debug
@@ -1607,24 +1609,10 @@ void nonzero_activation_weight_stream_gen(
 //			for(unsigned char pe=0; pe<PE; pe++){
 //#pragma HLS UNROLL
 
-//				auto const &w = weights.weights(tile);
-
-				// ***hwkim: should be merged to nonzero skip scheme of ternary architecture
-//				if((x<Left && kx<Left)
-//						||(y<Top && ky<Top)
-//						||(x>(OFMDim-1-Right) && kx>(3-1-Right))
-//						||(y>(OFMHeight-1-Bottom) && ky>(3-1-Bottom))){
-//					;	// hwkim: skip
-//				}
-//				else{
-
 					if(z_mask[pe]==0){
-//						packed_input[pe].write(inputBuf[sf]);
 						packed_input[pe].write(input_pack_buf[pe]);
-//						packed_weight[pe].write((ap_uint<SIMD>)w[pe]);
 						packed_weight[pe].write(w_pack_buf[pe]);
 
-//						sf_cnt[pe]++;	// should be changed - there's fan-in which is not multiple of SIMD (the last one of stream)
 						sf_cnt[pe]+=SIMD;
 
 						pack_en[pe] = 0;
@@ -1644,7 +1632,7 @@ void nonzero_activation_weight_stream_gen(
 						cout << "inpack: " << input_pack_buf[pe] << endl;
 #endif
 					}
-//					else{	// packed buffer for stream is not full with nonzero values
+
 					if(z_mask[pe]!=0){
 						// hwkim added for debug
 #ifdef ACTIVATION_LOG
@@ -1656,12 +1644,13 @@ void nonzero_activation_weight_stream_gen(
 							}
 						}
 #endif
-
 						pack_en[pe] = 1;
 					}
 				}
+#ifdef DEBUG
 				// hwkim added for debug
-//				cout << "pack_en: " << hex << pack_en << endl;
+				cout << "pack_en: " << hex << pack_en << endl;
+#endif
 			}
 
 			tile++;
@@ -1689,11 +1678,6 @@ void nonzero_activation_weight_stream_gen(
 			if(sf == (SF-1)) {
 				for(unsigned char pe=0; pe<PE; pe++){
 #pragma HLS UNROLL
-
-					// hwkim added for debug
-//					mask_delay_buf[pe] = 0;
-//					input_delay_buf[pe] = 0;
-//					w_delay_buf[pe] = 0;
 
 					if(pack_en[pe]==1 && (~z_mask[pe])!=0){
 						unsigned char next_bit_cnt=0;
@@ -1726,15 +1710,15 @@ void nonzero_activation_weight_stream_gen(
 					}
 
 					sf_num[pe].write(sf_cnt[pe]);
+#ifdef DEBUG
 					// hwkim added for debug
 //					cout << "sf_cnt: " << dec << sf_cnt[pe] << endl;
+#endif
 				}
 				if(++nf == NF) {
 					nf   = 0;
 				}
 			}
-
-//			sf++;
 		}
 	}
 }

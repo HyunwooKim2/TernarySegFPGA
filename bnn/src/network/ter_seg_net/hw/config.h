@@ -80,17 +80,17 @@
 #define L10_OFM_DIM 	480
 
 // for base & base new perf
-#define L0_SIMD 	3
-#define L1_SIMD 	32
-#define L2_SIMD 	32
-#define L3_SIMD 	32
-#define L4_SIMD 	32
-#define L5_SIMD 	32
-#define L6_SIMD 	32
-#define L7_SIMD 	32
-#define L8_SIMD 	32
-#define L9_SIMD 	32
-#define L10_SIMD 	16
+//#define L0_SIMD 	3
+//#define L1_SIMD 	32
+//#define L2_SIMD 	32
+//#define L3_SIMD 	32
+//#define L4_SIMD 	32
+//#define L5_SIMD 	32
+//#define L6_SIMD 	32
+//#define L7_SIMD 	32
+//#define L8_SIMD 	32
+//#define L9_SIMD 	32
+//#define L10_SIMD 	16
 // for 2x perf
 //#define L0_SIMD 	3
 //#define L1_SIMD 	32
@@ -127,18 +127,30 @@
 //#define L8_SIMD 	8
 //#define L9_SIMD 	8
 //#define L10_SIMD	8
+// for ternary base config
+#define L0_SIMD 	3
+#define L1_SIMD 	16
+#define L2_SIMD 	16
+#define L3_SIMD 	16
+#define L4_SIMD 	16
+#define L5_SIMD 	16
+#define L6_SIMD 	16
+#define L7_SIMD 	16
+#define L8_SIMD 	16
+#define L9_SIMD 	16
+#define L10_SIMD 	16
 
 // hwkim modified for balancing pipeline stage latency
 #define L0_PE 	16
-#define L1_PE 	32
-#define L2_PE 	16
-#define L3_PE 	32
-#define L4_PE 	16
-#define L5_PE 	32
-#define L6_PE 	16
-#define L7_PE 	32
-#define L8_PE 	16
-#define L9_PE 	32
+#define L1_PE 	64
+#define L2_PE 	32
+#define L3_PE 	64
+#define L4_PE 	32
+#define L5_PE 	64
+#define L6_PE 	32
+#define L7_PE 	64
+#define L8_PE 	32
+#define L9_PE 	64
 #define L10_PE 	11
 // for 2x perf
 //#define L0_PE 	32
@@ -230,30 +242,30 @@
 //#define L0_WPI 1
 
 // hwkim commented: activation accumulation precision
-#define L0_API 1
-#define L1_API 1
-#define L2_API 1
-#define L3_API 1
-#define L4_API 1
-#define L5_API 1
-#define L6_API 1
-#define L7_API 1
-#define L8_API 1
-#define L9_API 1
+#define L0_API 2
+#define L1_API 2
+#define L2_API 2
+#define L3_API 2
+#define L4_API 2
+#define L5_API 2
+#define L6_API 2
+#define L7_API 2
+#define L8_API 2
+#define L9_API 2
 #define L10_API 1
 
 // hwkim added for ternary
-#define L0_NUMTH	2
-#define L1_NUMTH	2
-#define L2_NUMTH	2
-#define L3_NUMTH	2
-#define L4_NUMTH	2
-#define L5_NUMTH	2
-#define L6_NUMTH	2
-#define L7_NUMTH	2
-#define L8_NUMTH	2
-#define L9_NUMTH	2
-#define L10_NUMTH	1	// there's no activation function, threshold is offset (bias)
+//#define L0_NUMTH	2
+//#define L1_NUMTH	2
+//#define L2_NUMTH	2
+//#define L3_NUMTH	2
+//#define L4_NUMTH	2
+//#define L5_NUMTH	2
+//#define L6_NUMTH	2
+//#define L7_NUMTH	2
+//#define L8_NUMTH	2
+//#define L9_NUMTH	2
+//#define L10_NUMTH	1	// there's no activation function, threshold is offset (bias)
 
 //#define L0_WPF 0
 //#define L0_APF 0

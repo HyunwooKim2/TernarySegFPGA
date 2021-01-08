@@ -86,7 +86,7 @@ static BinaryWeights< L8_SIMD,  L8_PE,  L8_WMEM>  weights8;
 static BinaryWeights< L9_SIMD,  L9_PE,  L9_WMEM>  weights9;
 static BinaryWeights<L10_SIMD, L10_PE, L10_WMEM>  weights10;
 
-// hwkim modified for ternary - NumTH modified
+// hwkim modified for ternary - API, TR modified
 //static InputLayerActivation< L0_TMEM,  L0_PE,  L0_API, ap_fixed<24, 16>, ap_uint<L0_API> > threshs0;
 //static ThresholdsActivation< L1_TMEM,  L1_PE,  L1_API, ap_int<16>, ap_uint<L1_API>>  		threshs1;
 //static ThresholdsActivation< L2_TMEM,  L2_PE,  L2_API, ap_int<16>, ap_uint<L2_API>>  		threshs2;
@@ -98,17 +98,17 @@ static BinaryWeights<L10_SIMD, L10_PE, L10_WMEM>  weights10;
 //static ThresholdsActivation< L8_TMEM,  L8_PE,  L8_API, ap_int<16>, ap_uint<L8_API>>  		threshs8;
 //static ThresholdsActivation< L9_TMEM,  L9_PE,  L9_API, ap_int<16>, ap_uint<L9_API>>  		threshs9;
 //static PassThroughAndBatchNorm<L10_TMEM, L10_PE, L10_API, ap_int<16>, ap_fixed<24,16,AP_TRN,AP_SAT>, ap_ufixed<8,0,AP_TRN,AP_SAT>>	threshs10;
-static InputLayerActivation< L0_TMEM,  L0_PE,  L0_NUMTH, ap_fixed<24, 16>, ap_uint<L0_API> > threshs0;
-static ThresholdsActivation< L1_TMEM,  L1_PE,  L1_NUMTH, ap_int<16>, ap_uint<L1_API>>  		threshs1;
-static ThresholdsActivation< L2_TMEM,  L2_PE,  L2_NUMTH, ap_int<16>, ap_uint<L2_API>>  		threshs2;
-static ThresholdsActivation< L3_TMEM,  L3_PE,  L3_NUMTH, ap_int<16>, ap_uint<L3_API>>  		threshs3;
-static ThresholdsActivation< L4_TMEM,  L4_PE,  L4_NUMTH, ap_int<16>, ap_uint<L4_API>>  		threshs4;
-static ThresholdsActivation< L5_TMEM,  L5_PE,  L5_NUMTH, ap_int<16>, ap_uint<L5_API>>  		threshs5;
-static ThresholdsActivation< L6_TMEM,  L6_PE,  L6_NUMTH, ap_int<16>, ap_uint<L6_API>>  		threshs6;
-static ThresholdsActivation< L7_TMEM,  L7_PE,  L7_NUMTH, ap_int<16>, ap_uint<L7_API>>  		threshs7;
-static ThresholdsActivation< L8_TMEM,  L8_PE,  L8_NUMTH, ap_int<16>, ap_uint<L8_API>>  		threshs8;
-static ThresholdsActivation< L9_TMEM,  L9_PE,  L9_NUMTH, ap_int<16>, ap_uint<L9_API>>  		threshs9;
-static PassThroughAndBatchNorm<L10_TMEM, L10_PE, L10_NUMTH, ap_int<16>, ap_fixed<24,16,AP_TRN,AP_SAT>, ap_ufixed<8,0,AP_TRN,AP_SAT>>	threshs10;
+static InputLayerActivation< L0_TMEM,  L0_PE,  L0_API, ap_fixed<24, 16>, ap_int<L0_API> > threshs0;
+static ThresholdsActivation< L1_TMEM,  L1_PE,  L1_API, ap_int<16>, ap_int<L1_API>>  		threshs1;
+static ThresholdsActivation< L2_TMEM,  L2_PE,  L2_API, ap_int<16>, ap_int<L2_API>>  		threshs2;
+static ThresholdsActivation< L3_TMEM,  L3_PE,  L3_API, ap_int<16>, ap_int<L3_API>>  		threshs3;
+static ThresholdsActivation< L4_TMEM,  L4_PE,  L4_API, ap_int<16>, ap_int<L4_API>>  		threshs4;
+static ThresholdsActivation< L5_TMEM,  L5_PE,  L5_API, ap_int<16>, ap_int<L5_API>>  		threshs5;
+static ThresholdsActivation< L6_TMEM,  L6_PE,  L6_API, ap_int<16>, ap_int<L6_API>>  		threshs6;
+static ThresholdsActivation< L7_TMEM,  L7_PE,  L7_API, ap_int<16>, ap_int<L7_API>>  		threshs7;
+static ThresholdsActivation< L8_TMEM,  L8_PE,  L8_API, ap_int<16>, ap_int<L8_API>>  		threshs8;
+static ThresholdsActivation< L9_TMEM,  L9_PE,  L9_API, ap_int<16>, ap_int<L9_API>>  		threshs9;
+static PassThroughAndBatchNorm<L10_TMEM, L10_PE, L10_API, ap_int<16>, ap_fixed<24,16,AP_TRN,AP_SAT>, ap_ufixed<8,0,AP_TRN,AP_SAT>>	threshs10;
 
 #ifdef ACTIVATION_LOG
 string golden_file_dir = "/home/hwkim/work/params/matlab_ter_params/camvid/1123/Activations/";
@@ -437,15 +437,13 @@ template <unsigned int OutWidth>
 void read_activation_file(
 		//string snapshot_file_name,
 		stream<ap_uint<OutWidth>> & out_stream,
-		int layer_cnt
+		string snapshot_file_name
+//		int layer_cnt
 		)
 {
-	string snapshot_file_name = snapshot_dir + "activation_" + to_string(layer_cnt+1) + "_log.txt";
-	FILE * act_snapshot_file = fopen(snapshot_file_name.c_str(), "rt");
-	//if(!inter4_snapshot_file.is_open()){
-	if(act_snapshot_file==NULL){
-		cout << "act_snapshot_file open error!" << endl;
-	}
+//	string snapshot_file_name = snapshot_dir + "activation_" + to_string(layer_cnt+1) + "_log.txt";
+	FILE * snapshot_file = fopen(snapshot_file_name.c_str(), "rt");
+	if(snapshot_file==NULL)	cout << snapshot_file_name << "open error!" << endl;
 
 	//unsigned long inter_snap_buf;
 	ap_uint<OutWidth> act_snap_buf;
@@ -457,8 +455,8 @@ void read_activation_file(
 	while(1){
 		act_snap_buf = 0;
 //		act_snap_ch64[16] = 0;
-		fscanf(act_snapshot_file, "%s", act_snap_ch_arr);
-		if(feof(act_snapshot_file))
+		fscanf(snapshot_file, "%s", act_snap_ch_arr);
+		if(feof(snapshot_file))
 			break;
 //		for(int word_cnt=0; word_cnt<OutWidth/64; word_cnt++){
 //			for(int i=0; i<64/4; i++){
@@ -481,7 +479,7 @@ void read_activation_file(
 //		cout << dec << stream_cnt << " : " << hex << out_stream.read() << endl;
 	}
 //	cout << out_stream.size() << endl;
-	fclose(act_snapshot_file);
+	fclose(snapshot_file);
 }
 
 #endif
@@ -624,6 +622,8 @@ void DoCompute(
 #pragma HLS STREAM variable=inter9_mask //depth=256
   stream<ap_uint<64>> inter10_mask("DoCompute.inter10_mask");
 #pragma HLS STREAM variable=inter10_mask //depth=256
+  stream<ap_uint<11>> inter11_mask("DoCompute.inter11_mask");	// dummy for "ConvLayer_Batch" function template
+#pragma HLS STREAM variable=inter11_mask //depth=256
 
   // hwkim modified for padding & segmentation
   //const unsigned int inBits = 32 * 32 * 3 * 8;
@@ -637,7 +637,8 @@ void DoCompute(
   const unsigned int outBits = L10_OFM_DIM*L10_OFM_HEIGHT*16;
 
 #ifdef SEP_SIM
-	int sep_sim_layer1_en = 1;
+  string snapshot_file_name;
+	int sep_sim_layer1_en = 0;
 	int sep_sim_layer2_en = 1;
 	int sep_sim_layer3_en = 1;
 	int sep_sim_layer4_en = 1;
@@ -678,16 +679,22 @@ void DoCompute(
 			0,
 #endif
 			L0_SIMD, L0_PE,
-			ap_uint<1>,	// hwkim added for batch norm scale
+			ap_uint<1>,	// TDstElem, hwkim added for batch norm scale
 			Slice<ap_fixed<8, 1, AP_TRN, AP_SAT>>, Identity, Recast<Binary>>
 				(inter0_2,
 				inter0_2_mask,
-				inter1, weights0,
+				inter1,
+				inter1_mask,
+				weights0,
 				wmasks0,	// hwkim added for ternary
 				threshs0, numReps, ap_resource_lut());
 #ifdef SEP_SIM
-	else
-		read_activation_file<L0_OFM_CH>(inter1, 0);
+	else{
+		snapshot_file_name = snapshot_dir + "activation_1_log.txt";
+		read_activation_file<L0_OFM_CH>(inter1, snapshot_file_name);
+		snapshot_file_name = snapshot_dir + "activation_mask_1_log.txt";
+		read_activation_file<L0_OFM_CH>(inter1_mask, snapshot_file_name);
+	}
 #endif
 
 #ifdef FPGA_DEBUG
@@ -741,12 +748,18 @@ void DoCompute(
 				Recast<XnorMul>>
 					(inter1,
 					inter1_mask,	// hwkim added for ternary
-					inter2, weights1,
+					inter2,
+					inter2_mask,
+					weights1,
 					wmasks1,	// hwkim added for ternary
 					threshs1, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
-		else
-			read_activation_file<L1_OFM_CH>(inter2, 1);
+		else{
+			snapshot_file_name = snapshot_dir + "activation_2_log.txt";
+			read_activation_file<L1_OFM_CH>(inter2, snapshot_file_name);
+			snapshot_file_name = snapshot_dir + "activation_mask_2_log.txt";
+			read_activation_file<L1_OFM_CH>(inter2_mask, snapshot_file_name);
+		}
 	#endif
 #endif
 
@@ -798,12 +811,18 @@ void DoCompute(
 				Recast<XnorMul>>
 					(inter2,
 					inter2_mask,	// hwkim added for ternary
-					inter3, weights2,
+					inter3,
+					inter3_mask,
+					weights2,
 					wmasks2,	// hwkim added for ternary
 					threshs2, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
-		else
-			read_activation_file<L2_OFM_CH>(inter3, 2);
+		else{
+			snapshot_file_name = snapshot_dir + "activation_3_log.txt";
+			read_activation_file<L2_OFM_CH>(inter3, snapshot_file_name);
+			snapshot_file_name = snapshot_dir + "activation_mask_3_log.txt";
+			read_activation_file<L2_OFM_CH>(inter3_mask, snapshot_file_name);
+		}
 	#endif
 #endif
 
@@ -855,12 +874,18 @@ void DoCompute(
 				Recast<XnorMul>>
 					(inter3,
 					inter3_mask,	// hwkim added for ternary
-					inter4, weights3,
+					inter4,
+					inter4_mask,
+					weights3,
 					wmasks3,	// hwkim added for ternary
 					threshs3, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
-			else
-				read_activation_file<L3_OFM_CH>(inter4, 3);
+			else{
+				snapshot_file_name = snapshot_dir + "activation_4_log.txt";
+				read_activation_file<L3_OFM_CH>(inter4, snapshot_file_name);
+				snapshot_file_name = snapshot_dir + "activation_mask_4_log.txt";
+				read_activation_file<L3_OFM_CH>(inter4_mask, snapshot_file_name);
+			}
 	#endif
 #endif
 
@@ -912,12 +937,18 @@ void DoCompute(
 				Recast<XnorMul>>
 					(inter4,
 					inter4_mask,	// hwkim added for ternary
-					inter5, weights4,
+					inter5,
+					inter5_mask,
+					weights4,
 					wmasks4,	// hwkim added for ternary
 					threshs4, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
-			else
-				read_activation_file<L4_OFM_CH>(inter5, 4);
+			else{
+				snapshot_file_name = snapshot_dir + "activation_5_log.txt";
+				read_activation_file<L4_OFM_CH>(inter5, snapshot_file_name);
+				snapshot_file_name = snapshot_dir + "activation_mask_5_log.txt";
+				read_activation_file<L4_OFM_CH>(inter5_mask, snapshot_file_name);
+			}
 	#endif
 #endif
 
@@ -969,12 +1000,18 @@ void DoCompute(
 				Recast<XnorMul>>
 					(inter5,
 					inter5_mask,	// hwkim added for ternary
-					inter6, weights5,
+					inter6,
+					inter6_mask,
+					weights5,
 					wmasks5,	// hwkim added for ternary
 					threshs5, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
-			else
-				read_activation_file<L5_OFM_CH>(inter6, 5);
+			else{
+				snapshot_file_name = snapshot_dir + "activation_6_log.txt";
+				read_activation_file<L5_OFM_CH>(inter6, snapshot_file_name);
+				snapshot_file_name = snapshot_dir + "activation_mask_6_log.txt";
+				read_activation_file<L5_OFM_CH>(inter6_mask, snapshot_file_name);
+			}
 	#endif
 #endif
 
@@ -1020,8 +1057,12 @@ void DoCompute(
 				L6_SIMD, L6_PE, Recast<XnorMul>>
 					(inter6, inter7, weights6, threshs6, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
-			else
-				read_activation_file<L6_OFM_CH>(inter7, 6);
+			else{
+				snapshot_file_name = snapshot_dir + "activation_7_log.txt";
+				read_activation_file<L6_OFM_CH>(inter7, snapshot_file_name);
+				snapshot_file_name = snapshot_dir + "activation_mask_7_log.txt";
+				read_activation_file<L6_OFM_CH>(inter7_mask, snapshot_file_name);
+			}
 	#endif
 #endif
 
@@ -1071,12 +1112,18 @@ void DoCompute(
 				Recast<XnorMul>>
 					(inter7,
 					inter7_mask,	// hwkim added for ternary
-					inter8, weights7,
+					inter8,
+					inter8_mask,
+					weights7,
 					wmasks7,	// hwkim added for ternary
 					threshs7, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
-			else
-				read_activation_file<L7_OFM_CH>(inter8, 7);
+			else{
+				snapshot_file_name = snapshot_dir + "activation_8_log.txt";
+				read_activation_file<L7_OFM_CH>(inter8, snapshot_file_name);
+				snapshot_file_name = snapshot_dir + "activation_mask_8_log.txt";
+				read_activation_file<L7_OFM_CH>(inter8_mask, snapshot_file_name);
+			}
 	#endif
 #endif
 
@@ -1122,8 +1169,12 @@ void DoCompute(
 				L8_SIMD, L8_PE, Recast<XnorMul>>
 					(inter8, inter9, weights8, threshs8, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
-		else
-			read_activation_file<L8_OFM_CH>(inter9, 8);
+		else{
+			snapshot_file_name = snapshot_dir + "activation_9_log.txt";
+			read_activation_file<L8_OFM_CH>(inter9, snapshot_file_name);
+			snapshot_file_name = snapshot_dir + "activation_mask_9_log.txt";
+			read_activation_file<L8_OFM_CH>(inter9_mask, snapshot_file_name);
+		}
 	#endif
 #endif
 
@@ -1169,12 +1220,18 @@ void DoCompute(
 				Recast<XnorMul>>
 					(inter9,
 					inter9_mask,	// hwkim added for ternary
-					inter10, weights9,
+					inter10,
+					inter10_mask,
+					weights9,
 					wmasks9,	// hwkim added for ternary
 					threshs9, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
-		else
-			read_activation_file<L9_OFM_CH>(inter10, 9);
+		else{
+			snapshot_file_name = snapshot_dir + "activation_10_log.txt";
+			read_activation_file<L9_OFM_CH>(inter10, snapshot_file_name);
+			snapshot_file_name = snapshot_dir + "activation_mask_10_log.txt";
+			read_activation_file<L9_OFM_CH>(inter10_mask, snapshot_file_name);
+		}
 	#endif
 #endif
 
@@ -1226,14 +1283,20 @@ void DoCompute(
 				Slice<ap_fixed<24,16,AP_TRN,AP_SAT> >>	//Slice<ap_int<16> >>	// hwkim modified for batch norm scale
 					(inter10,
 					inter10_mask,	// hwkim added for ternary
-					inter11, weights10,
+					inter11,
+					inter11_mask,
+					weights10,
 					wmasks10,	// hwkim added for ternary
 					threshs10, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
-		else
+		else{
 			// hwkim modified for batch norm scale
 			//read_activation_file<L10_OFM_CH*16>(inter11, 10);
-			read_activation_file<L10_OFM_CH*24>(inter11, 10);
+			snapshot_file_name = snapshot_dir + "activation_11_log.txt";
+			read_activation_file<L10_OFM_CH*24>(inter11, snapshot_file_name);
+			snapshot_file_name = snapshot_dir + "activation_mask_11_log.txt";
+			read_activation_file<L10_OFM_CH>(inter11_mask, snapshot_file_name);
+		}
 	#endif
 #endif
 
