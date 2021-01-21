@@ -98,7 +98,10 @@ cd $OLD_DIR
 BNN_PATH=$XILINX_BNN_ROOT/network
 
 HLS_SRC_DIR="$BNN_PATH/$NETWORK/hw"
+
+# hwkim modified for sim/syn dual execution
 HLS_OUT_DIR="$BNN_PATH/output/hls-syn/$NETWORK-$PLATFORM"
+#HLS_OUT_DIR="$BNN_PATH/output/hls-syn/$NETWORK-$PLATFORM-sim"
 
 # hwkim modified
 #HLS_SCRIPT=$BNN_PATH/hls-syn.tcl
@@ -165,7 +168,10 @@ if [[ ("$MODE" == "h") || ("$MODE" == "a")  ]]; then
 	echo "Error: Please copy binary weight and threshold parameters to $PARAMS"
 	exit 1
   fi
+  #hwkim modified for sim/syn dual execution
   vivado_hls -f $HLS_SCRIPT -tclargs $NETWORK-$PLATFORM $HLS_SRC_DIR $PARAMS $TEST_INPUT $TEST_RESULT $PLATFORM_PART $TARGET_CLOCK
+#  vivado_hls -f $HLS_SCRIPT -tclargs $NETWORK-$PLATFORM-sim $HLS_SRC_DIR $PARAMS $TEST_INPUT $TEST_RESULT $PLATFORM_PART $TARGET_CLOCK
+
   if cat $VIVADO_HLS_LOG | grep "ERROR"; then
     echo "Error in Vivado_HLS"
     exit 1	

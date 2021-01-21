@@ -144,6 +144,24 @@ inline T mac_masked(T const &a, TC const &c, TD const &d, ap_uint<WAY> mask) {
   return  mac_masked<N, WAY>(a, c, d, ap_resource_dflt(), mask);
 }
 
+// hwkim added for ternary
+//- MAC with selectable implementation resource
+template<unsigned N, unsigned WAY, typename T, typename TC, typename TD, typename R>
+T mac_masked_pm(T const &a, TC const &c, TD const &d, R const &r, ap_uint<WAY> mask) {
+#pragma HLS inline
+  T  res = a;
+  for(unsigned  i = 0; i < N; i++) {
+#pragma HLS unroll
+	  res += mul(c[i], d[i], r)? 1 : -1;
+  }
+  return  res;
+}
+// hwkim added for ternary
+template<unsigned N, unsigned WAY, typename T, typename TC, typename TD>
+inline T mac_masked_pm(T const &a, TC const &c, TD const &d, ap_uint<WAY> mask) {
+#pragma HLS inline
+  return  mac_masked<N, WAY>(a, c, d, ap_resource_dflt(), mask);
+}
 
 
 #endif

@@ -78,6 +78,8 @@ template<
 #endif
 		unsigned int SIMD,	// number of SIMD lanes
 		unsigned int PE,		// number of PEs
+		unsigned char WAY,	// hwkim added for ternary
+		unsigned char FanInCntWidth,	// hwkim added for ternary, log2(fan-in/WAY)
 		typename TDstElem,	// hwkim added for batch norm scale
 		typename TSrcI = Identity,      // redefine I/O interpretation as needed for input activations
 		typename TDstI = Identity,		// redefine I/O interpretation as needed for output activations
@@ -96,6 +98,9 @@ void ConvLayer_Batch(
 				TW const &weights,
 				TM const &wmasks,	// hwkim added for ternary
 				TA const &activation,
+#ifdef SEP_SIM
+				unsigned nonzero_en,
+#endif
 				unsigned const   reps,
 				R const &r
 ) {
@@ -139,27 +144,91 @@ void ConvLayer_Batch(
 		  reps);
 
   // hwkim added for ternary
-	hls::stream<ap_uint<SIMD*TSrcI::width>> packed_input[PE];
-#pragma HLS STREAM variable=packed_input //depth=256
-	hls::stream<ap_uint<SIMD>> packed_weight[PE];
-#pragma HLS STREAM variable=packed_weight //depth=256
-	hls::stream<unsigned short> sf_num[PE];
-#pragma HLS STREAM variable=sf_num //depth=256
+//	hls::stream<ap_uint<SIMD*TSrcI::width>> packed_input[PE];
+//#pragma HLS STREAM variable=packed_input
+//	hls::stream<ap_uint<SIMD>> packed_weight[PE];
+//#pragma HLS STREAM variable=packed_weight
+//	hls::stream<unsigned short> sf_num[PE];
+//#pragma HLS STREAM variable=sf_num
+  // hwkim modified for way
+	hls::stream<ap_uint<WAY*TSrcI::width>> packed_input[PE*(SIMD/WAY)];
+#pragma HLS STREAM variable=packed_input
+	hls::stream<ap_uint<WAY>> packed_weight[PE*(SIMD/WAY)];
+#pragma HLS STREAM variable=packed_weight
+	hls::stream<ap_uint<FanInCntWidth>> sf_num[PE*(SIMD/WAY)];
+#pragma HLS STREAM variable=sf_num
+	hls::stream<ap_uint<WAY>> packed_mask[PE*(SIMD/WAY)];
+#pragma HLS STREAM variable=packed_weight
 
-  nonzero_activation_weight_stream_gen<MatrixW, MatrixH, SIMD, PE, OFMDim,
-  	  OFMHeight,
-  	  Top, Bottom, Left, Right,
-	  TSrcI::width>
-  	  (
-		  static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>&>(convInp),
-		  convInp_mask,
-		  weights,
-		  wmasks,
-		  static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>*>(packed_input),
-		  static_cast<hls::stream<ap_uint<SIMD>>*>(packed_weight),
-		  static_cast<hls::stream<unsigned short>*>(sf_num),
-		  reps * OFMDim * OFMHeight
-  	  );
+#ifdef SEP_SIM
+	if(nonzero_en==1)
+#endif
+		nonzero_activation_weight_stream_gen
+		<MatrixW, MatrixH, SIMD, PE, OFMDim, OFMHeight,
+			Top, Bottom, Left, Right,
+			TSrcI::width,
+			WAY
+#ifdef ACTIVATION_LOG
+			, LayerCnt
+#endif
+			>
+			(static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>&>(convInp),
+					convInp_mask,
+					weights,
+					wmasks,
+					static_cast<hls::stream<ap_uint<WAY*TSrcI::width>>*>(packed_input),
+					static_cast<hls::stream<ap_uint<WAY>>*>(packed_weight),
+					static_cast<hls::stream<ap_uint<FanInCntWidth>>*>(sf_num),
+					static_cast<hls::stream<ap_uint<WAY>>*>(packed_mask),
+					reps * OFMDim * OFMHeight);
+#ifdef SEP_SIM
+	else{
+		extern string snapshot_dir;
+
+		ifstream nonz_i_log_file[PE][SIMD/WAY];
+		ifstream nonz_w_log_file[PE][SIMD/WAY];
+		ifstream nonz_f_log_file[PE][SIMD/WAY];
+
+		ap_uint<WAY*TSrcI::width> nonz_i_buf;
+		ap_uint<WAY> nonz_w_buf;
+		ap_uint<FanInCntWidth> nonz_f_buf;
+
+		for(unsigned char pe=0; pe<PE; pe++){
+			for(unsigned char way_cnt=0; way_cnt<(SIMD/WAY); way_cnt++){
+				string nonz_i_log_file_name = snapshot_dir + "nonzero_" + to_string(LayerCnt+1)
+						+ "_" + to_string(pe) + "_" + to_string(way_cnt) + "_input_log.txt";
+				string nonz_w_log_file_name = snapshot_dir + "nonzero_" + to_string(LayerCnt+1)
+						+ "_" + to_string(pe) + "_" + to_string(way_cnt) + "_weight_log.txt";
+				string nonz_f_log_file_name = snapshot_dir + "nonzero_" + to_string(LayerCnt+1)
+						+ "_" + to_string(pe) + "_" + to_string(way_cnt) + "_fanin_log.txt";
+
+				nonz_i_log_file[pe][way_cnt].open(nonz_i_log_file_name);
+				nonz_w_log_file[pe][way_cnt].open(nonz_w_log_file_name);
+				nonz_f_log_file[pe][way_cnt].open(nonz_f_log_file_name);
+
+				if(!nonz_i_log_file[pe][way_cnt].is_open())	cout << nonz_i_log_file_name << " open error!" << endl;
+				if(!nonz_w_log_file[pe][way_cnt].is_open())	cout << nonz_w_log_file_name << " open error!" << endl;
+				if(!nonz_f_log_file[pe][way_cnt].is_open())	cout << nonz_f_log_file_name << " open error!" << endl;
+
+
+				while(!nonz_i_log_file[pe][way_cnt].eof()){
+					nonz_i_log_file[pe][way_cnt] >> hex >> nonz_i_buf;
+					packed_input[pe*(SIMD/WAY)+way_cnt].write(nonz_i_buf);
+				}
+
+				while(!nonz_w_log_file[pe][way_cnt].eof()){
+					nonz_w_log_file[pe][way_cnt] >> hex >> nonz_w_buf;
+					packed_weight[pe*(SIMD/WAY)+way_cnt].write(nonz_w_buf);
+				}
+
+				while(!nonz_f_log_file[pe][way_cnt].eof()){
+					nonz_f_log_file[pe][way_cnt] >> nonz_f_buf;
+					sf_num[pe*(SIMD/WAY)+way_cnt].write(nonz_f_buf);
+				}
+			}
+		}
+	}
+#endif
 
   // hwkim modified for padding
   /*
@@ -185,22 +254,24 @@ void ConvLayer_Batch(
 			*/
 	Matrix_Vector_Activate_Batch_SkipSeparately<MatrixW, MatrixH, SIMD, PE, OFMDim,
 		OFMHeight, Top, Bottom, Left, Right,	// hwkim modified for segmentation
+		WAY,
 #ifdef ACTIVATION_LOG
 		LayerCnt, (PE*TDstI::width),
 #endif
 		TDstElem,	// hwkim added for batch norm scale
 		TSrcI, TDstI, TWeightI>
-			(static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>&>(convInp),
+			(
+//			static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>&>(convInp),
 //			static_cast<hls::stream<ap_uint<SIMD>>&>(convInp_mask),	// hwkim added for ternary
 			static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>(mvOut),
 			static_cast<hls::stream<ap_uint<PE>>&>(mvOutMask),
 
 			// hwkim modifeid for ternary
 			//weights,
-			static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>*>(packed_input),
-			static_cast<hls::stream<ap_uint<SIMD>>*>(packed_weight),
-			//wmasks,	// hwkim added for ternary
-			static_cast<hls::stream<unsigned short>*>(sf_num),
+			static_cast<hls::stream<ap_uint<WAY*TSrcI::width>>*>(packed_input),
+			static_cast<hls::stream<ap_uint<WAY>>*>(packed_weight),
+			static_cast<hls::stream<ap_uint<FanInCntWidth>>*>(sf_num),
+			static_cast<hls::stream<ap_uint<WAY>>*>(packed_mask),
 
 			activation,
 			reps * OFMDim * OFMHeight, r);	//reps* OFMDim * OFMDim, r);	// hwkim modified for segmentation

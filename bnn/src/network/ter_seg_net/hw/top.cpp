@@ -638,7 +638,7 @@ void DoCompute(
 
 #ifdef SEP_SIM
   string snapshot_file_name;
-	int sep_sim_layer1_en = 0;
+	int sep_sim_layer1_en = 1;
 	int sep_sim_layer2_en = 1;
 	int sep_sim_layer3_en = 1;
 	int sep_sim_layer4_en = 1;
@@ -649,6 +649,18 @@ void DoCompute(
 	int sep_sim_layer9_en = 1;
 	int sep_sim_layer10_en = 1;
 	int sep_sim_layer11_en = 1;
+
+	int nonzero_layer1_en = 1;
+	int nonzero_layer2_en = 1;
+	int nonzero_layer3_en = 1;
+	int nonzero_layer4_en = 1;
+	int nonzero_layer5_en = 1;
+	int nonzero_layer6_en = 1;
+	int nonzero_layer7_en = 1;
+	int nonzero_layer8_en = 1;
+	int nonzero_layer9_en = 1;
+	int nonzero_layer10_en = 1;
+	int nonzero_layer11_en = 1;
 #endif
 
 	Mem2Stream_Batch<64, inBits / 8>(in, inter0, numReps);
@@ -679,6 +691,8 @@ void DoCompute(
 			0,
 #endif
 			L0_SIMD, L0_PE,
+			L0_WAY,	// hwkim added for ternary
+			L0_FANWIDTH,	// hwkim added for ternary
 			ap_uint<1>,	// TDstElem, hwkim added for batch norm scale
 			Slice<ap_fixed<8, 1, AP_TRN, AP_SAT>>, Identity, Recast<Binary>>
 				(inter0_2,
@@ -687,7 +701,11 @@ void DoCompute(
 				inter1_mask,
 				weights0,
 				wmasks0,	// hwkim added for ternary
-				threshs0, numReps, ap_resource_lut());
+				threshs0,
+#ifdef SEP_SIM
+				nonzero_layer1_en,
+#endif
+				numReps, ap_resource_lut());
 #ifdef SEP_SIM
 	else{
 		snapshot_file_name = snapshot_dir + "activation_1_log.txt";
@@ -744,6 +762,8 @@ void DoCompute(
 				1,
 	#endif
 				L1_SIMD, L1_PE,
+				L1_WAY,	// hwkim added for ternary
+				L1_FANWIDTH,	// hwkim added for ternary
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
 					(inter1,
@@ -752,7 +772,11 @@ void DoCompute(
 					inter2_mask,
 					weights1,
 					wmasks1,	// hwkim added for ternary
-					threshs1, numReps, ap_resource_lut());
+					threshs1,
+#ifdef SEP_SIM
+					nonzero_layer2_en,
+#endif
+					numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 		else{
 			snapshot_file_name = snapshot_dir + "activation_2_log.txt";
@@ -807,6 +831,8 @@ void DoCompute(
 				2,
 	#endif
 				L2_SIMD, L2_PE,
+				L2_WAY,	// hwkim added for ternary
+				L2_FANWIDTH,	// hwkim added for ternary
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
 					(inter2,
@@ -815,7 +841,11 @@ void DoCompute(
 					inter3_mask,
 					weights2,
 					wmasks2,	// hwkim added for ternary
-					threshs2, numReps, ap_resource_lut());
+					threshs2,
+#ifdef SEP_SIM
+					nonzero_layer3_en,
+#endif
+					numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 		else{
 			snapshot_file_name = snapshot_dir + "activation_3_log.txt";
@@ -870,6 +900,8 @@ void DoCompute(
 				3,
 	#endif
 				L3_SIMD, L3_PE,
+				L3_WAY,	// hwkim added for ternary
+				L3_FANWIDTH,	// hwkim added for ternary
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
 					(inter3,
@@ -878,7 +910,11 @@ void DoCompute(
 					inter4_mask,
 					weights3,
 					wmasks3,	// hwkim added for ternary
-					threshs3, numReps, ap_resource_lut());
+					threshs3,
+#ifdef SEP_SIM
+					nonzero_layer4_en,
+#endif
+					numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 			else{
 				snapshot_file_name = snapshot_dir + "activation_4_log.txt";
@@ -933,6 +969,8 @@ void DoCompute(
 				4,
 	#endif
 				L4_SIMD, L4_PE,
+				L4_WAY,	// hwkim added for ternary
+				L4_FANWIDTH,	// hwkim added for ternary
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
 					(inter4,
@@ -941,7 +979,11 @@ void DoCompute(
 					inter5_mask,
 					weights4,
 					wmasks4,	// hwkim added for ternary
-					threshs4, numReps, ap_resource_lut());
+					threshs4,
+#ifdef SEP_SIM
+					nonzero_layer5_en,
+#endif
+					numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 			else{
 				snapshot_file_name = snapshot_dir + "activation_5_log.txt";
@@ -996,6 +1038,8 @@ void DoCompute(
 				5,
 	#endif
 				L5_SIMD, L5_PE,
+				L5_WAY,	// hwkim added for ternary
+				L5_FANWIDTH,	// hwkim added for ternary
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
 					(inter5,
@@ -1004,7 +1048,11 @@ void DoCompute(
 					inter6_mask,
 					weights5,
 					wmasks5,	// hwkim added for ternary
-					threshs5, numReps, ap_resource_lut());
+					threshs5,
+#ifdef SEP_SIM
+					nonzero_layer6_en,
+#endif
+					numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 			else{
 				snapshot_file_name = snapshot_dir + "activation_6_log.txt";
@@ -1108,6 +1156,8 @@ void DoCompute(
 				7,
 	#endif
 				L7_SIMD, L7_PE,
+				L7_WAY,	// hwkim added for ternary
+				L7_FANWIDTH,	// hwkim added for ternary
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
 					(inter7,
@@ -1116,7 +1166,11 @@ void DoCompute(
 					inter8_mask,
 					weights7,
 					wmasks7,	// hwkim added for ternary
-					threshs7, numReps, ap_resource_lut());
+					threshs7,
+#ifdef SEP_SIM
+					nonzero_layer8_en,
+#endif
+					numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 			else{
 				snapshot_file_name = snapshot_dir + "activation_8_log.txt";
@@ -1216,6 +1270,8 @@ void DoCompute(
 				9,
 	#endif
 				L9_SIMD, L9_PE,
+				L9_WAY,	// hwkim added for ternary
+				L9_FANWIDTH,	// hwkim added for ternary
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
 					(inter9,
@@ -1224,7 +1280,11 @@ void DoCompute(
 					inter10_mask,
 					weights9,
 					wmasks9,	// hwkim added for ternary
-					threshs9, numReps, ap_resource_lut());
+					threshs9,
+#ifdef SEP_SIM
+					nonzero_layer9_en,
+#endif
+					numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 		else{
 			snapshot_file_name = snapshot_dir + "activation_10_log.txt";
@@ -1278,6 +1338,8 @@ void DoCompute(
 				10,
 	#endif
 				L10_SIMD, L10_PE,
+				L10_WAY,	// hwkim added for ternary
+				L10_FANWIDTH,	// hwkim added for ternary
 				ap_fixed<24,16,AP_TRN,AP_SAT>,	// hwkim added for batch norm scale
 				Recast<XnorMul>,
 				Slice<ap_fixed<24,16,AP_TRN,AP_SAT> >>	//Slice<ap_int<16> >>	// hwkim modified for batch norm scale
@@ -1287,7 +1349,11 @@ void DoCompute(
 					inter11_mask,
 					weights10,
 					wmasks10,	// hwkim added for ternary
-					threshs10, numReps, ap_resource_lut());
+					threshs10,
+#ifdef SEP_SIM
+					nonzero_layer10_en,
+#endif
+					numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 		else{
 			// hwkim modified for batch norm scale

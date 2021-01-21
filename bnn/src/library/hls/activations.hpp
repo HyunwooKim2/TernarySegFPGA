@@ -241,11 +241,14 @@ public:
 //    	result = (TR)0;
 
     // hwkim modified for ternary
-    result[0] = Compare()(m_thresholds[pe][nf][0], accu);
-    result[1] = Compare()(m_thresholds[pe][nf][1], accu) & (~result[0]);	// zero mask
+    result[0] = Compare()(m_thresholds[pe][nf][0], accu);	// +1(1), -1(0)
+    // hwkim modified for equal case
+//    result[1] = Compare()(m_thresholds[pe][nf][1], accu) & (~result[0]);	// zero mask, 0(1), others(0)
+    result[1] = (m_thresholds[pe][nf][1] <= accu) & (~result[0]);	// zero mask, 0(1), others(0)
 
     // hwkim added for debug
-//    cout << "pe: " << (int)pe;
+//    cout << "nf: " << (int)nf;
+//    cout << ", pe: " << (int)pe;
 //    cout << fixed;
 //    cout.precision(8);
 //    cout << ", th[0]: " << m_thresholds[pe][nf][0];
@@ -256,7 +259,7 @@ public:
     // hwkim: original code
 //	for(unsigned int i=0; i< NumTH; i++){
 //#pragma HLS unroll
-//      result+=Compare()(m_thresholds[pe][nf][i], accu);	// inequality sign "<="
+//      result+=Compare()(m_thresholds[pe][nf][i], accu);	// inequality sign "<"
 //    }
 
     return result;
