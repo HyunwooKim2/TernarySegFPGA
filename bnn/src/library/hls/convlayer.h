@@ -143,6 +143,7 @@ void ConvLayer_Batch(
 		  convInp_mask,	// hwkim added for ternary
 		  reps);
 
+/* hwkim commented for no zero skip
   // hwkim added for ternary
 //	hls::stream<ap_uint<SIMD*TSrcI::width>> packed_input[PE];
 //#pragma HLS STREAM variable=packed_input
@@ -229,16 +230,15 @@ void ConvLayer_Batch(
 		}
 	}
 #endif
+*/
 
-  // hwkim modified for padding
-  /*
+/* hwkim modified for padding
   Matrix_Vector_Activate_Batch<MatrixW, MatrixH, SIMD, PE, TSrcI, TDstI, TWeightI>
     (static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>&>(convInp),
      static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>  (mvOut),
      weights, activation, reps* OFMDim * OFMDim, r);
-     */
-  // hwkim modified for ternary
-  /*
+*/
+/* hwkim modified for ternary - zero skip
 	Matrix_Vector_Activate_Batch_Padding<MatrixW, MatrixH, SIMD, PE, OFMDim,
 		OFMHeight, Top, Bottom, Left, Right,	// hwkim modified for segmentation
 #ifdef ACTIVATION_LOG
@@ -251,7 +251,8 @@ void ConvLayer_Batch(
 			weights,
 			activation,
 			reps* OFMDim * OFMHeight, r);	//reps* OFMDim * OFMDim, r);	// hwkim modified for segmentation
-			*/
+*/
+/* hwkim commented for no zero skip
 	Matrix_Vector_Activate_Batch_SkipSeparately<MatrixW, MatrixH, SIMD, PE, OFMDim,
 		OFMHeight, Top, Bottom, Left, Right,	// hwkim modified for segmentation
 		WAY,
@@ -275,6 +276,25 @@ void ConvLayer_Batch(
 
 			activation,
 			reps * OFMDim * OFMHeight, r);	//reps* OFMDim * OFMDim, r);	// hwkim modified for segmentation
+			*/
+
+  // hwkim added for no zero skip
+	Matrix_Vector_Activate_Batch_Ternary_Masking<MatrixW, MatrixH, SIMD, PE, OFMDim,
+		OFMHeight, Top, Bottom, Left, Right,	// hwkim modified for segmentation
+#ifdef ACTIVATION_LOG
+		LayerCnt, (PE*TDstI::width),
+#endif
+		TDstElem,	// hwkim added for batch norm scale
+		TSrcI, TDstI, TWeightI>
+			(static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>&>(convInp),
+					convInp_mask,	// hwkim added for ternary
+					static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>(mvOut),
+					weights,
+					wmasks,	// hwkim added for ternary
+					activation,
+					reps* OFMDim * OFMHeight, r);	//reps* OFMDim * OFMDim, r);	// hwkim modified for segmentation
+
+
 }
 
 

@@ -1954,4 +1954,353 @@ void nonzero_activation_weight_stream_gen(
 
 }
 
+// hwkim added for ternary
+template<unsigned MatrixW, unsigned MatrixH, unsigned SIMD, unsigned PE, unsigned OFMDim,
+  unsigned OFMHeight,	// hwkim added for segmentation
+  unsigned Top, unsigned Bottom, unsigned Left, unsigned Right,	// hwkim modified for padding
+#ifdef ACTIVATION_LOG
+  unsigned int LayerCnt, unsigned int OutWidth,	// hwkim added for log
+#endif
+  typename TDstElem,	// hwkim added for batch norm scale
+  typename TSrcI = Identity, typename TDstI = Identity, typename TWeightI = Identity,
+  typename TI,
+  typename TIM,	// hwkim added for ternary
+  typename TO, typename TW,
+  typename TWM,
+  typename TA,
+  typename R>
+void Matrix_Vector_Activate_Batch_Ternary_Masking(
+		hls::stream<TI> & in,
+		hls::stream<TIM> & in_mask,	// hwkim added for ternary
+		hls::stream<TO> &out,
+		TW  const &weights,
+		TWM  const &wmasks,	// hwkim added for ternary
+		TA  const &activation,
+		int const  reps,
+		R const &r)
+{
+  // how many different rows each neuron will compute
+  // alternatively: number of vertical matrix chunks
+  unsigned const  NF = MatrixH / PE;
+  // how many synapse groups each row is split into
+  // alternatively: number of horizontal matrix chunks
+  unsigned const  SF = MatrixW / SIMD;
+  /*
+   * conv kernel dim * conv kernel dim * IFMChannels
+   * -> SF = 3 * 3 * (IFMChannels / SIMD)
+   */
+
+  // hwkim modified for debug
+#ifdef ACTIVATION_LOG
+  extern string snapshot_dir;
+  extern string golden_file_dir;
+  int compare_skip = 0;
+  ap_uint<OutWidth> act_buf_arr[NF];
+  ap_uint<NF*OutWidth> act_buf=0;
+  string conv_out_file_name = snapshot_dir + "conv_" + to_string(LayerCnt+1) + "_out_minusBias.txt";
+  string act_file_name = snapshot_dir + "activation_" + to_string(LayerCnt+1) + "_log.txt";
+  string golden_conv_out_file_name = golden_file_dir + "binConv" + to_string(LayerCnt+1) + "_minusBias.txt";
+  string golden_act_file_name = golden_file_dir + "Sign" + to_string(LayerCnt+1) + ".txt";
+  string conv_out_comp_file_name = "conv_" + to_string(LayerCnt+1) + "_out_minusBias_comp.txt";
+  string act_comp_file_name = "act_" + to_string(LayerCnt+1) + "_comp.txt";
+
+  ofstream conv_out_log_file(conv_out_file_name);
+  ofstream activation_log_file(act_file_name);
+  ifstream golden_conv_out_file(golden_conv_out_file_name);
+  FILE * golden_file = fopen(golden_act_file_name.c_str(),"rt");
+  ofstream conv_out_comp_file(conv_out_comp_file_name);
+  ofstream act_comp_file(act_comp_file_name);
+  ofstream last_layer_scaled_file("last_layer_scaled_log.log");
+
+  if(!conv_out_log_file.is_open())	cout << "conv_out_log_file open error" << endl;
+  if(!activation_log_file.is_open())	cout << act_file_name << " open error!!" << endl;
+  if(!golden_conv_out_file.is_open())	cout << "golden_conv_out_file open error" << endl;
+  if(golden_file==NULL){
+	  cout << golden_act_file_name << " open error!!" << endl;
+	  compare_skip = 1;
+  }
+  if(!conv_out_comp_file.is_open())	cout << "conv_out_comp_file open error" << endl;
+  if(!act_comp_file.is_open())	cout << act_comp_file_name << " open error!" << endl;
+  if(!last_layer_scaled_file.is_open())	cout << "last_layer_scaled_file open error" << endl;
+#endif
+
+  // input vector buffers
+  TI	inputBuf[SF];
+#pragma HLS ARRAY_PARTITION variable=inputBuf complete dim=1
+  // hwkim added for ternary
+  TI	inputBuf_mask[SF];
+#pragma HLS ARRAY_PARTITION variable=inputBuf_mask complete dim=1
+
+  decltype(activation.init(0,0))  accu[PE];
+#pragma HLS ARRAY_PARTITION variable=accu complete dim=0
+
+// hwkim added for activation comparision using +- accumulation
+#ifdef ACTIVATION_LOG
+  decltype(activation.init(0,0))  accu_pm[PE];
+#endif
+
+  unsigned  nf   = 0;
+  unsigned  sf   = 0;
+  unsigned  tile = 0; // invariant: tile = nf*SF + sf
+  // everything merged into a common iteration space (one "big" loop instead
+  // of smaller nested loops) to get the pipelinening the way we want
+  unsigned const TOTAL_FOLD = NF * SF;
+
+  // hwkim modified for padding (fan-in scaling)
+  //unsigned int xy;
+  unsigned int x=0, y=0, kx=0, ky=0;
+  unsigned const fan_in_step = MatrixW/9;
+  unsigned const sf_ch = SF/9;
+  unsigned int fan_in=0;
+  unsigned int sf_ch_cnt=0;
+
+  // hwkim modified for dependency
+  //for(unsigned  i = 0; i < reps * TOTAL_FOLD; i++) {
+  for(unsigned  i = 0; i < reps * TOTAL_FOLD / SF; i++) {
+	  for(unsigned sf=0; sf < SF; sf++){
+#pragma HLS PIPELINE II=1 rewind
+		  // hwkim commented for positive only accumulation - counter implementation? rather than / %
+//		  xy = i*SF/TOTAL_FOLD;		//xy = i/TOTAL_FOLD;	// hwkim modified for dependency
+//		  y = xy/OFMDim;
+//		  x = xy%OFMDim;
+//		  ky = ((tile/(SF/9))%9)/3;
+//		  kx = ((tile/(SF/9))%9)%3;
+		  //tile: sf -> kx -> ky -> nf
+
+		  TI  inElem;
+		  TIM  inElem_mask;	// hwkim added for ternary
+		  if(nf == 0) {
+			  // hwkim modified for padding
+//			  inElem = in.read();	// read input from stream
+//			  inputBuf[sf] = inElem;	// store in appropriate buffer for reuse
+			  if((x<Left && kx<Left)
+				  ||(y<Top && ky<Top)
+				  ||(x>(OFMDim-1-Right) && kx>(3-1-Right))
+				  ||(y>(OFMHeight-1-Bottom) && ky>(3-1-Bottom))){
+				  ;	// skip
+			  }
+			  else{
+				  inElem = in.read();
+				  inputBuf[sf] = inElem;
+				  // hwkim added for ternary
+				  inElem_mask = in_mask.read();
+				  inputBuf_mask[sf] = inElem_mask;
+			  }
+		  }
+		  else {
+			  inElem = inputBuf[sf];		// reuse buffered input
+			  inElem_mask = inputBuf_mask[sf];	// hwkim added for ternary
+		  }
+
+		  // Threshold Initialisation
+		  if(sf == 0) {
+			  for(unsigned  pe = 0; pe < PE; pe++) {
+#pragma HLS UNROLL
+				  accu[pe] = activation.init(nf, pe);
+#ifdef ACTIVATION_LOG
+				  accu_pm[pe] = activation.init(nf, pe);
+#endif
+			  }
+		  }
+
+		  // compute matrix-vector product for each processing element
+		  auto const &w = weights.weights(tile);
+		  // hwkim added for ternary
+		  auto const &wm = wmasks.masks(tile);
+
+		  for(unsigned  pe = 0; pe < PE; pe++) {
+#pragma HLS UNROLL
+			  auto const  wgt = TWeightI()(w[pe]);
+			  auto const  act = TSrcI()(inElem);
+			  // hwkim added for ternary
+//			  auto const  wgt_mask = TWeightI()(wm[pe]);
+//			  auto const  act_mask = TSrcI()(inElem_mask);
+			  auto const  packed_mask = ~(wm[pe] | inElem_mask);	//wgt_mask & act_mask;
+
+			  // hwkim modified for padding
+			  //accu[pe] = mac<SIMD>(accu[pe], wgt, act, r);
+			  if((x<Left && kx<Left)
+					  ||(y<Top && ky<Top)
+					  ||(x>(OFMDim-1-Right) && kx>(3-1-Right))
+					  ||(y>(OFMHeight-1-Bottom) && ky>(3-1-Bottom))){
+				  ;	//skip pad from accumulation
+			  }
+			  else{
+				  // hwkim modified for activation comparison using +- accumulation
+//				  accu[pe] = mac<SIMD>(accu[pe], wgt, act, r
+//#ifdef ACTIVATION_LOG
+//						  , 0
+//#endif
+//				  );
+				  // hwkim modified for ternary
+				  accu[pe] = mac_masked<SIMD>(accu[pe], wgt, act, r, packed_mask);	// should be modified - N = WAY
+//				  cout << hex;
+//				  cout << "(" << x << "," << y << ") (" << kx << ", " << ky << ") " << (int)pe;
+//				  cout << " wm: " << wm[pe] << ", im: " << inElem_mask;
+//				  cout << ", pm: " << packed_mask;
+//				  cout << ", acc: " << accu[pe] << endl;
+#ifdef ACTIVATION_LOG
+				  accu_pm[pe] = mac<SIMD>(accu_pm[pe], wgt, act, r, 1);
+#endif
+			  }
+		  }
+
+		  // keep track of which folded synapse/neuron we are processing
+		  ++tile;
+
+		  // hwkim added for positive only accumulation
+		  if(++sf_ch_cnt==sf_ch){
+			  sf_ch_cnt=0;
+			  if((x<Left && kx<Left)
+				  ||(y<Top && ky<Top)
+				  ||(x>(OFMDim-1-Right) && kx>(3-1-Right))
+				  ||(y>(OFMHeight-1-Bottom) && ky>(3-1-Bottom))){
+				  ;
+			  }
+			  else{
+				  fan_in += fan_in_step;
+			  }
+			  if(++kx==3){
+				  kx=0;
+				  if(++ky==3){
+					  ky=0;
+					  if(nf==(NF-1)){
+						  if(++x==OFMDim){
+							  x=0;
+							  if(++y==OFMHeight){
+								  y=0;
+							  }
+						  }
+					  }
+				  }
+			  }
+		  }
+
+		  // hwkim modified for dependency - 191004 ------------------------------------------------
+		  if(sf == (SF-1)) {
+		  	// produce output and clear accumulators
+		  	auto  outElem = TDstI().template operator()<TO>();
+		  	for (unsigned  pe = 0; pe < PE; pe++) {
+#pragma HLS UNROLL
+
+// hwkim modified for debug
+// hwkim commented for 0-1 accumulation - not +- accum
+#ifdef ACTIVATION_LOG
+		  		if(TSrcI::width!=1)	// hwkim: for the first layer
+		  			accu_pm[pe] = accu[pe];
+
+		  		// write conv_out_minus_bias
+		  		conv_out_log_file << setprecision(8) << accu_pm[pe] << endl;//" | ";
+		  		 //compare golden with computed
+		  		decltype(activation.init(0,0))	golden_buf;
+		  		golden_conv_out_file >> golden_buf;
+		  		if(accu_pm[pe]!=golden_buf){
+		  			conv_out_comp_file << fixed;
+		  			conv_out_comp_file.precision(8);
+		  			conv_out_comp_file.setf(ios_base::showpoint);
+		  			conv_out_comp_file << "differ @ (" << y << "," << x << ") gold: " << golden_buf << ", accu[" << nf << ", " << pe << "]: " << accu[pe] << endl;
+		  		}
+#endif
+		  		// hwkim modified for positive only accumulation
+		      	//accu[pe] = accu[pe] + activation.m_thresholds[pe][nf][0];
+		      	//outElem[pe] = activation.activate(nf, pe, accu[pe]);
+		  		// hwkim modified for batch norm scale
+		  		//ap_fixed<24,16,AP_TRN,AP_SAT> fxdoutElem;
+		  		TDstElem outElem_unit;
+		  		//ap_uint<TDstI::width> uoutElem;
+		  		outElem_unit = activation.activate(nf, pe, accu[pe], fan_in);
+		  		outElem[pe] = *reinterpret_cast<ap_uint<TDstI::width> *>(&outElem_unit);
+		  		//cout << " " << outElem[pe] << endl;	// for debug
+		  	}
+		  	out.write(outElem);
+		  	// hwkim modified for positive only accumulation
+	  		fan_in=0;
+
+// hwkim added for debug
+#ifdef ACTIVATION_LOG
+		  	act_buf_arr[nf] = outElem;
+		  //	cout << hex << (unsigned int)act_buf_arr[nf] << endl;
+		  	if(nf==(NF-1)){
+		  		// write activation log - OutWidth(PE*TDst::width) is under 32 for conv(tconv) layers
+		  		act_buf = 0;
+		  		for(int nf_cnt=NF-1; nf_cnt>=0; nf_cnt--){
+		  			for(int word_cnt=0; word_cnt<OutWidth/4; word_cnt++){
+		  				activation_log_file << uppercase << hex << ((unsigned int)(act_buf_arr[nf_cnt]>>(OutWidth-4*(word_cnt+1)))&0xF);
+		  			}
+		  			// filling act_buf
+		  			act_buf = act_buf << OutWidth;	//OutWidth or PE
+		  			act_buf = act_buf | act_buf_arr[nf_cnt];
+		  		}
+		  		activation_log_file  << endl;
+
+		  		// compare activation with gold result
+		  		ap_uint<NF*OutWidth> gold_buf = 0;
+		  		char gold_buf_ch[(NF*OutWidth)/4+1];
+		  		char gold_buf_ch64[17];
+		  		gold_buf_ch64[16] = 0;
+		  		unsigned long gold_buf_long;
+		  		if(compare_skip==0){
+		  			fscanf(golden_file, "%s", gold_buf_ch);
+		  			// there's no layers with channel count smaller than 64
+		  			for(int word_cnt=0; word_cnt<(NF*OutWidth)/64; word_cnt++){
+		  				for(int i=0; i<64/4; i++){
+		  					gold_buf_ch64[i] = gold_buf_ch[word_cnt*16+i];
+		  				}
+		  				gold_buf_long = strtoul(gold_buf_ch64, NULL, 16);
+		  				gold_buf = gold_buf << 64;
+		  				gold_buf = gold_buf | (*reinterpret_cast<ap_uint<64> *>(&gold_buf_long));
+		  			}
+
+		  			if(act_buf!=gold_buf){
+		  				act_comp_file << dec << "@(" << setw(2) << y << "," << setw(2) << x << ")" <<
+		  						hex << " golden: ";
+		  				if((NF*OutWidth)>=64){
+		  					for(int i=0; i<(NF*OutWidth)/64; i++){
+		  						act_comp_file << (unsigned long long )(gold_buf >> 64*(OutWidth/64-i-1));
+		  					}
+		  					act_comp_file << "," << endl << setw(17) << hex << "act: ";
+		  					for(int i=0; i<OutWidth/64; i++){
+		  						act_comp_file << (unsigned long long )(act_buf >> 64*(OutWidth/64-i-1));
+		  					}
+		  					act_comp_file << endl;
+		  				}
+		  				else{
+		  					act_comp_file << (unsigned long long )gold_buf << "," << endl
+		  							<< setw(17) << hex << "act: "  << (unsigned long long )act_buf << endl;
+		  				}
+		  			}
+		  		}
+		  		if(x==0)
+					cout << dec << y << "/" << OFMHeight << endl;
+		  	}
+#endif
+
+		  	// next folded neuron or image
+		  	// hwkim modified for dependency
+		  	//sf = 0;
+
+		  	if(++nf == NF) {
+		  		/* hwkim commented
+		  		 * 모든 kernel에 대해 연산 다 했으면
+		  		 */
+		  		nf   = 0;
+		  		tile = 0;
+		  	}
+		}
+
+
+
+		// hwkim modified for dependency - 191004 -----------------------------------------------------
+	}
+  }
+
+#ifdef ACTIVATION_LOG
+  conv_out_log_file.close();
+  conv_out_comp_file.close();
+  last_layer_scaled_file.close();
+#endif
+}
+
+
+
 #endif

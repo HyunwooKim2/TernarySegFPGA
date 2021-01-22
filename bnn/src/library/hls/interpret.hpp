@@ -107,6 +107,13 @@ class Binary {
     return  m_val? static_cast<decltype(-b)>(b) : -b;
   }
   friend std::ostream& operator<<(std::ostream&, Binary const&);
+
+  // hwkim added for ternary
+  template<typename T>
+  auto operator&(T const &b) const -> decltype(ap_int<2>(1)*b) {
+#pragma HLS inline
+	  return  m_val? static_cast<decltype(-b)>(b) : static_cast<decltype(-b)>(0);
+  }
 };
 
 template<typename T>

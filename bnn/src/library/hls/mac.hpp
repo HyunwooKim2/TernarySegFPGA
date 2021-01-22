@@ -87,6 +87,18 @@ auto mul(TC const &c, TD const &d, ap_resource_lut const&) -> decltype(c*d) {
   return  res;
 }
 
+// hwkim added for ternary
+//- Request LUT
+template<typename TC, typename TD, typename TM>
+auto mul_masked(TC const &c, TD const &d, ap_resource_lut const&, TM mask) -> decltype(c*d) {
+#pragma HLS inline
+	TC mask_casted(mask);
+  decltype(c*d) const  res = mask_casted&(c*d);
+#pragma HLS RESOURCE variable=res core=Mul_LUT
+  return  res;
+}
+
+
 //- Request DSP48
 template<typename TC, typename TD>
 auto mul(TC const &c, TD const &d, ap_resource_dsp const&) -> decltype(c*d) {
@@ -163,5 +175,22 @@ inline T mac_masked_pm(T const &a, TC const &c, TD const &d, ap_uint<WAY> mask) 
   return  mac_masked<N, WAY>(a, c, d, ap_resource_dflt(), mask);
 }
 
-
+// hwkim added for ternary
+//- MAC with selectable implementation resource
+template<unsigned N, typename T, typename TC, typename TD, typename R>
+T mac_masked(T const &a, TC const &c, TD const &d, R const &r, ap_uint<N> mask) {
+#pragma HLS inline
+  T  res = a;
+  for(unsigned  i = 0; i < N; i++) {
+#pragma HLS unroll
+	  res += mul_masked(c[i], d[i], r, mask[i]);
+  }
+  return  res;
+}
+// hwkim added for ternary
+template<unsigned N, typename T, typename TC, typename TD>
+inline T mac_masked(T const &a, TC const &c, TD const &d, ap_uint<N> mask) {
+#pragma HLS inline
+  return  mac_masked<N>(a, c, d, ap_resource_dflt(), mask);
+}
 #endif
