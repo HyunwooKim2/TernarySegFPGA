@@ -1091,6 +1091,7 @@ void DoCompute(
 		#endif
 	#endif
 #else
+			/* hwkim modified for synthesis - deconv layer should be implemented!
 		// Layer 7 - binary transposed convolution - stride 2
 	#ifdef SEP_SIM
 		if(sep_sim_layer7_en)
@@ -1104,6 +1105,35 @@ void DoCompute(
 	#endif
 				L6_SIMD, L6_PE, Recast<XnorMul>>
 					(inter6, inter7, weights6, threshs6, numReps, ap_resource_lut());
+	#ifdef SEP_SIM
+			else{
+				snapshot_file_name = snapshot_dir + "activation_7_log.txt";
+				read_activation_file<L6_OFM_CH>(inter7, snapshot_file_name);
+				snapshot_file_name = snapshot_dir + "activation_mask_7_log.txt";
+				read_activation_file<L6_OFM_CH>(inter7_mask, snapshot_file_name);
+			}
+	#endif	*/
+		// Layer 7 - binary deconvolution - deconv layer should be implemented!
+	#ifdef SEP_SIM
+		if(sep_sim_layer7_en)
+	#endif
+			ConvLayer_Batch<L6_K, L6_IFM_CH, L6_IFM_DIM, L6_OFM_CH, L6_OFM_DIM,
+				L6_IFM_HEIGHT, L6_OFM_HEIGHT, 1, 1, 1, 1, 1,
+	#ifdef ACTIVATION_LOG
+				6,
+	#endif
+				L6_SIMD, L6_PE,
+				L6_WAY,	// hwkim added for ternary
+				L6_FANWIDTH,	// hwkim added for ternary
+				ap_uint<1>,	// hwkim added for batch norm scale
+				Recast<XnorMul>>
+					(inter6,
+					inter6_mask,	// hwkim added for ternary
+					inter7,
+					inter7_mask,
+					weights6,
+					wmasks6,	// hwkim added for ternary
+					threshs6, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 			else{
 				snapshot_file_name = snapshot_dir + "activation_7_log.txt";
@@ -1209,6 +1239,7 @@ void DoCompute(
 		#endif
 	#endif
 #else
+				/* hwkim modified for synthesis - deconv layer should be implemented!
 		// Layer 9 - binary transposed convolution - stride 2
 	#ifdef SEP_SIM
 		if(sep_sim_layer9_en)
@@ -1229,6 +1260,35 @@ void DoCompute(
 			snapshot_file_name = snapshot_dir + "activation_mask_9_log.txt";
 			read_activation_file<L8_OFM_CH>(inter9_mask, snapshot_file_name);
 		}
+	#endif	*/
+		// Layer 9 - binary deconvolution
+	#ifdef SEP_SIM
+		if(sep_sim_layer9_en)
+	#endif
+			ConvLayer_Batch<L8_K, L8_IFM_CH, L8_IFM_DIM, L8_OFM_CH, L8_OFM_DIM,
+				L8_IFM_HEIGHT, L8_OFM_HEIGHT, 1, 1, 1, 1, 1,
+	#ifdef ACTIVATION_LOG
+				8,
+	#endif
+				L8_SIMD, L8_PE,
+				L8_WAY,	// hwkim added for ternary
+				L8_FANWIDTH,	// hwkim added for ternary
+				ap_uint<1>,	// hwkim added for batch norm scale
+				Recast<XnorMul>>
+					(inter8,
+					inter8_mask,	// hwkim added for ternary
+					inter9,
+					inter9_mask,
+					weights8,
+					wmasks8,	// hwkim added for ternary
+					threshs8, numReps, ap_resource_lut());
+	#ifdef SEP_SIM
+			else{
+				snapshot_file_name = snapshot_dir + "activation_9_log.txt";
+				read_activation_file<L8_OFM_CH>(inter9, snapshot_file_name);
+				snapshot_file_name = snapshot_dir + "activation_mask_9_log.txt";
+				read_activation_file<L8_OFM_CH>(inter9_mask, snapshot_file_name);
+			}
 	#endif
 #endif
 

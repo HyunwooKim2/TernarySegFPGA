@@ -1532,6 +1532,10 @@ void nonzero_activation_weight_stream_gen(
 	unsigned char const  SF = MatrixW / SIMD;
 	unsigned short const TOTAL_FOLD = NF * SF;
 
+	// ** hwkim added for OPTIMIZATION
+	TI inElem;
+	TIM imaskElem;
+
 	TI	inputBuf[SF];
 #pragma HLS ARRAY_PARTITION variable=inputBuf complete dim=1
 	TIM	imaskBuf[SF];
@@ -1599,16 +1603,28 @@ void nonzero_activation_weight_stream_gen(
 						||(y<Top && ky<Top)
 						||(x>(OFMDim-1-Right) && kx>(3-1-Right))
 						||(y>(OFMHeight-1-Bottom) && ky>(3-1-Bottom))){
-					inputBuf[sf] = TI(~0x0);	// hwkim: skip
-					imaskBuf[sf] = 0;
+					// ** hwkim modified for OPTIMIZATION
+//					inputBuf[sf] = TI(~0x0);	// hwkim: skip
+//					imaskBuf[sf] = 0;
+					inElem = TI(~0x0);
+					inputBuf[sf] = inElem;
+					imaskElem = 0;
+					imaskBuf[sf] = imaskElem;
 				}
 				else{
+					// ** hwkim modified for OPTIMIZATION
 					// hwkim modified for ternary
-//					inElem = in.read();
-//					inputBuf[sf] = inElem;
-					inputBuf[sf] = in.read();
-					imaskBuf[sf] = in_mask.read();	// hwkim added for ternary
+					inElem = in.read();
+					inputBuf[sf] = inElem;
+//					inputBuf[sf] = in.read();
+//					imaskBuf[sf] = in_mask.read();	// hwkim added for ternary
+					imaskElem = in_mask.read();
+					imaskBuf[sf] = imaskElem;
 				}
+			}
+			else{
+				inElem = inputBuf[sf];
+				imaskElem = imaskBuf[sf];
 			}
 
 			auto const &w = weights.weights(tile);
@@ -1644,9 +1660,17 @@ void nonzero_activation_weight_stream_gen(
 #endif
 
 					for(unsigned char way_cnt=0; way_cnt<(SIMD/WAY); way_cnt++){
-						mask_delay_buf[pe][way_cnt] = wm[pe]((way_cnt+1)*WAY-1, way_cnt*WAY) | imaskBuf[sf]((way_cnt+1)*WAY-1, way_cnt*WAY);
-						input_delay_buf[pe][way_cnt] = inputBuf[sf](((way_cnt+1)*WAY*SrcWidth)-1, way_cnt*WAY*SrcWidth);
-						w_delay_buf[pe][way_cnt] = w[pe]((way_cnt+1)*WAY-1, way_cnt*WAY);
+						// ** hwkim modified for OPTIMIZATION
+//						mask_delay_buf[pe][way_cnt] = wm[pe]((way_cnt+1)*WAY-1, way_cnt*WAY) | imaskBuf[sf]((way_cnt+1)*WAY-1, way_cnt*WAY);
+//						input_delay_buf[pe][way_cnt] = inputBuf[sf](((way_cnt+1)*WAY*SrcWidth)-1, way_cnt*WAY*SrcWidth);
+//						mask_delay_buf[pe][way_cnt] = wm[pe]((way_cnt+1)*WAY-1, way_cnt*WAY) | imaskElem((way_cnt+1)*WAY-1, way_cnt*WAY);
+//						input_delay_buf[pe][way_cnt] = inElem(((way_cnt+1)*WAY*SrcWidth)-1, way_cnt*WAY*SrcWidth);
+						mask_delay_buf[pe][way_cnt] = (wm[pe] | imaskElem) >> (way_cnt*WAY);
+						input_delay_buf[pe][way_cnt] = inElem >> (way_cnt*WAY*SrcWidth);
+
+						// ** hwkim modified for OPTIMIZATION
+//						w_delay_buf[pe][way_cnt] = w[pe]((way_cnt+1)*WAY-1, way_cnt*WAY);
+						w_delay_buf[pe][way_cnt] = w[pe] >> (way_cnt*WAY);
 					}
 						// hwkim added for debug
 #if defined (ACTIVATION_LOG) & defined (DEBUG)
@@ -1675,21 +1699,22 @@ void nonzero_activation_weight_stream_gen(
 
 					for(unsigned char way_cnt=0; way_cnt<(SIMD/WAY); way_cnt++){
 						if(pack_en[pe][way_cnt]==1){
-							// hwkim modified to remove MUX
-//							for(unsigned char prev_bit_cnt=0; prev_bit_cnt<WAY; prev_bit_cnt++){	// SIMD should be small enough to unroll
-//								if(z_mask[pe][way_cnt][prev_bit_cnt]){
-//									for(unsigned char next_bit_cnt=0; next_bit_cnt<WAY; next_bit_cnt++){
-//										if(mask_delay_buf[pe][way_cnt][next_bit_cnt]==0){
-//											z_mask[pe][way_cnt][prev_bit_cnt] = 0;
-//											mask_delay_buf[pe][way_cnt][next_bit_cnt] = 1;
-//											input_pack_buf[pe][way_cnt](prev_bit_cnt*SrcWidth+(SrcWidth-1), prev_bit_cnt*SrcWidth)
-//													= input_delay_buf[pe][way_cnt](next_bit_cnt*SrcWidth+(SrcWidth-1), next_bit_cnt*SrcWidth);
-//											w_pack_buf[pe][way_cnt][prev_bit_cnt] = w_delay_buf[pe][way_cnt][next_bit_cnt];
-//											break;
-//										}
-//									}
-//								}
-//							}
+							// hwkim added for MUX method
+							for(unsigned char prev_bit_cnt=0; prev_bit_cnt<WAY; prev_bit_cnt++){	// SIMD should be small enough to unroll
+								if(z_mask[pe][way_cnt][prev_bit_cnt]){
+									for(unsigned char next_bit_cnt=0; next_bit_cnt<WAY; next_bit_cnt++){
+										if(mask_delay_buf[pe][way_cnt][next_bit_cnt]==0){
+											z_mask[pe][way_cnt][prev_bit_cnt] = 0;
+											mask_delay_buf[pe][way_cnt][next_bit_cnt] = 1;
+											input_pack_buf[pe][way_cnt](prev_bit_cnt*SrcWidth+(SrcWidth-1), prev_bit_cnt*SrcWidth)
+													= input_delay_buf[pe][way_cnt](next_bit_cnt*SrcWidth+(SrcWidth-1), next_bit_cnt*SrcWidth);
+											w_pack_buf[pe][way_cnt][prev_bit_cnt] = w_delay_buf[pe][way_cnt][next_bit_cnt];
+											break;
+										}
+									}
+								}
+							}
+							/* hwkim added for shift method
 							for(unsigned char bit_cnt=0; bit_cnt<WAY; bit_cnt++){
 								ap_uint<WAY> pack_mask = z_mask[pe][way_cnt] & ~mask_delay_buf[pe][way_cnt];
 								ap_uint<SrcWidth*WAY> pack_i_mask = 0;
@@ -1723,7 +1748,7 @@ void nonzero_activation_weight_stream_gen(
 									input_delay_buf[pe][way_cnt] = (input_delay_buf[pe][way_cnt] >> SrcWidth) | (input_delay_buf[pe][way_cnt] << (WAY-1)*SrcWidth);
 									w_delay_buf[pe][way_cnt] = (w_delay_buf[pe][way_cnt] >> 1) | (w_delay_buf[pe][way_cnt] << (WAY-1));
 								}
-							}
+							}*/
 						}
 						else{
 							z_mask[pe][way_cnt] = mask_delay_buf[pe][way_cnt];
@@ -1823,6 +1848,78 @@ void nonzero_activation_weight_stream_gen(
 #endif
 				}
 
+//			}
+
+				/* hwkim commented for OPTIMIZATION
+				// hwkim moved for ternary
+				if(sf == (SF-1)) {
+//				for(unsigned char pe=0; pe<PE; pe++){
+//#pragma HLS UNROLL
+					// hwkim added for debug
+#if defined (ACTIVATION_LOG) & defined (DEBUG)
+					for(unsigned char way_cnt=0; way_cnt<(SIMD/WAY); way_cnt++){	// hwkim added for way
+						mask_delay_buf[pe][way_cnt] = ~0;
+						input_delay_buf[pe][way_cnt] = 0;
+						w_delay_buf[pe][way_cnt] = 0;
+					}
+					nonz_dbg_file << string(100, '-') << endl;
+					nonz_dbg_file << string(10, '*') << "last SIMD pe: " << dec << (int)pe << endl;
+#endif
+					for(unsigned char way_cnt=0; way_cnt<(SIMD/WAY); way_cnt++){	// hwkim added for way
+						if(pack_en[pe][way_cnt]==1 && (~z_mask[pe][way_cnt])!=0){
+							for(unsigned char prev_bit_cnt=0; prev_bit_cnt<WAY; prev_bit_cnt++){
+								if(z_mask[pe][way_cnt][prev_bit_cnt]==0){
+									sf_cnt[pe][way_cnt]++;
+								}
+							}
+
+							packed_input[pe*(SIMD/WAY)+way_cnt].write(input_pack_buf[pe][way_cnt]);
+							packed_weight[pe*(SIMD/WAY)+way_cnt].write(w_pack_buf[pe][way_cnt]);
+							packed_mask[pe*(SIMD/WAY)+way_cnt].write(z_mask[pe][way_cnt]);
+#ifdef ACTIVATION_LOG
+							nonz_i_log_file[pe][way_cnt] << (unsigned long)input_delay_buf[pe][way_cnt] << endl;
+							nonz_w_log_file[pe][way_cnt] << (unsigned long)w_delay_buf[pe][way_cnt] << endl;
+#endif
+
+#if defined (ACTIVATION_LOG) & defined (DEBUG)
+							// hwkim added for debug
+							nonz_dbg_file << string(10, '*') << "way: " << (int)way_cnt << endl;
+							nonz_dbg_file << hex;
+							nonz_dbg_file << "mbuf: ";
+							for(int way_cnt=(SIMD/WAY-1); way_cnt>=0; way_cnt--)
+								nonz_dbg_file << (unsigned long)mask_delay_buf[pe][way_cnt] << " ";
+							nonz_dbg_file << ",\twbuf:  ";
+							for(int way_cnt=(SIMD/WAY-1); way_cnt>=0; way_cnt--)
+								nonz_dbg_file << (unsigned long)w_delay_buf[pe][way_cnt] << " ";
+							nonz_dbg_file << ",\tinbuf:  ";
+							for(int way_cnt=(SIMD/WAY-1); way_cnt>=0; way_cnt--)
+								nonz_dbg_file << (unsigned long)input_delay_buf[pe][way_cnt] << " ";
+							nonz_dbg_file << endl;
+							nonz_dbg_file << "zm:   ";
+							for(int way_cnt=(SIMD/WAY-1); way_cnt>=0; way_cnt--)
+								nonz_dbg_file << (unsigned long)z_mask[pe][way_cnt] << " ";
+							nonz_dbg_file << ",\twpack: ";
+							for(int way_cnt=(SIMD/WAY-1); way_cnt>=0; way_cnt--)
+								nonz_dbg_file << (unsigned long)w_pack_buf[pe][way_cnt] << " ";
+							nonz_dbg_file << ",\tinpack: ";
+							for(int way_cnt=(SIMD/WAY-1); way_cnt>=0; way_cnt--)
+								nonz_dbg_file << (unsigned long)input_pack_buf[pe][way_cnt] << " ";
+							nonz_dbg_file << endl;
+#endif
+						}
+
+						sf_num[pe*(SIMD/WAY)+way_cnt].write(sf_cnt[pe][way_cnt]);
+#ifdef ACTIVATION_LOG
+						nonz_f_log_file[pe][way_cnt] << (unsigned long)sf_cnt[pe][way_cnt] << endl;
+#endif
+#if defined (ACTIVATION_LOG) & defined (DEBUG)
+						// hwkim added for debug
+//						cout << "sf_cnt: " << dec << sf_cnt[pe] << endl;
+						nonz_dbg_file << dec << "sf_cnt[" << (int)pe << "][" << (int)way_cnt << "]: ";
+						nonz_dbg_file << sf_cnt[pe*(SIMD/WAY)+way_cnt] << endl;
+#endif
+					}
+				}*/
 			}
 
 			tile++;
@@ -1834,7 +1931,11 @@ void nonzero_activation_weight_stream_gen(
 					kx=0;
 					if(++ky==3){
 						ky=0;
-						if(nf==(NF-1)){
+						// ** hwkim modified for OPTIMIZATION
+//						if(nf==(NF-1)){
+						if(++nf==NF){
+							nf=0;
+
 							if(++x==OFMDim){
 								x=0;
 								if(++y==OFMHeight){
@@ -1849,6 +1950,7 @@ void nonzero_activation_weight_stream_gen(
 				}
 			}
 
+			/** hwkim modified for OPTIMIZATION
 			// hwkim moved for ternary
 			if(sf == (SF-1)) {
 				for(unsigned char pe=0; pe<PE; pe++){
@@ -1931,10 +2033,12 @@ void nonzero_activation_weight_stream_gen(
 #endif
 					}
 				}
-				if(++nf == NF) {
-					nf   = 0;
-				}
-			}
+
+				// ** hwkim modified for OPTIMIZATION
+//				if(++nf == NF) {
+//					nf   = 0;
+//				}
+			}*/
 		}
 	}
 
