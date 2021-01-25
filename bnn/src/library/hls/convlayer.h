@@ -289,6 +289,7 @@ void ConvLayer_Batch(
 			(static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>&>(convInp),
 					convInp_mask,	// hwkim added for ternary
 					static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>(mvOut),
+					static_cast<hls::stream<ap_uint<PE>>&>(mvOutMask),	// hwkim added for ternary
 					weights,
 					wmasks,	// hwkim added for ternary
 					activation,

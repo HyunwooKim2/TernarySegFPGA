@@ -1965,7 +1965,9 @@ template<unsigned MatrixW, unsigned MatrixH, unsigned SIMD, unsigned PE, unsigne
   typename TSrcI = Identity, typename TDstI = Identity, typename TWeightI = Identity,
   typename TI,
   typename TIM,	// hwkim added for ternary
-  typename TO, typename TW,
+  typename TO,
+  typename TOM, // hwkim added for ternary
+  typename TW,
   typename TWM,
   typename TA,
   typename R>
@@ -1973,6 +1975,7 @@ void Matrix_Vector_Activate_Batch_Ternary_Masking(
 		hls::stream<TI> & in,
 		hls::stream<TIM> & in_mask,	// hwkim added for ternary
 		hls::stream<TO> &out,
+		hls::stream<TOM> &out_mask,	// hwkim added for ternary
 		TW  const &weights,
 		TWM  const &wmasks,	// hwkim added for ternary
 		TA  const &activation,
@@ -1996,31 +1999,43 @@ void Matrix_Vector_Activate_Batch_Ternary_Masking(
   extern string golden_file_dir;
   int compare_skip = 0;
   ap_uint<OutWidth> act_buf_arr[NF];
+  ap_uint<PE> act_mask_buf_arr[NF];
   ap_uint<NF*OutWidth> act_buf=0;
+  ap_uint<NF*PE> act_mask_buf=0;
+
   string conv_out_file_name = snapshot_dir + "conv_" + to_string(LayerCnt+1) + "_out_minusBias.txt";
   string act_file_name = snapshot_dir + "activation_" + to_string(LayerCnt+1) + "_log.txt";
+  string act_mask_file_name = snapshot_dir + "activation_mask_" + to_string(LayerCnt+1) + "_log.txt";
   string golden_conv_out_file_name = golden_file_dir + "binConv" + to_string(LayerCnt+1) + "_minusBias.txt";
   string golden_act_file_name = golden_file_dir + "Sign" + to_string(LayerCnt+1) + ".txt";
+  string golden_mask_file_name = golden_file_dir + "Sign" + to_string(LayerCnt+1) + "_flag.txt";
   string conv_out_comp_file_name = "conv_" + to_string(LayerCnt+1) + "_out_minusBias_comp.txt";
   string act_comp_file_name = "act_" + to_string(LayerCnt+1) + "_comp.txt";
+  string mask_comp_file_name = "mask_" + to_string(LayerCnt+1) + "_comp.txt";
 
   ofstream conv_out_log_file(conv_out_file_name);
   ofstream activation_log_file(act_file_name);
+  ofstream activation_mask_log_file(act_mask_file_name);
   ifstream golden_conv_out_file(golden_conv_out_file_name);
   FILE * golden_file = fopen(golden_act_file_name.c_str(),"rt");
+  FILE * golden_mask_file = fopen(golden_mask_file_name.c_str(),"rt");
   ofstream conv_out_comp_file(conv_out_comp_file_name);
   ofstream act_comp_file(act_comp_file_name);
+  ofstream mask_comp_file(mask_comp_file_name);
   ofstream last_layer_scaled_file("last_layer_scaled_log.log");
 
   if(!conv_out_log_file.is_open())	cout << "conv_out_log_file open error" << endl;
   if(!activation_log_file.is_open())	cout << act_file_name << " open error!!" << endl;
+  if(!activation_mask_log_file.is_open())	cout << act_mask_file_name << " open error!!" << endl;
   if(!golden_conv_out_file.is_open())	cout << "golden_conv_out_file open error" << endl;
   if(golden_file==NULL){
 	  cout << golden_act_file_name << " open error!!" << endl;
 	  compare_skip = 1;
   }
+  if(golden_mask_file==NULL)	cout << golden_mask_file_name << " open error!!" << endl;
   if(!conv_out_comp_file.is_open())	cout << "conv_out_comp_file open error" << endl;
   if(!act_comp_file.is_open())	cout << act_comp_file_name << " open error!" << endl;
+  if(!mask_comp_file.is_open())	cout << mask_comp_file_name << " open error!" << endl;
   if(!last_layer_scaled_file.is_open())	cout << "last_layer_scaled_file open error" << endl;
 #endif
 
@@ -2180,6 +2195,9 @@ void Matrix_Vector_Activate_Batch_Ternary_Masking(
 		  if(sf == (SF-1)) {
 		  	// produce output and clear accumulators
 		  	auto  outElem = TDstI().template operator()<TO>();
+		  	// hwkim added for ternary
+		  	TOM	outMaskElem;
+
 		  	for (unsigned  pe = 0; pe < PE; pe++) {
 #pragma HLS UNROLL
 
@@ -2190,7 +2208,11 @@ void Matrix_Vector_Activate_Batch_Ternary_Masking(
 		  			accu_pm[pe] = accu[pe];
 
 		  		// write conv_out_minus_bias
-		  		conv_out_log_file << setprecision(8) << accu_pm[pe] << endl;//" | ";
+		  		conv_out_log_file << fixed;
+		  		conv_out_log_file.precision(8);
+		  		conv_out_log_file.setf(ios_base::showpoint);
+		  		conv_out_log_file <<  accu_pm[pe] << endl;//" | ";
+
 		  		 //compare golden with computed
 		  		decltype(activation.init(0,0))	golden_buf;
 		  		golden_conv_out_file >> golden_buf;
@@ -2198,100 +2220,158 @@ void Matrix_Vector_Activate_Batch_Ternary_Masking(
 		  			conv_out_comp_file << fixed;
 		  			conv_out_comp_file.precision(8);
 		  			conv_out_comp_file.setf(ios_base::showpoint);
-		  			conv_out_comp_file << "differ @ (" << y << "," << x << ") gold: " << golden_buf << ", accu[" << nf << ", " << pe << "]: " << accu[pe] << endl;
+		  			conv_out_comp_file << "differ @ (y " << y << ",x " << x << ")";
+		  			conv_out_comp_file << "gold: " << golden_buf << ", accu[nf " << (int)nf << ",pe " << (int)pe << "]: " << accu[pe] << endl;
 		  		}
 #endif
-		  		// hwkim modified for positive only accumulation
-		      	//accu[pe] = accu[pe] + activation.m_thresholds[pe][nf][0];
-		      	//outElem[pe] = activation.activate(nf, pe, accu[pe]);
-		  		// hwkim modified for batch norm scale
-		  		//ap_fixed<24,16,AP_TRN,AP_SAT> fxdoutElem;
+		  		// hwkim added for ternary
+		  		ap_uint<TDstElem::width+1> outElem_ter_unit;	// include zero mask
+		  		outElem_ter_unit = activation.activate(nf, pe, accu[pe], fan_in);	// ??? should be modified?
+		  		ap_uint<1> outMaskElem_unit;
+		  		outMaskElem_unit = (ap_uint<1>)outElem_ter_unit[TDstI::width];
+
 		  		TDstElem outElem_unit;
-		  		//ap_uint<TDstI::width> uoutElem;
-		  		outElem_unit = activation.activate(nf, pe, accu[pe], fan_in);
+		  		// hwkim modified for ternary
+//		  		outElem_unit = activation.activate(nf, pe, accu[pe], fan_in);
+		  		outElem_unit = (TDstElem)outElem_ter_unit[TDstI::width-1];
+
 		  		outElem[pe] = *reinterpret_cast<ap_uint<TDstI::width> *>(&outElem_unit);
-		  		//cout << " " << outElem[pe] << endl;	// for debug
+
+		  		// hwkim added for ternary
+		  		outMaskElem[pe] = outMaskElem_unit;
 		  	}
 		  	out.write(outElem);
+		  	out_mask.write(outMaskElem);	// hwkim added for ternary
 		  	// hwkim modified for positive only accumulation
 	  		fan_in=0;
 
 // hwkim added for debug
 #ifdef ACTIVATION_LOG
-		  	act_buf_arr[nf] = outElem;
-		  //	cout << hex << (unsigned int)act_buf_arr[nf] << endl;
-		  	if(nf==(NF-1)){
-		  		// write activation log - OutWidth(PE*TDst::width) is under 32 for conv(tconv) layers
-		  		act_buf = 0;
-		  		for(int nf_cnt=NF-1; nf_cnt>=0; nf_cnt--){
-		  			for(int word_cnt=0; word_cnt<OutWidth/4; word_cnt++){
-		  				activation_log_file << uppercase << hex << ((unsigned int)(act_buf_arr[nf_cnt]>>(OutWidth-4*(word_cnt+1)))&0xF);
-		  			}
-		  			// filling act_buf
-		  			act_buf = act_buf << OutWidth;	//OutWidth or PE
-		  			act_buf = act_buf | act_buf_arr[nf_cnt];
-		  		}
-		  		activation_log_file  << endl;
+	  		act_buf_arr[nf] = outElem;
+	  		act_mask_buf_arr[nf] = outMaskElem;
 
-		  		// compare activation with gold result
-		  		ap_uint<NF*OutWidth> gold_buf = 0;
-		  		char gold_buf_ch[(NF*OutWidth)/4+1];
-		  		char gold_buf_ch64[17];
-		  		gold_buf_ch64[16] = 0;
-		  		unsigned long gold_buf_long;
-		  		if(compare_skip==0){
-		  			fscanf(golden_file, "%s", gold_buf_ch);
-		  			// there's no layers with channel count smaller than 64
-		  			for(int word_cnt=0; word_cnt<(NF*OutWidth)/64; word_cnt++){
-		  				for(int i=0; i<64/4; i++){
-		  					gold_buf_ch64[i] = gold_buf_ch[word_cnt*16+i];
-		  				}
-		  				gold_buf_long = strtoul(gold_buf_ch64, NULL, 16);
-		  				gold_buf = gold_buf << 64;
-		  				gold_buf = gold_buf | (*reinterpret_cast<ap_uint<64> *>(&gold_buf_long));
-		  			}
+	  		if(nf==(NF-1)){
+	  			act_buf = 0;
+	  			act_mask_buf = 0;
 
-		  			if(act_buf!=gold_buf){
-		  				act_comp_file << dec << "@(" << setw(2) << y << "," << setw(2) << x << ")" <<
-		  						hex << " golden: ";
-		  				if((NF*OutWidth)>=64){
-		  					for(int i=0; i<(NF*OutWidth)/64; i++){
-		  						act_comp_file << (unsigned long long )(gold_buf >> 64*(OutWidth/64-i-1));
-		  					}
-		  					act_comp_file << "," << endl << setw(17) << hex << "act: ";
-		  					for(int i=0; i<OutWidth/64; i++){
-		  						act_comp_file << (unsigned long long )(act_buf >> 64*(OutWidth/64-i-1));
-		  					}
-		  					act_comp_file << endl;
-		  				}
-		  				else{
-		  					act_comp_file << (unsigned long long )gold_buf << "," << endl
-		  							<< setw(17) << hex << "act: "  << (unsigned long long )act_buf << endl;
-		  				}
-		  			}
-		  		}
-		  		if(x==0)
-					cout << dec << y << "/" << OFMHeight << endl;
-		  	}
+	  			for(int nf_cnt=NF-1; nf_cnt>=0; nf_cnt--){
+	  				// hwkim: filling act_buf
+	  				act_buf = act_buf << OutWidth;	//OutWidth or PE
+	  				act_buf = act_buf | act_buf_arr[nf_cnt];
+
+	  				act_mask_buf = act_mask_buf << PE;	//OutWidth or PE
+	  				act_mask_buf = act_mask_buf | act_mask_buf_arr[nf_cnt];
+	  			}
+
+	  			// hwkim: compare activation with gold result
+	  			ap_uint<NF*OutWidth> gold_buf = 0;
+	  			char gold_buf_ch[(NF*OutWidth)/4+1];
+	  			char gold_buf_ch64[17];
+	  			gold_buf_ch64[16] = 0;
+	  			unsigned long gold_buf_long;
+
+	  			if(compare_skip==0){
+	  				// hwkim: write activation log
+	  				activation_log_file << uppercase << hex;
+	  				if((NF*OutWidth)>=64){
+	  					for(int i=0; i<(NF*OutWidth)/64; i++){
+	  						activation_log_file << (unsigned long long )(act_buf >> 64*(NF*OutWidth/64-i-1));
+	  					}
+	  					activation_log_file << endl;
+	  				}
+	  				else{
+	  					activation_log_file << (unsigned long long )act_buf << endl;
+	  				}
+
+	  				// hwkim: write activation mask log
+	  				activation_mask_log_file << uppercase << hex;
+	  				if((NF*PE)>=64){
+	  					for(int i=0; i<(NF*PE)/64; i++){
+	  						activation_mask_log_file << (unsigned long long )(act_mask_buf >> 64*(NF*PE/64-i-1));
+	  					}
+	  					activation_mask_log_file << endl;
+	  				}
+	  				else{
+	  					activation_mask_log_file << (unsigned long long )act_mask_buf << endl;
+	  				}
+
+	  				// read golden results (activation)
+	  				fscanf(golden_file, "%s", gold_buf_ch);
+	  				for(int word_cnt=0; word_cnt<(NF*OutWidth)/64; word_cnt++){	// there's no layers with channel count smaller than 64
+	  					for(int i=0; i<64/4; i++){
+	  						gold_buf_ch64[i] = gold_buf_ch[word_cnt*16+i];
+	  					}
+	  					gold_buf_long = strtoul(gold_buf_ch64, NULL, 16);
+	  					gold_buf = gold_buf << 64;
+	  					gold_buf = gold_buf | (*reinterpret_cast<ap_uint<64> *>(&gold_buf_long));
+	  				}
+
+	  				if(act_buf!=gold_buf){
+	  					act_comp_file << dec << "@(" << setw(2) << y << "," << setw(2) << x << ")" << hex << " golden: ";
+	  					if((NF*OutWidth)>=64){
+	  						for(int i=0; i<(NF*OutWidth)/64; i++){
+	  							act_comp_file << (unsigned long long )(gold_buf >> 64*(NF*OutWidth/64-i-1));
+	  						}
+	  						act_comp_file << "," << endl << setw(17) << hex << "act: ";
+	  						for(int i=0; i<(NF*OutWidth)/64; i++){
+	  							act_comp_file << (unsigned long long )(act_buf >> 64*(NF*OutWidth/64-i-1));
+	  						}
+	  						act_comp_file << endl;
+	  					}
+	  					else{
+	  						act_comp_file << (unsigned long long )gold_buf << "," << setw(17);
+	  						act_comp_file << hex << "act: "  << (unsigned long long )act_buf << endl;
+	  					}
+	  				}
+
+	  				// read golden results (zero mask)
+	  				fscanf(golden_mask_file, "%s", gold_buf_ch);
+	  				for(int word_cnt=0; word_cnt<(NF*OutWidth)/64; word_cnt++){	// there's no layers with channel count smaller than 64
+	  					for(int i=0; i<64/4; i++){
+	  						gold_buf_ch64[i] = gold_buf_ch[word_cnt*16+i];
+	  					}
+	  					gold_buf_long = strtoul(gold_buf_ch64, NULL, 16);
+	  					gold_buf = gold_buf << 64;
+	  					gold_buf = gold_buf | (*reinterpret_cast<ap_uint<64> *>(&gold_buf_long));
+	  				}
+
+	  				if(act_mask_buf!=gold_buf){
+	  					mask_comp_file << dec << "@(" << setw(2) << y << "," << setw(2) << x << ")";
+	  					mask_comp_file << hex << " golden: ";
+	  					if((NF*PE)>=64){
+	  						for(int i=0; i<(NF*PE)/64; i++){
+	  							mask_comp_file << (unsigned long long )(gold_buf >> 64*(NF*PE/64-i-1));
+	  						}
+	  						mask_comp_file << "," << endl << setw(17) << hex << "act: ";
+	  						for(int i=0; i<(NF*PE)/64; i++){
+	  							mask_comp_file << (unsigned long long )(act_mask_buf >> 64*(NF*PE/64-i-1));
+	  						}
+	  						mask_comp_file << endl;
+	  					}
+	  					else{
+	  						mask_comp_file << (unsigned long long )gold_buf << "," << setw(17);
+	  						mask_comp_file << hex << "act: "  << (unsigned long long )act_mask_buf << endl;
+	  					}
+	  				}
+	  			}
+	  			if(x==0)
+	  				cout << dec << y << "/" << OFMHeight << endl;
+	  		}
 #endif
+	  		// next folded neuron or image
+	  		// hwkim modified for dependency
+	  		//sf = 0;
 
-		  	// next folded neuron or image
-		  	// hwkim modified for dependency
-		  	//sf = 0;
-
-		  	if(++nf == NF) {
-		  		/* hwkim commented
-		  		 * 모든 kernel에 대해 연산 다 했으면
-		  		 */
-		  		nf   = 0;
-		  		tile = 0;
-		  	}
-		}
-
-
-
-		// hwkim modified for dependency - 191004 -----------------------------------------------------
-	}
+	  		if(++nf == NF) {
+	  			/* hwkim commented
+	  			 * 모든 kernel에 대해 연산 다 했으면
+	  			 */
+	  			nf   = 0;
+	  			tile = 0;
+	  		}
+		  }
+		  // hwkim modified for dependency - 191004 -----------------------------------------------------
+	  }
   }
 
 #ifdef ACTIVATION_LOG
