@@ -1802,7 +1802,8 @@ void nonzero_activation_weight_stream_gen(
 
 							sf_cnt[pe][way_cnt]+=WAY;
 
-							pack_en[pe][way_cnt] = 0;
+//							pack_en[pe][way_cnt] = 0;	// ** hwkim commented for OPTIMIZATION
+
 							z_mask[pe][way_cnt] = mask_delay_buf[pe][way_cnt];
 							input_pack_buf[pe][way_cnt] = input_delay_buf[pe][way_cnt];
 							w_pack_buf[pe][way_cnt] = w_delay_buf[pe][way_cnt];
@@ -1848,7 +1849,12 @@ void nonzero_activation_weight_stream_gen(
 #endif
 							pack_en[pe][way_cnt] = 1;
 						}
+						// ** hwkim added for OPTIMIZATION
+						else{
+							pack_en[pe][way_cnt] = 0;
+						}
 					}
+
 #if defined (ACTIVATION_LOG) & defined (DEBUG)
 					// hwkim added for debug
 					nonz_dbg_file << string(10, '*') << "pack_en[" << dec << (int)pe << "]: ";

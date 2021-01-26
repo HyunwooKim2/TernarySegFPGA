@@ -1133,7 +1133,11 @@ void DoCompute(
 					inter7_mask,
 					weights6,
 					wmasks6,	// hwkim added for ternary
-					threshs6, numReps, ap_resource_lut());
+					threshs6,
+	#ifdef SEP_SIM
+					nonzero_layer7_en,
+	#endif
+					numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 			else{
 				snapshot_file_name = snapshot_dir + "activation_7_log.txt";
@@ -1281,7 +1285,11 @@ void DoCompute(
 					inter9_mask,
 					weights8,
 					wmasks8,	// hwkim added for ternary
-					threshs8, numReps, ap_resource_lut());
+					threshs8,
+#ifdef SEP_SIM
+				nonzero_layer7_en,
+#endif
+					numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 			else{
 				snapshot_file_name = snapshot_dir + "activation_9_log.txt";
@@ -1453,6 +1461,10 @@ void DoCompute(
 	infer_category<(11*24), 64>(inter11, memOutStrm, numReps);
 	Stream2Mem_Batch<64, outBits/8>(memOutStrm, out, numReps);
 #endif
+
+	// hwkim added for synthesis
+	while(!inter11_mask.empty())
+		inter11_mask.read();
 
 }
 
