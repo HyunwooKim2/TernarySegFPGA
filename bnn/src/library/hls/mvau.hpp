@@ -2149,13 +2149,15 @@ void Matrix_Vector_Activate_Batch_Ternary_Masking(
 //				  );
 				  // hwkim modified for ternary
 				  accu[pe] = mac_masked<SIMD>(accu[pe], wgt, act, r, packed_mask);	// should be modified - N = WAY
+#ifdef ACTIVATION_LOG
 //				  cout << hex;
 //				  cout << "(" << x << "," << y << ") (" << kx << ", " << ky << ") " << (int)pe;
 //				  cout << " wm: " << wm[pe] << ", im: " << inElem_mask;
 //				  cout << ", pm: " << packed_mask;
 //				  cout << ", acc: " << accu[pe] << endl;
-#ifdef ACTIVATION_LOG
-				  accu_pm[pe] = mac<SIMD>(accu_pm[pe], wgt, act, r, 1);
+				  // hwkim modified for no zero skip ternary
+//				  accu_pm[pe] = mac<SIMD>(accu_pm[pe], wgt, act, r, 1);
+				  accu_pm[pe] = mac_masked_pm<SIMD>(accu_pm[pe], wgt, act, r, 1);
 #endif
 			  }
 		  }
@@ -2221,7 +2223,7 @@ void Matrix_Vector_Activate_Batch_Ternary_Masking(
 		  			conv_out_comp_file.precision(8);
 		  			conv_out_comp_file.setf(ios_base::showpoint);
 		  			conv_out_comp_file << "differ @ (y " << y << ",x " << x << ")";
-		  			conv_out_comp_file << "gold: " << golden_buf << ", accu[nf " << (int)nf << ",pe " << (int)pe << "]: " << accu[pe] << endl;
+		  			conv_out_comp_file << "gold: " << golden_buf << ", accu[nf " << (int)nf << ",pe " << (int)pe << "]: " << accu_pm[pe] << endl;
 		  		}
 #endif
 		  		// hwkim added for ternary
