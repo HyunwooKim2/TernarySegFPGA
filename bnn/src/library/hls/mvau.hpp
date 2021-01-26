@@ -1180,6 +1180,7 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 	  // hwkim added for ternary
 	  auto  outElem = TDstI().template operator()<TO>();
 	  TOM outMaskElem;
+	  ap_uint<WAY> mask;
 
 	  // hwkim modified for sf separation
 //	  ap_uint<PE> sf_sync_flag = 0;
@@ -1231,7 +1232,7 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 //						  mask = ~0x0;
 //					  else
 //						  mask = (~(ap_uint<WAY>)0x0) >> (WAY-(sf_num_buf[pe][way_cnt]%WAY));
-					  ap_uint<WAY> mask = ~packed_mask[pe*(SIMD/WAY)+way_cnt].read();
+					  mask = ~packed_mask[pe*(SIMD/WAY)+way_cnt].read();
 
 				  	  // hwkim added and modified for ternary & debug (inElem_pe and dummy_w can be removed)
 //					  auto const  act = TSrcI()(packed_input[pe].read());
@@ -1273,7 +1274,9 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 			  	  }
 			  }
 		  }
+		  // ** hwkim modified for OPTIMIZATION
 		  if(sf_max <= sf)
+//		  if(~mask)
 			  break;
 	  }
 
@@ -1537,24 +1540,34 @@ void nonzero_activation_weight_stream_gen(
 	TIM imaskElem;
 
 	TI	inputBuf[SF];
-#pragma HLS ARRAY_PARTITION variable=inputBuf complete dim=1
+//#pragma HLS ARRAY_PARTITION variable=inputBuf complete dim=1
 	TIM	imaskBuf[SF];
-#pragma HLS ARRAY_PARTITION variable=imaskBuf complete dim=1
+//#pragma HLS ARRAY_PARTITION variable=imaskBuf complete dim=1
 
 	ap_uint<WAY>	z_mask[PE][SIMD/WAY];
-#pragma HLS ARRAY_PARTITION variable=z_mask complete dim=0
+//#pragma HLS ARRAY_PARTITION variable=z_mask complete dim=0
+#pragma HLS ARRAY_PARTITION variable=z_mask complete dim=1
 	ap_uint<WAY>	mask_delay_buf[PE][SIMD/WAY];
-#pragma HLS ARRAY_PARTITION variable=mask_delay_buf complete dim=0
+//#pragma HLS ARRAY_PARTITION variable=mask_delay_buf complete dim=0
+#pragma HLS ARRAY_PARTITION variable=mask_delay_buf complete dim=1
 
 	ap_uint<SrcWidth*WAY>	input_pack_buf[PE][SIMD/WAY];
-#pragma HLS ARRAY_PARTITION variable=input_pack_buf complete dim=0
+//#pragma HLS ARRAY_PARTITION variable=input_pack_buf complete dim=0
 	ap_uint<SrcWidth*WAY>	input_delay_buf[PE][SIMD/WAY];
-#pragma HLS ARRAY_PARTITION variable=input_delay_buf complete dim=0
+//#pragma HLS ARRAY_PARTITION variable=input_delay_buf complete dim=0
+#pragma HLS ARRAY_PARTITION variable=input_delay_buf complete dim=1
 
 	ap_uint<WAY> w_pack_buf[PE][SIMD/WAY];
-#pragma HLS ARRAY_PARTITION variable=w_pack_buf complete dim=0
+//#pragma HLS ARRAY_PARTITION variable=w_pack_buf complete dim=0
 	ap_uint<WAY> w_delay_buf[PE][SIMD/WAY];
-#pragma HLS ARRAY_PARTITION variable=w_delay_buf complete dim=0
+//#pragma HLS ARRAY_PARTITION variable=w_delay_buf complete dim=0
+
+	FI	sf_cnt[PE][SIMD/WAY];
+//#pragma HLS ARRAY_PARTITION variable=sf_cnt complete dim=0
+
+//	ap_uint<PE>	pack_en = 0;
+	ap_uint<SIMD/WAY>	pack_en[PE];
+#pragma HLS ARRAY_PARTITION variable=pack_en complete dim=0
 
 	unsigned short x=0, y=0;
 	ap_uint<2> kx=0, ky=0;
@@ -1562,17 +1575,12 @@ void nonzero_activation_weight_stream_gen(
 	unsigned char sf   = 0;
 	unsigned char const sf_ch = SF/9;
 	unsigned char tile = 0;
-	FI	sf_cnt[PE][SIMD/WAY];
-#pragma HLS ARRAY_PARTITION variable=sf_cnt complete dim=0
 
 	// hwkim modified for dependency
 	//for(unsigned  i = 0; i < reps * TOTAL_FOLD; i++) {
 	for(unsigned  i = 0; i < reps * TOTAL_FOLD / SF; i++) {
 #pragma HLS LOOP_FLATTEN off
 		unsigned char sf_ch_cnt=0;
-
-//		ap_uint<PE>	pack_en = 0;
-		ap_uint<SIMD/WAY>	pack_en[PE];
 
 		if(nf==0){
 			tile = 0;
@@ -1850,11 +1858,9 @@ void nonzero_activation_weight_stream_gen(
 
 //			}
 
-				/* hwkim commented for OPTIMIZATION
+				/** hwkim commented for OPTIMIZATION
 				// hwkim moved for ternary
 				if(sf == (SF-1)) {
-//				for(unsigned char pe=0; pe<PE; pe++){
-//#pragma HLS UNROLL
 					// hwkim added for debug
 #if defined (ACTIVATION_LOG) & defined (DEBUG)
 					for(unsigned char way_cnt=0; way_cnt<(SIMD/WAY); way_cnt++){	// hwkim added for way
@@ -1949,10 +1955,12 @@ void nonzero_activation_weight_stream_gen(
 					}
 				}
 			}
+		}	// ** hwkim added for OPTIMIZATION - remove SF-1 from sf loop
 
-			/** hwkim modified for OPTIMIZATION
+//			/** hwkim modified for OPTIMIZATION
 			// hwkim moved for ternary
-			if(sf == (SF-1)) {
+//			if(sf == (SF-1)) {
+
 				for(unsigned char pe=0; pe<PE; pe++){
 #pragma HLS UNROLL
 					// hwkim added for debug
@@ -2029,17 +2037,12 @@ void nonzero_activation_weight_stream_gen(
 						// hwkim added for debug
 //						cout << "sf_cnt: " << dec << sf_cnt[pe] << endl;
 						nonz_dbg_file << dec << "sf_cnt[" << (int)pe << "][" << (int)way_cnt << "]: ";
-						nonz_dbg_file << sf_cnt[pe*(SIMD/WAY)+way_cnt] << endl;
+						nonz_dbg_file << (unsigned long)sf_cnt[pe][way_cnt] << endl;
 #endif
 					}
 				}
-
-				// ** hwkim modified for OPTIMIZATION
-//				if(++nf == NF) {
-//					nf   = 0;
-//				}
-			}*/
-		}
+//			}*/
+//		}	// **hwkim commented & moved up for OPTIMIZATION
 	}
 
 #if defined (ACTIVATION_LOG) & defined (DEBUG)
