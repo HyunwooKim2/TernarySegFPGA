@@ -152,6 +152,7 @@ void ConvLayer_Batch(
 //#pragma HLS STREAM variable=sf_num
   // hwkim modified for way
 	hls::stream<ap_uint<WAY*TSrcI::width>> packed_input[PE*(SIMD/WAY)];
+#pragma HLS ARRAY_PARTITION variable=packed_input complete dim=1	// ** hwkim added for OPTIMIZATION
 #pragma HLS STREAM variable=packed_input
 	hls::stream<ap_uint<WAY>> packed_weight[PE*(SIMD/WAY)];
 #pragma HLS STREAM variable=packed_weight
