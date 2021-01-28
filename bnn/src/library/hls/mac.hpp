@@ -201,7 +201,8 @@ T mac_masked_pm(T const &a, TC const &c, TD const &d, R const &r, ap_uint<N> mas
   T  res = a;
   for(unsigned  i = 0; i < N; i++) {
 #pragma HLS unroll
-	  res += mul(c[i], d[i], r)? 1 : -1;
+	  if(mask[i])
+		  res += mul(c[i], d[i], r)? 1 : -1;
   }
   return  res;
 }

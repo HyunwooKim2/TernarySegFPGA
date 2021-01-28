@@ -2131,6 +2131,31 @@ void Matrix_Vector_Activate_Batch_Ternary_Masking(
 //			  auto const  wgt_mask = TWeightI()(wm[pe]);
 //			  auto const  act_mask = TSrcI()(inElem_mask);
 			  auto const  packed_mask = ~(wm[pe] | inElem_mask);	//wgt_mask & act_mask;
+#ifdef ACTIVATION_LOG
+			  cout << dec;
+			  cout << "(" << y << "," << x << ") ";
+			  cout << "[" << ky << "," << kx << "] ";
+			  cout << "nf" << (int)nf;
+			  cout << " sf" << (int)sf;
+			  cout << " pe" << (int)pe;
+			  cout << " wgt: ";
+			  cout << hex;
+			  cout.width(10);
+			  cout << w[pe];
+			  cout << ", act: ";
+			  cout.width(10);
+			  cout << inElem;
+			  cout << ", wm: ";
+			  cout.width(10);
+			  cout << wm[pe];
+			  cout << ", im: ";
+			  cout.width(10);
+			  cout << inElem_mask;
+			  cout << ", pm: ";
+			  cout.width(10);
+			  cout << packed_mask;
+			  cout << endl;
+#endif
 
 			  // hwkim modified for padding
 			  //accu[pe] = mac<SIMD>(accu[pe], wgt, act, r);
@@ -2157,7 +2182,8 @@ void Matrix_Vector_Activate_Batch_Ternary_Masking(
 //				  cout << ", acc: " << accu[pe] << endl;
 				  // hwkim modified for no zero skip ternary
 //				  accu_pm[pe] = mac<SIMD>(accu_pm[pe], wgt, act, r, 1);
-				  accu_pm[pe] = mac_masked_pm<SIMD>(accu_pm[pe], wgt, act, r, 1);
+				  accu_pm[pe] = mac_masked_pm<SIMD>(accu_pm[pe], wgt, act, r, packed_mask);
+				  cout << dec << "accu_pm: " << accu_pm[pe] << endl;
 #endif
 			  }
 		  }
