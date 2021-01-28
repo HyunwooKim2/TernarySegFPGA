@@ -1553,6 +1553,7 @@ void nonzero_activation_weight_stream_gen(
 
 	ap_uint<SrcWidth*WAY>	input_pack_buf[PE][SIMD/WAY];
 //#pragma HLS ARRAY_PARTITION variable=input_pack_buf complete dim=0
+#pragma HLS ARRAY_PARTITION variable=input_pack_buf complete dim=1
 	ap_uint<SrcWidth*WAY>	input_delay_buf[PE][SIMD/WAY];
 //#pragma HLS ARRAY_PARTITION variable=input_delay_buf complete dim=0
 #pragma HLS ARRAY_PARTITION variable=input_delay_buf complete dim=1
@@ -1605,17 +1606,18 @@ void nonzero_activation_weight_stream_gen(
 //			pack_en[pe] = 0;
 		}
 
-		/** hwkim modified for OPTIMIZATION - sf/way loop integration
+//		/** hwkim modified for OPTIMIZATION - sf/way loop integration
 		for(sf=0; sf<SF; sf++){
 #pragma HLS PIPELINE II=1
 			// ** hwkim moved for OPTIMIZATION
-			for(unsigned char way_cnt=0; way_cnt<(SIMD/WAY); way_cnt++){
-			*/
-		sf = 0;
-		unsigned char way_cnt = 0;
-		for(int sf_way_cnt=0; sf_way_cnt<SF*(SIMD/WAY); sf_way_cnt++){
-#pragma HLS PIPELINE II=1
-#pragma HLS dependence variable=pack_en inter false
+//			for(unsigned char way_cnt=0; way_cnt<(SIMD/WAY); way_cnt++){	//*/
+//		sf = 0;
+//		unsigned char way_cnt = 0;
+//		for(int sf_way_cnt=0; sf_way_cnt<SF*(SIMD/WAY); sf_way_cnt++){
+//#pragma HLS PIPELINE II=1
+// ** hwkim added for OPTIMIZATION
+//#pragma HLS dependence variable=pack_en inter false
+//#pragma HLS dependence variable=input_pack_buf inter false
 
 			// ***hwkim: should be merged to nonzero skip scheme of ternary architecture
 				if(nf == 0) {
@@ -1679,9 +1681,9 @@ void nonzero_activation_weight_stream_gen(
 					nonz_dbg_file << endl;
 #endif
 
-					// ** hwkim commented & moved for OPTIMIZATION
-//					for(unsigned char way_cnt=0; way_cnt<(SIMD/WAY); way_cnt++){
-
+				// ** hwkim commented & moved for OPTIMIZATION
+				for(unsigned char way_cnt=0; way_cnt<(SIMD/WAY); way_cnt++){
+#pragma HLS UNROLL
 						// ** hwkim moved for OPTIMIZATION
 					for(unsigned char pe=0; pe<PE; pe++){
 #pragma HLS UNROLL
@@ -1962,14 +1964,14 @@ void nonzero_activation_weight_stream_gen(
 #endif
 					}
 				}*/
-//			}	// ** hwkim commented for OPTIMIZATION - sf/way loop integration
+			}	// ** hwkim commented for OPTIMIZATION - sf/way loop integration
 
 			tile++;
 
 			// ** hwkim added for OPTIMIZATION - sf/way loop integration
-			if(++way_cnt==(SIMD/WAY)){
-				way_cnt = 0;
-				sf++;
+//			if(++way_cnt==(SIMD/WAY)){
+//				way_cnt = 0;
+//				sf++;
 
 				if(++sf_ch_cnt==sf_ch){
 					sf_ch_cnt=0;
@@ -1995,11 +1997,6 @@ void nonzero_activation_weight_stream_gen(
 						}
 					}
 				}
-			}
-			// ** hwkim added for OPTIMIZATION - sf/way loop integration
-//			if(++way_cnt==(SIMD/WAY)){
-//				way_cnt = 0;
-//				sf++;
 //			}
 
 		}	// ** hwkim added for OPTIMIZATION - remove SF-1 from sf loop
@@ -2008,7 +2005,7 @@ void nonzero_activation_weight_stream_gen(
 			// hwkim moved for ternary
 //			if(sf == (SF-1)) {
 
-				for(unsigned char pe=0; pe<PE; pe++){
+				for(unsigned char pe=0; pe<PE; pe++){	// hwkim: should be modified - integrate pe/way_cnt loop
 #pragma HLS UNROLL
 					// hwkim added for debug
 #if defined (ACTIVATION_LOG) & defined (DEBUG)
