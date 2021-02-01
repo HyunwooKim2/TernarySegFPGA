@@ -1612,6 +1612,8 @@ void nonzero_activation_weight_stream_gen(
 			tile = 0;
 		}
 
+		ap_uint<1> init[PE*(SIMD/WAY)];
+
 		// ** hwkim modified for OPTIMIZATION
 //		for(unsigned char pe=0; pe<PE; pe++){
 //#pragma HLS UNROLL
@@ -1630,6 +1632,7 @@ void nonzero_activation_weight_stream_gen(
 			// ** hwkim added for OPTIMIZATION
 //				pack_en[pe*(SIMD/WAY)+way_cnt] = 0;
 			pack_en[pe_way_cnt] = 0;
+			init[pe_way_cnt] = 1;
 
 			// ** hwkim added for OPTIMIZATION
 			if(++way_cnt==(SIMD/WAY)){
@@ -1651,7 +1654,7 @@ void nonzero_activation_weight_stream_gen(
 //#pragma HLS dependence variable=pack_en inter false
 //#pragma HLS dependence variable=input_pack_buf inter false
 		// ** hwkim moved for OPTIMIZATION - last i/w/m push integration into sf loop
-		for(sf=0; sf<SF+1; sf++){
+		for(sf=0; sf<SF+1; sf++){	// 1st cycle - initialize buf, sf+2 cycle - rest i/w/m & sf push
 #pragma HLS PIPELINE II=1
 
 			if(sf<SF){	// ** hwkim added for OPTIMIZATION - last i/w/m push integration into sf loop
@@ -1685,6 +1688,10 @@ void nonzero_activation_weight_stream_gen(
 					imaskElem = imaskBuf[sf];
 				}
 			}
+			else{
+				inElem = ~0x0;
+				imaskElem = ~0x0;
+			}
 
 			// ** hwkim commented & moved for OPTIMIZATION
 //			for(unsigned char pe=0; pe<PE; pe++){
@@ -1695,37 +1702,152 @@ void nonzero_activation_weight_stream_gen(
 //					for(unsigned char pe=0; pe<PE; pe++){
 //#pragma HLS UNROLL
 
+#if defined(ACTIVATION_LOG) & defined(DEBUG)
+			cout << "(" << y << "," << x << ") ";
+			cout << "[" << ky << "," << kx << "] ";
+			cout << "nf: " << (int)nf << " sf: " << (int)sf;
+			cout << "-------------------------------------" << endl;
+#endif DEBUG
+
+			pe = 0;
+			way_cnt = 0;
 			for(unsigned short pe_way_cnt=0; pe_way_cnt<PE*(SIMD/WAY); pe_way_cnt++){
 #pragma HLS UNROLL
-				if(sf<SF){		// ** hwkim added for OPTIMIZATION - last i/w/m push integration into sf loop
+//				if(sf<=SF){		// ** hwkim added for OPTIMIZATION - last i/w/m push integration into sf loop
 
 					auto const &w = weights.weights(tile);
 					auto const &wm = wmasks.masks(tile);
 
 					// ***hwkim: should be merged to nonzero skip scheme of ternary architecture
-					if((x<Left && kx<Left)
-							||(y<Top && ky<Top)
-							||(x>(OFMDim-1-Right) && kx>(3-1-Right))
-							||(y>(OFMHeight-1-Bottom) && ky>(3-1-Bottom))){
+					if(	((x<Left && kx<Left)
+							|| (y < Top && ky < Top)
+							|| (x > (OFMDim-1-Right) && kx > (3-1-Right))
+							|| (y > (OFMHeight-1-Bottom) && ky > (3-1-Bottom)))
+							&& (sf<SF)){
 						;	// hwkim: skip
 					}
 					else{
-						// hwkim added for debug
-	#if defined (ACTIVATION_LOG) & defined (DEBUG)
-						nonz_dbg_file << string(100, '-') << endl;
-						nonz_dbg_file << dec;
-						nonz_dbg_file << "yx " << "(" << y << "," << x << ")" << ", ";
-						nonz_dbg_file << "kyx " << "(" << ky << "," << kx << ")" << ", ";
-						nonz_dbg_file << "nf: " << (int)nf << ", ";
-						nonz_dbg_file << "sf: " << (int)sf << ", ";
-						nonz_dbg_file << "pe: " << (int)pe << endl;
-						nonz_dbg_file << string(10, '*') << "new input to buffer" << endl;
-						nonz_dbg_file << hex;
-						nonz_dbg_file << "n_m: " << hex << (unsigned long)(wm[pe] | imaskBuf[sf]);
-						nonz_dbg_file << ",\tn_w: " << (unsigned long)w[pe];
-						nonz_dbg_file << ",\tn_i: " << (unsigned long)inputBuf[sf];
-						nonz_dbg_file << endl;
-	#endif
+						if(init[pe_way_cnt]){
+							z_mask[pe][way_cnt] = (wm[pe] | imaskElem) >> (way_cnt*WAY);
+							input_pack_buf[pe][way_cnt] = inElem >> (way_cnt*WAY*SrcWidth);
+							w_pack_buf[pe][way_cnt] = w[pe] >> (way_cnt*WAY);
+							init[pe_way_cnt] = 0;
+#if defined(ACTIVATION_LOG) & defined(DEBUG)
+							cout << "init buffering.............." << endl;
+#endif
+						}
+						else{
+//							if((sf < SF) | pack_en[pe_way_cnt]){	// pack_en for rest i/w/m push
+//								mask_delay_buf[pe][way_cnt] = (wm[pe] | imaskElem) >> (way_cnt*WAY);
+//								input_delay_buf[pe][way_cnt] = inElem >> (way_cnt*WAY*SrcWidth);
+//								w_delay_buf[pe][way_cnt] = w[pe] >> (way_cnt*WAY);
+//							}
+//							else{
+//								mask_delay_buf[pe][way_cnt] = ~0x0;
+//								input_delay_buf[pe][way_cnt] = ~0x0;
+//								w_delay_buf[pe][way_cnt] = ~0x0;
+//							}
+
+							if(pack_en[pe_way_cnt] && (z_mask[pe][way_cnt]==0)){	// bit packing했고, push했으면 새 것 가져옴. push 안 했으면 packing buf에서 계속 대기
+								z_mask[pe][way_cnt] = mask_delay_buf[pe][way_cnt];
+								input_pack_buf[pe][way_cnt] = input_delay_buf[pe][way_cnt];
+								w_pack_buf[pe][way_cnt] = w_delay_buf[pe][way_cnt];
+							}
+
+							if((z_mask[pe][way_cnt]==0) || ((sf==SF) && (~z_mask[pe][way_cnt]!=0))){	// SF+1 for rest i/w/m push
+								packed_input[pe_way_cnt].write(input_pack_buf[pe][way_cnt]);
+								packed_weight[pe_way_cnt].write(w_pack_buf[pe][way_cnt]);
+								packed_mask[pe_way_cnt].write(z_mask[pe][way_cnt]);
+#ifdef ACTIVATION_LOG
+								nonz_i_log_file[pe][way_cnt] << (unsigned long)input_pack_buf[pe][way_cnt] << endl;
+								nonz_w_log_file[pe][way_cnt] << (unsigned long)w_pack_buf[pe][way_cnt] << endl;
+#endif
+								sf_cnt[pe][way_cnt]+=WAY;
+
+//								if(pack_en[pe_way_cnt]){		// pack해서 바로 다 찬 경우
+//									z_mask[pe][way_cnt] = mask_delay_buf[pe][way_cnt];
+//									input_pack_buf[pe][way_cnt] = input_delay_buf[pe][way_cnt];
+//									w_pack_buf[pe][way_cnt] = w_delay_buf[pe][way_cnt];
+//									mask_delay_buf[pe][way_cnt] = (wm[pe] | imaskElem) >> (way_cnt*WAY);
+//									input_delay_buf[pe][way_cnt] = inElem >> (way_cnt*WAY*SrcWidth);
+//									w_delay_buf[pe][way_cnt] = w[pe] >> (way_cnt*WAY);
+//									pack_en[pe_way_cnt] = 1;
+//								}
+//								else{	// pack 안 한 경우
+									z_mask[pe][way_cnt] = (wm[pe] | imaskElem) >> (way_cnt*WAY);
+									input_pack_buf[pe][way_cnt] = inElem >> (way_cnt*WAY*SrcWidth);
+									w_pack_buf[pe][way_cnt] = w[pe] >> (way_cnt*WAY);
+									pack_en[pe_way_cnt] = 0;
+//								}
+#if defined(ACTIVATION_LOG) & defined(DEBUG)
+								cout << "push....................." << endl;
+#endif
+							}
+							else{
+								mask_delay_buf[pe][way_cnt] = (wm[pe] | imaskElem) >> (way_cnt*WAY);
+								input_delay_buf[pe][way_cnt] = inElem >> (way_cnt*WAY*SrcWidth);
+								w_delay_buf[pe][way_cnt] = w[pe] >> (way_cnt*WAY);
+
+								for(unsigned char prev_bit_cnt=0; prev_bit_cnt<WAY; prev_bit_cnt++){	// SIMD should be small enough to unroll
+									for(unsigned char next_bit_cnt=0; next_bit_cnt<WAY; next_bit_cnt++){
+#pragma HLS UNROLL
+										if(z_mask[pe][way_cnt][prev_bit_cnt]
+															   && (mask_delay_buf[pe][way_cnt][next_bit_cnt]==0)){
+											z_mask[pe][way_cnt][prev_bit_cnt] = 0;
+											mask_delay_buf[pe][way_cnt][next_bit_cnt] = 1;
+											input_pack_buf[pe][way_cnt](prev_bit_cnt*SrcWidth+(SrcWidth-1), prev_bit_cnt*SrcWidth)
+													= input_delay_buf[pe][way_cnt](next_bit_cnt*SrcWidth+(SrcWidth-1), next_bit_cnt*SrcWidth);
+											w_pack_buf[pe][way_cnt][prev_bit_cnt] = w_delay_buf[pe][way_cnt][next_bit_cnt];
+											break;
+										}
+									}
+								}
+								pack_en[pe_way_cnt] = 1;
+#if defined(ACTIVATION_LOG) & defined(DEBUG)
+								cout << "bit packing............." << endl;
+#endif
+								if(z_mask[pe][way_cnt]==0){
+									packed_input[pe_way_cnt].write(input_pack_buf[pe][way_cnt]);
+									packed_weight[pe_way_cnt].write(w_pack_buf[pe][way_cnt]);
+									packed_mask[pe_way_cnt].write(z_mask[pe][way_cnt]);
+#ifdef ACTIVATION_LOG
+									nonz_i_log_file[pe][way_cnt] << (unsigned long)input_pack_buf[pe][way_cnt] << endl;
+									nonz_w_log_file[pe][way_cnt] << (unsigned long)w_pack_buf[pe][way_cnt] << endl;
+#endif
+									sf_cnt[pe][way_cnt]+=WAY;
+#if defined(ACTIVATION_LOG) & defined(DEBUG)
+									cout << "push....................." << endl;
+#endif
+								}
+							}
+						}
+#if defined(ACTIVATION_LOG) & defined(DEBUG)
+						cout << dec << "***** pe: " << (int)pe << " way: " << (int)way_cnt << endl;
+						cout << hex;
+						cout << "m_buf: " << mask_delay_buf[pe][way_cnt];
+						cout << " i_buf: " << input_delay_buf[pe][way_cnt];
+						cout << " w_buf: " << w_delay_buf[pe][way_cnt] << endl;
+						cout << "m_pac: " << z_mask[pe][way_cnt];
+						cout << " i_pac: " << input_pack_buf[pe][way_cnt];
+						cout << " w_pac: " << w_pack_buf[pe][way_cnt] << endl;
+						cout << dec;
+						cout << "sf_cnt: " << sf_cnt[pe][way_cnt] << endl;
+#endif
+
+						if(sf==SF){
+							sf_num[pe_way_cnt].write(sf_cnt[pe][way_cnt]);
+#ifdef ACTIVATION_LOG
+							nonz_f_log_file[pe][way_cnt] << (unsigned long)sf_cnt[pe][way_cnt] << endl;
+#endif
+						}
+
+						if(++way_cnt==(SIMD/WAY)){
+							way_cnt=0;
+							pe++;
+						}
+					}
+			}
+/** hwkim commented for LATENCY OPTIMIZATION
 
 						// ** hwkim modified for OPTIMIZATION
 //						mask_delay_buf[pe][way_cnt] = wm[pe]((way_cnt+1)*WAY-1, way_cnt*WAY) | imaskBuf[sf]((way_cnt+1)*WAY-1, way_cnt*WAY);
@@ -1771,22 +1893,22 @@ void nonzero_activation_weight_stream_gen(
 //						if(pack_en[pe*(SIMD/WAY)+way_cnt]==1){
 						if(pack_en[pe_way_cnt]==1){
 
-							/* hwkim modified for critical path
-							// hwkim added for MUX method
-							for(unsigned char prev_bit_cnt=0; prev_bit_cnt<WAY; prev_bit_cnt++){	// SIMD should be small enough to unroll
-								if(z_mask[pe][way_cnt][prev_bit_cnt]){
-									for(unsigned char next_bit_cnt=0; next_bit_cnt<WAY; next_bit_cnt++){
-										if(mask_delay_buf[pe][way_cnt][next_bit_cnt]==0){
-											z_mask[pe][way_cnt][prev_bit_cnt] = 0;
-											mask_delay_buf[pe][way_cnt][next_bit_cnt] = 1;
-											input_pack_buf[pe][way_cnt](prev_bit_cnt*SrcWidth+(SrcWidth-1), prev_bit_cnt*SrcWidth)
-													= input_delay_buf[pe][way_cnt](next_bit_cnt*SrcWidth+(SrcWidth-1), next_bit_cnt*SrcWidth);
-											w_pack_buf[pe][way_cnt][prev_bit_cnt] = w_delay_buf[pe][way_cnt][next_bit_cnt];
-											break;
-										}
-									}
-								}
-							}*/
+//							/* hwkim modified for critical path
+//							// hwkim added for MUX method
+//							for(unsigned char prev_bit_cnt=0; prev_bit_cnt<WAY; prev_bit_cnt++){	// SIMD should be small enough to unroll
+//								if(z_mask[pe][way_cnt][prev_bit_cnt]){
+//									for(unsigned char next_bit_cnt=0; next_bit_cnt<WAY; next_bit_cnt++){
+//										if(mask_delay_buf[pe][way_cnt][next_bit_cnt]==0){
+//											z_mask[pe][way_cnt][prev_bit_cnt] = 0;
+//											mask_delay_buf[pe][way_cnt][next_bit_cnt] = 1;
+//											input_pack_buf[pe][way_cnt](prev_bit_cnt*SrcWidth+(SrcWidth-1), prev_bit_cnt*SrcWidth)
+//													= input_delay_buf[pe][way_cnt](next_bit_cnt*SrcWidth+(SrcWidth-1), next_bit_cnt*SrcWidth);
+//											w_pack_buf[pe][way_cnt][prev_bit_cnt] = w_delay_buf[pe][way_cnt][next_bit_cnt];
+//											break;
+//										}
+//									}
+//								}
+//							}
 							for(unsigned char prev_bit_cnt=0; prev_bit_cnt<WAY; prev_bit_cnt++){	// SIMD should be small enough to unroll
 								for(unsigned char next_bit_cnt=0; next_bit_cnt<WAY; next_bit_cnt++){
 #pragma HLS UNROLL
@@ -1802,41 +1924,41 @@ void nonzero_activation_weight_stream_gen(
 								}
 							}
 
-							/* hwkim added for shift method
-							for(unsigned char bit_cnt=0; bit_cnt<WAY; bit_cnt++){
-								ap_uint<WAY> pack_mask = z_mask[pe][way_cnt] & ~mask_delay_buf[pe][way_cnt];
-								ap_uint<SrcWidth*WAY> pack_i_mask = 0;
-								for(unsigned char i_way_cnt=0; i_way_cnt<WAY; i_way_cnt++){
-#pragma HLS UNROLL
-									if(pack_mask[i_way_cnt])
-										pack_i_mask(SrcWidth*i_way_cnt+SrcWidth-1, SrcWidth*i_way_cnt) = ap_uint<SrcWidth>(~0x0);
-								}
-
-								z_mask[pe][way_cnt] = z_mask[pe][way_cnt] & mask_delay_buf[pe][way_cnt];
-								input_pack_buf[pe][way_cnt] &= ~pack_i_mask;
-								input_pack_buf[pe][way_cnt] |= input_delay_buf[pe][way_cnt] & pack_i_mask;
-								w_pack_buf[pe][way_cnt] &= ~pack_mask;
-								w_pack_buf[pe][way_cnt] |= w_delay_buf[pe][way_cnt] & pack_mask;
-
-								mask_delay_buf[pe][way_cnt] = mask_delay_buf[pe][way_cnt] | pack_mask;
-
-#if defined (ACTIVATION_LOG) & defined (DEBUG)
-								if(bit_cnt > 0)
-									cout << "shifted!" << endl;
-								cout << "z_mask: " << hex << z_mask[pe][way_cnt] << endl;
-								cout << "pack_i_mask: " << hex << pack_i_mask << endl;
-								cout << "input_pack_buf: " << hex << input_pack_buf[pe][way_cnt] << endl;
-								cout << "w_pack_buf: " << hex << w_pack_buf[pe][way_cnt] << endl << endl;
-#endif
-
-								if(z_mask[pe][way_cnt]==0)
-									break;
-								else{	// circular shift (rotate) right
-									mask_delay_buf[pe][way_cnt] = (mask_delay_buf[pe][way_cnt] >> 1) | (mask_delay_buf[pe][way_cnt] << (WAY-1));
-									input_delay_buf[pe][way_cnt] = (input_delay_buf[pe][way_cnt] >> SrcWidth) | (input_delay_buf[pe][way_cnt] << (WAY-1)*SrcWidth);
-									w_delay_buf[pe][way_cnt] = (w_delay_buf[pe][way_cnt] >> 1) | (w_delay_buf[pe][way_cnt] << (WAY-1));
-								}
-							}*/
+//							/* hwkim added for shift method
+//							for(unsigned char bit_cnt=0; bit_cnt<WAY; bit_cnt++){
+//								ap_uint<WAY> pack_mask = z_mask[pe][way_cnt] & ~mask_delay_buf[pe][way_cnt];
+//								ap_uint<SrcWidth*WAY> pack_i_mask = 0;
+//								for(unsigned char i_way_cnt=0; i_way_cnt<WAY; i_way_cnt++){
+//#pragma HLS UNROLL
+//									if(pack_mask[i_way_cnt])
+//										pack_i_mask(SrcWidth*i_way_cnt+SrcWidth-1, SrcWidth*i_way_cnt) = ap_uint<SrcWidth>(~0x0);
+//								}
+//
+//								z_mask[pe][way_cnt] = z_mask[pe][way_cnt] & mask_delay_buf[pe][way_cnt];
+//								input_pack_buf[pe][way_cnt] &= ~pack_i_mask;
+//								input_pack_buf[pe][way_cnt] |= input_delay_buf[pe][way_cnt] & pack_i_mask;
+//								w_pack_buf[pe][way_cnt] &= ~pack_mask;
+//								w_pack_buf[pe][way_cnt] |= w_delay_buf[pe][way_cnt] & pack_mask;
+//
+//								mask_delay_buf[pe][way_cnt] = mask_delay_buf[pe][way_cnt] | pack_mask;
+//
+//#if defined (ACTIVATION_LOG) & defined (DEBUG)
+//								if(bit_cnt > 0)
+//									cout << "shifted!" << endl;
+//								cout << "z_mask: " << hex << z_mask[pe][way_cnt] << endl;
+//								cout << "pack_i_mask: " << hex << pack_i_mask << endl;
+//								cout << "input_pack_buf: " << hex << input_pack_buf[pe][way_cnt] << endl;
+//								cout << "w_pack_buf: " << hex << w_pack_buf[pe][way_cnt] << endl << endl;
+//#endif
+//
+//								if(z_mask[pe][way_cnt]==0)
+//									break;
+//								else{	// circular shift (rotate) right
+//									mask_delay_buf[pe][way_cnt] = (mask_delay_buf[pe][way_cnt] >> 1) | (mask_delay_buf[pe][way_cnt] << (WAY-1));
+//									input_delay_buf[pe][way_cnt] = (input_delay_buf[pe][way_cnt] >> SrcWidth) | (input_delay_buf[pe][way_cnt] << (WAY-1)*SrcWidth);
+//									w_delay_buf[pe][way_cnt] = (w_delay_buf[pe][way_cnt] >> 1) | (w_delay_buf[pe][way_cnt] << (WAY-1));
+//								}
+//							}
 						}
 						else{
 							z_mask[pe][way_cnt] = mask_delay_buf[pe][way_cnt];
@@ -1927,29 +2049,29 @@ void nonzero_activation_weight_stream_gen(
 							pack_en[pe_way_cnt] = 1;
 						}
 
-						/** hwkim modified for LATENCY OPTIMIZATION
-						if(z_mask[pe][way_cnt]!=0){
-							// hwkim added for debug
-#if defined (ACTIVATION_LOG) & defined (DEBUG)
-							if(pack_en[pe][way_cnt]==1){	// already attempted but still not full
-//								cout << "still not full" << endl;
-								if((~mask_delay_buf[pe][way_cnt])!=0){
-									cout << "error case" << endl;
-									throw 1;
-								}
-							}
-#endif
-							// ** hwkim modified for OPTIMIZATION
-//							pack_en[pe][way_cnt] = 1;
-//							pack_en[pe*(SIMD/WAY)+way_cnt] = 1;
-							pack_en[pe_way_cnt] = 1;
-						}
-						// ** hwkim added for OPTIMIZATION
-						else{
-//							pack_en[pe][way_cnt] = 0;
-//							pack_en[pe*(SIMD/WAY)+way_cnt] = 0;
-							pack_en[pe_way_cnt] = 0;
-						}*/
+//						/** hwkim modified for LATENCY OPTIMIZATION
+//						if(z_mask[pe][way_cnt]!=0){
+//							// hwkim added for debug
+//#if defined (ACTIVATION_LOG) & defined (DEBUG)
+//							if(pack_en[pe][way_cnt]==1){	// already attempted but still not full
+////								cout << "still not full" << endl;
+//								if((~mask_delay_buf[pe][way_cnt])!=0){
+//									cout << "error case" << endl;
+//									throw 1;
+//								}
+//							}
+//#endif
+//							// ** hwkim modified for OPTIMIZATION
+////							pack_en[pe][way_cnt] = 1;
+////							pack_en[pe*(SIMD/WAY)+way_cnt] = 1;
+//							pack_en[pe_way_cnt] = 1;
+//						}
+//						// ** hwkim added for OPTIMIZATION
+//						else{
+////							pack_en[pe][way_cnt] = 0;
+////							pack_en[pe*(SIMD/WAY)+way_cnt] = 0;
+//							pack_en[pe_way_cnt] = 0;
+//						}
 
 						// ** hwkim added for OPTIMIZATION
 						if(++way_cnt==(SIMD/WAY)){
@@ -2039,6 +2161,8 @@ void nonzero_activation_weight_stream_gen(
 				}
 			}
 
+		*/
+
 			if(sf<SF){
 				tile++;
 			// ** hwkim added for OPTIMIZATION - sf/way loop integration
@@ -2074,106 +2198,106 @@ void nonzero_activation_weight_stream_gen(
 			// hwkim moved for ternary
 //			if(sf == (SF-1)) {
 
-		/** hwkim commented for OPTIMIZATION - last i/w/m push integration into sf loop
-				// ** hwkim added for OPTIMIZATION
-//				for(unsigned char pe=0; pe<PE; pe++){	// hwkim: should be modified - integrate pe/way_cnt loop
+//		/** hwkim commented for OPTIMIZATION - last i/w/m push integration into sf loop
+//				// ** hwkim added for OPTIMIZATION
+////				for(unsigned char pe=0; pe<PE; pe++){	// hwkim: should be modified - integrate pe/way_cnt loop
+////#pragma HLS UNROLL
+////					for(unsigned char way_cnt=0; way_cnt<(SIMD/WAY); way_cnt++){	// hwkim added for way
+//		pe = 0;
+//		way_cnt = 0;
+//		for(unsigned short pe_way_cnt=0; pe_way_cnt<PE*(SIMD/WAY); pe_way_cnt++){
 //#pragma HLS UNROLL
+//
+//						// hwkim added for debug
+//#if defined (ACTIVATION_LOG) & defined (DEBUG)
 //					for(unsigned char way_cnt=0; way_cnt<(SIMD/WAY); way_cnt++){	// hwkim added for way
-		pe = 0;
-		way_cnt = 0;
-		for(unsigned short pe_way_cnt=0; pe_way_cnt<PE*(SIMD/WAY); pe_way_cnt++){
-#pragma HLS UNROLL
-
-						// hwkim added for debug
-#if defined (ACTIVATION_LOG) & defined (DEBUG)
-					for(unsigned char way_cnt=0; way_cnt<(SIMD/WAY); way_cnt++){	// hwkim added for way
-						mask_delay_buf[pe][way_cnt] = ~0;
-						input_delay_buf[pe][way_cnt] = 0;
-						w_delay_buf[pe][way_cnt] = 0;
-					}
-					nonz_dbg_file << string(100, '-') << endl;
-					nonz_dbg_file << string(10, '*') << "last SIMD pe: " << dec << (int)pe << endl;
-#endif
-						// hwkim modified for way
-//						if(pack_en[pe]==1 && (~z_mask[pe])!=0){
-						// ** hwkim modified for OPTIMIZATION
-//						if(pack_en[pe][way_cnt]==1 && (~z_mask[pe][way_cnt])!=0){
-//						if(pack_en[pe*(SIMD/WAY)+way_cnt]==1 && (~z_mask[pe][way_cnt])!=0){
-						if(pack_en[pe_way_cnt]==1 && (~z_mask[pe][way_cnt])!=0){
-
-							// hwkim commented for mask
-//							unsigned char next_bit_cnt=0;
-							for(unsigned char prev_bit_cnt=0; prev_bit_cnt<WAY; prev_bit_cnt++){
-								if(z_mask[pe][way_cnt][prev_bit_cnt]==0){
-//									mask_delay_buf[pe][way_cnt][next_bit_cnt] = 0;
-//									input_delay_buf[pe][way_cnt](next_bit_cnt*SrcWidth+(SrcWidth-1), next_bit_cnt*SrcWidth)
-//											= input_pack_buf[pe][way_cnt](prev_bit_cnt*SrcWidth+(SrcWidth-1), prev_bit_cnt*SrcWidth);
-//									w_delay_buf[pe][way_cnt][next_bit_cnt] = w_pack_buf[pe][way_cnt][prev_bit_cnt];
-//									next_bit_cnt++;
-									sf_cnt[pe][way_cnt]++;
-								}
-							}
-
-							// hwkim modified for mask
-//							packed_input[pe*(SIMD/WAY)+way_cnt].write(input_delay_buf[pe][way_cnt]);
-//							packed_weight[pe*(SIMD/WAY)+way_cnt].write(w_delay_buf[pe][way_cnt]);
-							// ** hwkim modified for OPTIMIZATION
-//							packed_input[pe*(SIMD/WAY)+way_cnt].write(input_pack_buf[pe][way_cnt]);
-//							packed_weight[pe*(SIMD/WAY)+way_cnt].write(w_pack_buf[pe][way_cnt]);
-//							packed_mask[pe*(SIMD/WAY)+way_cnt].write(z_mask[pe][way_cnt]);
-							packed_input[pe_way_cnt].write(input_pack_buf[pe][way_cnt]);
-							packed_weight[pe_way_cnt].write(w_pack_buf[pe][way_cnt]);
-							packed_mask[pe_way_cnt].write(z_mask[pe][way_cnt]);
-#ifdef ACTIVATION_LOG
-							nonz_i_log_file[pe][way_cnt] << (unsigned long)input_delay_buf[pe][way_cnt] << endl;
-							nonz_w_log_file[pe][way_cnt] << (unsigned long)w_delay_buf[pe][way_cnt] << endl;
-#endif
-
-#if defined (ACTIVATION_LOG) & defined (DEBUG)
-							// hwkim added for debug
-							nonz_dbg_file << string(10, '*') << "way: " << (int)way_cnt << endl;
-							nonz_dbg_file << hex;
-							nonz_dbg_file << "mbuf: ";
-							for(int way_cnt=(SIMD/WAY-1); way_cnt>=0; way_cnt--)
-								nonz_dbg_file << (unsigned long)mask_delay_buf[pe][way_cnt] << " ";
-							nonz_dbg_file << ",\twbuf:  ";
-							for(int way_cnt=(SIMD/WAY-1); way_cnt>=0; way_cnt--)
-								nonz_dbg_file << (unsigned long)w_delay_buf[pe][way_cnt] << " ";
-							nonz_dbg_file << ",\tinbuf:  ";
-							for(int way_cnt=(SIMD/WAY-1); way_cnt>=0; way_cnt--)
-								nonz_dbg_file << (unsigned long)input_delay_buf[pe][way_cnt] << " ";
-							nonz_dbg_file << endl;
-							nonz_dbg_file << "zm:   ";
-							for(int way_cnt=(SIMD/WAY-1); way_cnt>=0; way_cnt--)
-								nonz_dbg_file << (unsigned long)z_mask[pe][way_cnt] << " ";
-							nonz_dbg_file << ",\twpack: ";
-							for(int way_cnt=(SIMD/WAY-1); way_cnt>=0; way_cnt--)
-								nonz_dbg_file << (unsigned long)w_pack_buf[pe][way_cnt] << " ";
-							nonz_dbg_file << ",\tinpack: ";
-							for(int way_cnt=(SIMD/WAY-1); way_cnt>=0; way_cnt--)
-								nonz_dbg_file << (unsigned long)input_pack_buf[pe][way_cnt] << " ";
-							nonz_dbg_file << endl;
-#endif
-						}
-						// ** hwkim modified for OPTIMIZATION
-//						sf_num[pe*(SIMD/WAY)+way_cnt].write(sf_cnt[pe][way_cnt]);
-						sf_num[pe_way_cnt].write(sf_cnt[pe][way_cnt]);
-#ifdef ACTIVATION_LOG
-						nonz_f_log_file[pe][way_cnt] << (unsigned long)sf_cnt[pe][way_cnt] << endl;
-#endif
-#if defined (ACTIVATION_LOG) & defined (DEBUG)
-						// hwkim added for debug
-//						cout << "sf_cnt: " << dec << sf_cnt[pe] << endl;
-						nonz_dbg_file << dec << "sf_cnt[" << (int)pe << "][" << (int)way_cnt << "]: ";
-						nonz_dbg_file << (unsigned long)sf_cnt[pe][way_cnt] << endl;
-#endif
-//					}	// **hwkim commented for OPTIMIZATION - pe/way loop integration
-						// ** hwkim added for OPTIMIZATION
-						if(++way_cnt==(SIMD/WAY)){
-							way_cnt=0;
-							pe++;
-						}
-				}*/
+//						mask_delay_buf[pe][way_cnt] = ~0;
+//						input_delay_buf[pe][way_cnt] = 0;
+//						w_delay_buf[pe][way_cnt] = 0;
+//					}
+//					nonz_dbg_file << string(100, '-') << endl;
+//					nonz_dbg_file << string(10, '*') << "last SIMD pe: " << dec << (int)pe << endl;
+//#endif
+//						// hwkim modified for way
+////						if(pack_en[pe]==1 && (~z_mask[pe])!=0){
+//						// ** hwkim modified for OPTIMIZATION
+////						if(pack_en[pe][way_cnt]==1 && (~z_mask[pe][way_cnt])!=0){
+////						if(pack_en[pe*(SIMD/WAY)+way_cnt]==1 && (~z_mask[pe][way_cnt])!=0){
+//						if(pack_en[pe_way_cnt]==1 && (~z_mask[pe][way_cnt])!=0){
+//
+//							// hwkim commented for mask
+////							unsigned char next_bit_cnt=0;
+//							for(unsigned char prev_bit_cnt=0; prev_bit_cnt<WAY; prev_bit_cnt++){
+//								if(z_mask[pe][way_cnt][prev_bit_cnt]==0){
+////									mask_delay_buf[pe][way_cnt][next_bit_cnt] = 0;
+////									input_delay_buf[pe][way_cnt](next_bit_cnt*SrcWidth+(SrcWidth-1), next_bit_cnt*SrcWidth)
+////											= input_pack_buf[pe][way_cnt](prev_bit_cnt*SrcWidth+(SrcWidth-1), prev_bit_cnt*SrcWidth);
+////									w_delay_buf[pe][way_cnt][next_bit_cnt] = w_pack_buf[pe][way_cnt][prev_bit_cnt];
+////									next_bit_cnt++;
+//									sf_cnt[pe][way_cnt]++;
+//								}
+//							}
+//
+//							// hwkim modified for mask
+////							packed_input[pe*(SIMD/WAY)+way_cnt].write(input_delay_buf[pe][way_cnt]);
+////							packed_weight[pe*(SIMD/WAY)+way_cnt].write(w_delay_buf[pe][way_cnt]);
+//							// ** hwkim modified for OPTIMIZATION
+////							packed_input[pe*(SIMD/WAY)+way_cnt].write(input_pack_buf[pe][way_cnt]);
+////							packed_weight[pe*(SIMD/WAY)+way_cnt].write(w_pack_buf[pe][way_cnt]);
+////							packed_mask[pe*(SIMD/WAY)+way_cnt].write(z_mask[pe][way_cnt]);
+//							packed_input[pe_way_cnt].write(input_pack_buf[pe][way_cnt]);
+//							packed_weight[pe_way_cnt].write(w_pack_buf[pe][way_cnt]);
+//							packed_mask[pe_way_cnt].write(z_mask[pe][way_cnt]);
+//#ifdef ACTIVATION_LOG
+//							nonz_i_log_file[pe][way_cnt] << (unsigned long)input_delay_buf[pe][way_cnt] << endl;
+//							nonz_w_log_file[pe][way_cnt] << (unsigned long)w_delay_buf[pe][way_cnt] << endl;
+//#endif
+//
+//#if defined (ACTIVATION_LOG) & defined (DEBUG)
+//							// hwkim added for debug
+//							nonz_dbg_file << string(10, '*') << "way: " << (int)way_cnt << endl;
+//							nonz_dbg_file << hex;
+//							nonz_dbg_file << "mbuf: ";
+//							for(int way_cnt=(SIMD/WAY-1); way_cnt>=0; way_cnt--)
+//								nonz_dbg_file << (unsigned long)mask_delay_buf[pe][way_cnt] << " ";
+//							nonz_dbg_file << ",\twbuf:  ";
+//							for(int way_cnt=(SIMD/WAY-1); way_cnt>=0; way_cnt--)
+//								nonz_dbg_file << (unsigned long)w_delay_buf[pe][way_cnt] << " ";
+//							nonz_dbg_file << ",\tinbuf:  ";
+//							for(int way_cnt=(SIMD/WAY-1); way_cnt>=0; way_cnt--)
+//								nonz_dbg_file << (unsigned long)input_delay_buf[pe][way_cnt] << " ";
+//							nonz_dbg_file << endl;
+//							nonz_dbg_file << "zm:   ";
+//							for(int way_cnt=(SIMD/WAY-1); way_cnt>=0; way_cnt--)
+//								nonz_dbg_file << (unsigned long)z_mask[pe][way_cnt] << " ";
+//							nonz_dbg_file << ",\twpack: ";
+//							for(int way_cnt=(SIMD/WAY-1); way_cnt>=0; way_cnt--)
+//								nonz_dbg_file << (unsigned long)w_pack_buf[pe][way_cnt] << " ";
+//							nonz_dbg_file << ",\tinpack: ";
+//							for(int way_cnt=(SIMD/WAY-1); way_cnt>=0; way_cnt--)
+//								nonz_dbg_file << (unsigned long)input_pack_buf[pe][way_cnt] << " ";
+//							nonz_dbg_file << endl;
+//#endif
+//						}
+//						// ** hwkim modified for OPTIMIZATION
+////						sf_num[pe*(SIMD/WAY)+way_cnt].write(sf_cnt[pe][way_cnt]);
+//						sf_num[pe_way_cnt].write(sf_cnt[pe][way_cnt]);
+//#ifdef ACTIVATION_LOG
+//						nonz_f_log_file[pe][way_cnt] << (unsigned long)sf_cnt[pe][way_cnt] << endl;
+//#endif
+//#if defined (ACTIVATION_LOG) & defined (DEBUG)
+//						// hwkim added for debug
+////						cout << "sf_cnt: " << dec << sf_cnt[pe] << endl;
+//						nonz_dbg_file << dec << "sf_cnt[" << (int)pe << "][" << (int)way_cnt << "]: ";
+//						nonz_dbg_file << (unsigned long)sf_cnt[pe][way_cnt] << endl;
+//#endif
+////					}	// **hwkim commented for OPTIMIZATION - pe/way loop integration
+//						// ** hwkim added for OPTIMIZATION
+//						if(++way_cnt==(SIMD/WAY)){
+//							way_cnt=0;
+//							pe++;
+//						}
+//				}*/
 //			}*/
 //		}	// **hwkim commented & moved up for OPTIMIZATION
 	}
