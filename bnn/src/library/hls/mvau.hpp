@@ -1639,7 +1639,7 @@ void nonzero_activation_weight_stream_gen(
 		unsigned char pe=0;
 		unsigned char way_cnt=0;
 		for(unsigned short pe_way_cnt=0; pe_way_cnt<PE*(SIMD/WAY); pe_way_cnt++){
-#pragma HSL UNROLL
+#pragma HLS UNROLL
 			sf_cnt[pe][way_cnt] = 0;
 			mask_delay_buf[pe][way_cnt] = 0;
 			input_delay_buf[pe][way_cnt] = 0;
@@ -1732,7 +1732,7 @@ void nonzero_activation_weight_stream_gen(
 			cout << "[" << ky << "," << kx << "] ";
 			cout << "nf: " << (int)nf << " sf: " << (int)sf;
 			cout << "-------------------------------------" << endl;
-#endif DEBUG
+#endif
 
 			pe = 0;
 			way_cnt = 0;
