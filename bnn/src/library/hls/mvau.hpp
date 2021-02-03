@@ -1765,9 +1765,10 @@ void nonzero_activation_weight_stream_gen(
 //						z_mask[pe][way_cnt] = mask_delay_buf[pe][way_cnt];
 //						input_pack_buf[pe][way_cnt] = input_delay_buf[pe][way_cnt];
 //						w_pack_buf[pe][way_cnt] = w_delay_buf[pe][way_cnt];
-						mask_pack_pong[pe][way_cnt] = mask_delay_buf[pe][way_cnt];
-						input_pack_pong[pe][way_cnt] = input_delay_buf[pe][way_cnt];
-						w_pack_pong[pe][way_cnt] = w_delay_buf[pe][way_cnt];
+						// ** hwkim commented for gather
+//						mask_pack_pong[pe][way_cnt] = mask_delay_buf[pe][way_cnt];
+//						input_pack_pong[pe][way_cnt] = input_delay_buf[pe][way_cnt];
+//						w_pack_pong[pe][way_cnt] = w_delay_buf[pe][way_cnt];
 						mask_pack_ping[pe][way_cnt] = mask_delay_buf[pe][way_cnt];
 						input_pack_ping[pe][way_cnt] = input_delay_buf[pe][way_cnt];
 						w_pack_ping[pe][way_cnt] = w_delay_buf[pe][way_cnt];
@@ -1792,38 +1793,40 @@ void nonzero_activation_weight_stream_gen(
 						// ** hwkim modified for pp
 //							if((z_mask[pe][way_cnt]==0) || ((sf==SF) && (~z_mask[pe][way_cnt]!=0)))	// SF for rest i/w/m push. pack_en은 위 if에서 고려함 이미.{
 //							if((z_mask[pe][way_cnt]==0) || ((sf==SF+1) && (~z_mask[pe][way_cnt]!=0))){
-						if(pingpong[pe_way_cnt]
-								&& ((mask_pack_pong[pe][way_cnt]==0) || ((sf==SF+1) && (~mask_pack_pong[pe][way_cnt]!=0)))){
-
-							// ** hwkim modified for pp
-//							packed_input[pe_way_cnt].write(input_pack_buf[pe][way_cnt]);
-//							packed_weight[pe_way_cnt].write(w_pack_buf[pe][way_cnt]);
-//							packed_mask[pe_way_cnt].write(z_mask[pe][way_cnt]);
+						// ** hwkim commented for gather
+//						if(pingpong[pe_way_cnt]
+//								&& ((mask_pack_pong[pe][way_cnt]==0) || ((sf==SF+1) && (~mask_pack_pong[pe][way_cnt]!=0)))){
+//
+//							// ** hwkim modified for pp
+////							packed_input[pe_way_cnt].write(input_pack_buf[pe][way_cnt]);
+////							packed_weight[pe_way_cnt].write(w_pack_buf[pe][way_cnt]);
+////							packed_mask[pe_way_cnt].write(z_mask[pe][way_cnt]);
+////#ifdef ACTIVATION_LOG
+////								nonz_i_log_file[pe][way_cnt] << (unsigned long)input_pack_buf[pe][way_cnt] << endl;
+////								nonz_w_log_file[pe][way_cnt] << (unsigned long)w_pack_buf[pe][way_cnt] << endl;
+////#endif
+//							packed_input[pe_way_cnt].write(input_pack_pong[pe][way_cnt]);
+//							packed_weight[pe_way_cnt].write(w_pack_pong[pe][way_cnt]);
+//							packed_mask[pe_way_cnt].write(mask_pack_pong[pe][way_cnt]);
 //#ifdef ACTIVATION_LOG
-//								nonz_i_log_file[pe][way_cnt] << (unsigned long)input_pack_buf[pe][way_cnt] << endl;
-//								nonz_w_log_file[pe][way_cnt] << (unsigned long)w_pack_buf[pe][way_cnt] << endl;
+//							nonz_i_log_file[pe][way_cnt] << (unsigned long)input_pack_pong[pe][way_cnt] << endl;
+//							nonz_w_log_file[pe][way_cnt] << (unsigned long)w_pack_pong[pe][way_cnt] << endl;
 //#endif
-							packed_input[pe_way_cnt].write(input_pack_pong[pe][way_cnt]);
-							packed_weight[pe_way_cnt].write(w_pack_pong[pe][way_cnt]);
-							packed_mask[pe_way_cnt].write(mask_pack_pong[pe][way_cnt]);
-#ifdef ACTIVATION_LOG
-							nonz_i_log_file[pe][way_cnt] << (unsigned long)input_pack_pong[pe][way_cnt] << endl;
-							nonz_w_log_file[pe][way_cnt] << (unsigned long)w_pack_pong[pe][way_cnt] << endl;
-#endif
-#if defined(ACTIVATION_LOG) & defined(DEBUG)
-							cout << "push pong................." << hex << input_pack_pong[pe][way_cnt] << endl;
-#endif
-							sf_cnt[pe][way_cnt]+=WAY;
-							// ** hwkim modified for pp
-//							z_mask[pe][way_cnt] = mask_delay_buf[pe][way_cnt];
-//							input_pack_buf[pe][way_cnt] = input_delay_buf[pe][way_cnt];
-//							w_pack_buf[pe][way_cnt] = w_delay_buf[pe][way_cnt];
-							mask_pack_pong[pe][way_cnt] = mask_delay_buf[pe][way_cnt];
-							input_pack_pong[pe][way_cnt] = input_delay_buf[pe][way_cnt];
-							w_pack_pong[pe][way_cnt] = w_delay_buf[pe][way_cnt];
-						}
-						else if(((~pingpong[pe_way_cnt])
-								&& ((mask_pack_ping[pe][way_cnt]==0) || ((sf==SF+1) && (~mask_pack_ping[pe][way_cnt]!=0))))){
+//#if defined(ACTIVATION_LOG) & defined(DEBUG)
+//							cout << "push pong................." << hex << input_pack_pong[pe][way_cnt] << endl;
+//#endif
+//							sf_cnt[pe][way_cnt]+=WAY;
+//							// ** hwkim modified for pp
+////							z_mask[pe][way_cnt] = mask_delay_buf[pe][way_cnt];
+////							input_pack_buf[pe][way_cnt] = input_delay_buf[pe][way_cnt];
+////							w_pack_buf[pe][way_cnt] = w_delay_buf[pe][way_cnt];
+//							mask_pack_pong[pe][way_cnt] = mask_delay_buf[pe][way_cnt];
+//							input_pack_pong[pe][way_cnt] = input_delay_buf[pe][way_cnt];
+//							w_pack_pong[pe][way_cnt] = w_delay_buf[pe][way_cnt];
+//						}
+//						else if(((~pingpong[pe_way_cnt])
+//								&& ((mask_pack_ping[pe][way_cnt]==0) || ((sf==SF+1) && (~mask_pack_ping[pe][way_cnt]!=0))))){
+						if((mask_pack_ping[pe][way_cnt]==0) || ((sf==SF+1) && (~mask_pack_ping[pe][way_cnt]!=0))){
 							packed_input[pe_way_cnt].write(input_pack_ping[pe][way_cnt]);
 							packed_weight[pe_way_cnt].write(w_pack_ping[pe][way_cnt]);
 							packed_mask[pe_way_cnt].write(mask_pack_ping[pe][way_cnt]);
@@ -1842,11 +1845,35 @@ void nonzero_activation_weight_stream_gen(
 						}
 						else{
 							unsigned char next_bit_start = 0;
+							ap_uint<WAY> new_mask = 0;	// ** hwkim added for gather
 							for(unsigned char prev_bit_cnt=0; prev_bit_cnt<WAY; prev_bit_cnt++){
 								for(unsigned char next_bit_cnt=0; next_bit_cnt<WAY; next_bit_cnt++){
 #pragma HLS UNROLL
-									if(next_bit_cnt < next_bit_start)
-										continue;
+//									if(next_bit_cnt < next_bit_start)
+//										continue;
+									// ** hwkim added for gather
+									if(mask_pack_ping[pe][way_cnt][prev_bit_cnt]
+										   && (mask_delay_buf[pe][way_cnt][next_bit_cnt]==0)
+										   && (next_bit_cnt >= next_bit_start)){
+
+//										mask_pack_ping[pe][way_cnt][next_bit_cnt] = 1;	// next input
+										new_mask[next_bit_cnt] = 1;
+
+										mask_pack_pong[pe][way_cnt][prev_bit_cnt] = 0;
+										input_pack_pong[pe][way_cnt](prev_bit_cnt*SrcWidth+(SrcWidth-1), prev_bit_cnt*SrcWidth)
+											= input_delay_buf[pe][way_cnt](next_bit_cnt*SrcWidth+(SrcWidth-1), next_bit_cnt*SrcWidth);
+										w_pack_pong[pe][way_cnt][prev_bit_cnt] = w_delay_buf[pe][way_cnt][next_bit_cnt];
+
+										next_bit_start = next_bit_cnt+1;
+										break;
+									}
+									else{
+//										mask_pack_ping[pe][way_cnt][prev_bit_cnt] = mask_delay_buf[pe][way_cnt][prev_bit_cnt];	// next input
+										mask_pack_pong[pe][way_cnt][prev_bit_cnt] = mask_pack_ping[pe][way_cnt][prev_bit_cnt];	// current input
+										input_pack_pong[pe][way_cnt](prev_bit_cnt*SrcWidth+(SrcWidth-1), prev_bit_cnt*SrcWidth)
+											= input_pack_ping[pe][way_cnt](prev_bit_cnt*SrcWidth+(SrcWidth-1), prev_bit_cnt*SrcWidth);
+										w_pack_pong[pe][way_cnt][prev_bit_cnt] = w_pack_ping[pe][way_cnt][prev_bit_cnt];
+									}
 
 									// ** hwkim modified for pp
 //										if(z_mask[pe][way_cnt][prev_bit_cnt]
@@ -1856,36 +1883,38 @@ void nonzero_activation_weight_stream_gen(
 //											input_pack_buf[pe][way_cnt](prev_bit_cnt*SrcWidth+(SrcWidth-1), prev_bit_cnt*SrcWidth)
 //												= input_delay_buf[pe][way_cnt](next_bit_cnt*SrcWidth+(SrcWidth-1), next_bit_cnt*SrcWidth);
 //											w_pack_buf[pe][way_cnt][prev_bit_cnt] = w_delay_buf[pe][way_cnt][next_bit_cnt];
-									if(pingpong[pe_way_cnt]
-									   && mask_pack_pong[pe][way_cnt][prev_bit_cnt]
-									   && (mask_delay_buf[pe][way_cnt][next_bit_cnt]==0)){
-										mask_pack_pong[pe][way_cnt][prev_bit_cnt] = 0;
-										mask_pack_ping[pe][way_cnt][next_bit_cnt] = 1;
-										input_pack_pong[pe][way_cnt](prev_bit_cnt*SrcWidth+(SrcWidth-1), prev_bit_cnt*SrcWidth)
-											= input_delay_buf[pe][way_cnt](next_bit_cnt*SrcWidth+(SrcWidth-1), next_bit_cnt*SrcWidth);
-										w_pack_pong[pe][way_cnt][prev_bit_cnt] = w_delay_buf[pe][way_cnt][next_bit_cnt];
-										next_bit_start = next_bit_cnt+1;
-										break;
-									}
-									else if(~pingpong[pe_way_cnt]
-										&& mask_pack_ping[pe][way_cnt][prev_bit_cnt]
-										&& (mask_delay_buf[pe][way_cnt][next_bit_cnt]==0)){
-										mask_pack_ping[pe][way_cnt][prev_bit_cnt] = 0;
-										mask_pack_pong[pe][way_cnt][next_bit_cnt] = 1;
-										input_pack_ping[pe][way_cnt](prev_bit_cnt*SrcWidth+(SrcWidth-1), prev_bit_cnt*SrcWidth)
-											= input_delay_buf[pe][way_cnt](next_bit_cnt*SrcWidth+(SrcWidth-1), next_bit_cnt*SrcWidth);
-										w_pack_ping[pe][way_cnt][prev_bit_cnt] = w_delay_buf[pe][way_cnt][next_bit_cnt];
-										next_bit_start = next_bit_cnt+1;
-										break;
-									}
-									else if(pingpong[pe_way_cnt]){
-										mask_pack_ping[pe][way_cnt][next_bit_cnt] = mask_delay_buf[pe][way_cnt][next_bit_cnt];
-									}
-									else if(~pingpong[pe_way_cnt]){
-										mask_pack_pong[pe][way_cnt][next_bit_cnt] = mask_delay_buf[pe][way_cnt][next_bit_cnt];
-									}
+									// ** hwkim commented for gather
+//									if(pingpong[pe_way_cnt]
+//									   && mask_pack_pong[pe][way_cnt][prev_bit_cnt]
+//									   && (mask_delay_buf[pe][way_cnt][next_bit_cnt]==0)){
+//										mask_pack_pong[pe][way_cnt][prev_bit_cnt] = 0;
+//										mask_pack_ping[pe][way_cnt][next_bit_cnt] = 1;
+//										input_pack_pong[pe][way_cnt](prev_bit_cnt*SrcWidth+(SrcWidth-1), prev_bit_cnt*SrcWidth)
+//											= input_delay_buf[pe][way_cnt](next_bit_cnt*SrcWidth+(SrcWidth-1), next_bit_cnt*SrcWidth);
+//										w_pack_pong[pe][way_cnt][prev_bit_cnt] = w_delay_buf[pe][way_cnt][next_bit_cnt];
+//										next_bit_start = next_bit_cnt+1;
+//										break;
+//									}
+//									else if(~pingpong[pe_way_cnt]
+//										&& mask_pack_ping[pe][way_cnt][prev_bit_cnt]
+//										&& (mask_delay_buf[pe][way_cnt][next_bit_cnt]==0)){
+//										mask_pack_ping[pe][way_cnt][prev_bit_cnt] = 0;
+//										mask_pack_pong[pe][way_cnt][next_bit_cnt] = 1;
+//										input_pack_ping[pe][way_cnt](prev_bit_cnt*SrcWidth+(SrcWidth-1), prev_bit_cnt*SrcWidth)
+//											= input_delay_buf[pe][way_cnt](next_bit_cnt*SrcWidth+(SrcWidth-1), next_bit_cnt*SrcWidth);
+//										w_pack_ping[pe][way_cnt][prev_bit_cnt] = w_delay_buf[pe][way_cnt][next_bit_cnt];
+//										next_bit_start = next_bit_cnt+1;
+//										break;
+//									}
+//									else if(pingpong[pe_way_cnt]){
+//										mask_pack_ping[pe][way_cnt][next_bit_cnt] = mask_delay_buf[pe][way_cnt][next_bit_cnt];
+//									}
+//									else if(~pingpong[pe_way_cnt]){
+//										mask_pack_pong[pe][way_cnt][next_bit_cnt] = mask_delay_buf[pe][way_cnt][next_bit_cnt];
+//									}
 								}
 							}
+
 #if defined(ACTIVATION_LOG) & defined(DEBUG)
 							cout << "bit packing............." << endl;
 #endif
@@ -1894,7 +1923,9 @@ void nonzero_activation_weight_stream_gen(
 //									packed_input[pe_way_cnt].write(input_pack_buf[pe][way_cnt]);
 //									packed_weight[pe_way_cnt].write(w_pack_buf[pe][way_cnt]);
 //									packed_mask[pe_way_cnt].write(z_mask[pe][way_cnt]);
-							if(pingpong[pe_way_cnt]&&(mask_pack_pong[pe][way_cnt]==0)){
+							// ** hwkim modified for gather
+//							if(pingpong[pe_way_cnt]&&(mask_pack_pong[pe][way_cnt]==0)){
+							if(mask_pack_pong[pe][way_cnt]==0){
 								packed_input[pe_way_cnt].write(input_pack_pong[pe][way_cnt]);
 								packed_weight[pe_way_cnt].write(w_pack_pong[pe][way_cnt]);
 								packed_mask[pe_way_cnt].write(mask_pack_pong[pe][way_cnt]);
@@ -1909,31 +1940,39 @@ void nonzero_activation_weight_stream_gen(
 #endif
 								sf_cnt[pe][way_cnt]+=WAY;
 
+								// ** hwkim modified for pp
 								// ** important!! 2nd write to pack buf
 //								z_mask[pe][way_cnt] = mask_delay_buf[pe][way_cnt];
 //								input_pack_buf[pe][way_cnt] = input_delay_buf[pe][way_cnt];
 //								w_pack_buf[pe][way_cnt] = w_delay_buf[pe][way_cnt];
+								// ** hwkim commented for gather
 								input_pack_ping[pe][way_cnt] = input_delay_buf[pe][way_cnt];
 								w_pack_ping[pe][way_cnt] = w_delay_buf[pe][way_cnt];
-								pingpong[pe_way_cnt] = 0;
+								mask_pack_ping[pe][way_cnt] = mask_delay_buf[pe][way_cnt] | new_mask;
+//								pingpong[pe_way_cnt] = 0;	// ** hwkim commented for gather
 							}
-							// ** hwkim added for pp
-							else if(~pingpong[pe_way_cnt]&&(mask_pack_ping[pe][way_cnt]==0)){
-								packed_input[pe_way_cnt].write(input_pack_ping[pe][way_cnt]);
-								packed_weight[pe_way_cnt].write(w_pack_ping[pe][way_cnt]);
-								packed_mask[pe_way_cnt].write(mask_pack_ping[pe][way_cnt]);
-#ifdef ACTIVATION_LOG
-								nonz_i_log_file[pe][way_cnt] << (unsigned long)input_pack_ping[pe][way_cnt] << endl;
-								nonz_w_log_file[pe][way_cnt] << (unsigned long)w_pack_ping[pe][way_cnt] << endl;
-#endif
-#if defined(ACTIVATION_LOG) & defined(DEBUG)
-								cout << "push ping................" << hex << input_pack_ping[pe][way_cnt] << endl;
-#endif
-								sf_cnt[pe][way_cnt]+=WAY;
-								input_pack_pong[pe][way_cnt] = input_delay_buf[pe][way_cnt];
-								w_pack_pong[pe][way_cnt] = w_delay_buf[pe][way_cnt];
-								pingpong[pe_way_cnt] = 1;
+							else{
+								mask_pack_ping[pe][way_cnt] = (mask_delay_buf[pe][way_cnt] | new_mask) & mask_pack_pong[pe][way_cnt];
+								input_pack_ping[pe][way_cnt] = input_pack_pong[pe][way_cnt];
+								w_pack_ping[pe][way_cnt] = w_pack_pong[pe][way_cnt];
 							}
+							// ** hwkim added for pp & commented for gather
+//							else if(~pingpong[pe_way_cnt]&&(mask_pack_ping[pe][way_cnt]==0)){
+//								packed_input[pe_way_cnt].write(input_pack_ping[pe][way_cnt]);
+//								packed_weight[pe_way_cnt].write(w_pack_ping[pe][way_cnt]);
+//								packed_mask[pe_way_cnt].write(mask_pack_ping[pe][way_cnt]);
+//#ifdef ACTIVATION_LOG
+//								nonz_i_log_file[pe][way_cnt] << (unsigned long)input_pack_ping[pe][way_cnt] << endl;
+//								nonz_w_log_file[pe][way_cnt] << (unsigned long)w_pack_ping[pe][way_cnt] << endl;
+//#endif
+//#if defined(ACTIVATION_LOG) & defined(DEBUG)
+//								cout << "push ping................" << hex << input_pack_ping[pe][way_cnt] << endl;
+//#endif
+//								sf_cnt[pe][way_cnt]+=WAY;
+//								input_pack_pong[pe][way_cnt] = input_delay_buf[pe][way_cnt];
+//								w_pack_pong[pe][way_cnt] = w_delay_buf[pe][way_cnt];
+//								pingpong[pe_way_cnt] = 1;
+//							}
 						}
 						// ** hwkim added for pp
 //						mask_delay_buf[pe][way_cnt] = (wm[pe] | imaskElem) >> (way_cnt*WAY);
