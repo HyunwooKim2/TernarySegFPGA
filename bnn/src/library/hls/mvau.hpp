@@ -1561,11 +1561,13 @@ void nonzero_activation_weight_stream_gen(
 	// ** hwkim added for OPTIMIZATION
 	TI inElem;
 	TIM imaskElem;
+	ap_uint<SIMD> wmaskElem[PE];
 
 	TI	inputBuf[SF];
 //#pragma HLS ARRAY_PARTITION variable=inputBuf complete dim=1
 	TIM	imaskBuf[SF];
 //#pragma HLS ARRAY_PARTITION variable=imaskBuf complete dim=1
+	ap_uint<SIMD> wmaskBuf[SF][PE];
 
 //	ap_uint<WAY>	z_mask[PE][SIMD/WAY];
 ////#pragma HLS ARRAY_PARTITION variable=z_mask complete dim=0
@@ -1683,27 +1685,20 @@ void nonzero_activation_weight_stream_gen(
 #pragma HLS PIPELINE II=1
 
 			if(sf<SF){	// ** hwkim added for OPTIMIZATION - last i/w/m push integration into sf loop
-			// ***hwkim: should be merged to nonzero skip scheme of ternary architecture
+				// ***hwkim: should be merged to nonzero skip scheme of ternary architecture
 				if(nf == 0) {
 					if((x<Left && kx<Left)
 						||(y<Top && ky<Top)
 						||(x>(OFMDim-1-Right) && kx>(3-1-Right))
 						||(y>(OFMHeight-1-Bottom) && ky>(3-1-Bottom))){
-						// ** hwkim modified for OPTIMIZATION
-	//					inputBuf[sf] = TI(~0x0);	// hwkim: skip
-	//					imaskBuf[sf] = 0;
 						inElem = TI(~0x0);
 						inputBuf[sf] = inElem;
 						imaskElem = 0;
 						imaskBuf[sf] = imaskElem;
 					}
 					else{
-						// ** hwkim modified for OPTIMIZATION
-						// hwkim modified for ternary
 						inElem = in.read();
 						inputBuf[sf] = inElem;
-	//					inputBuf[sf] = in.read();
-	//					imaskBuf[sf] = in_mask.read();	// hwkim added for ternary
 						imaskElem = in_mask.read();
 						imaskBuf[sf] = imaskElem;
 					}
@@ -1712,10 +1707,18 @@ void nonzero_activation_weight_stream_gen(
 					inElem = inputBuf[sf];
 					imaskElem = imaskBuf[sf];
 				}
+				auto const &wm = wmasks.masks(tile);
+				for(unsigned char pe=0; pe<PE; pe++){
+					wmaskElem[pe] = wm[pe];
+					wmaskBuf[sf][pe] = wmaskElem[pe];
+				}
 			}
 			else{
 				inElem = ~0x0;
 				imaskElem = ~0x0;
+				for(unsigned char pe=0; pe<PE; pe++){
+					wmaskElem[pe] = ~0x0;
+				}
 			}
 
 			// ** hwkim commented & moved for OPTIMIZATION
@@ -1741,7 +1744,7 @@ void nonzero_activation_weight_stream_gen(
 //				if(sf<=SF){		// ** hwkim added for OPTIMIZATION - last i/w/m push integration into sf loop
 
 					auto const &w = weights.weights(tile);
-					auto const &wm = wmasks.masks(tile);
+//					auto const &wm = wmasks.masks(tile);	// ** hwkim commented for pp
 
 					// ***hwkim: should be merged to nonzero skip scheme of ternary architecture
 					if(	((x<Left && kx<Left)
@@ -1769,7 +1772,10 @@ void nonzero_activation_weight_stream_gen(
 						input_pack_ping[pe][way_cnt] = input_delay_buf[pe][way_cnt];
 						w_pack_ping[pe][way_cnt] = w_delay_buf[pe][way_cnt];
 
-						mask_delay_buf[pe][way_cnt] = (wm[pe] | imaskElem) >> (way_cnt*WAY);
+						// ** hwkim modified for pp
+//						mask_delay_buf[pe][way_cnt] = (wm[pe] | imaskElem) >> (way_cnt*WAY);
+						mask_delay_buf[pe][way_cnt] = (wmaskElem[pe] | imaskElem) >> (way_cnt*WAY);
+
 						input_delay_buf[pe][way_cnt] = inElem >> (way_cnt*WAY*SrcWidth);
 						w_delay_buf[pe][way_cnt] = w[pe] >> (way_cnt*WAY);
 						init_cyc_cnt[pe_way_cnt]++;
@@ -1930,7 +1936,8 @@ void nonzero_activation_weight_stream_gen(
 							}
 						}
 						// ** hwkim added for pp
-						mask_delay_buf[pe][way_cnt] = (wm[pe] | imaskElem) >> (way_cnt*WAY);
+//						mask_delay_buf[pe][way_cnt] = (wm[pe] | imaskElem) >> (way_cnt*WAY);
+						mask_delay_buf[pe][way_cnt] = (wmaskElem[pe] | imaskElem) >> (way_cnt*WAY);
 						input_delay_buf[pe][way_cnt] = inElem >> (way_cnt*WAY*SrcWidth);
 						w_delay_buf[pe][way_cnt] = w[pe] >> (way_cnt*WAY);
 					}
