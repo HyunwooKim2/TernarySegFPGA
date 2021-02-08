@@ -1628,16 +1628,19 @@ void nonzero_activation_weight_stream_gen(
 			else if(nf==0){
 				inElem = in.read();
 				imaskElem = in_mask.read();
+				// ** hwkim moved to reduce exp
+				inputBuf[sf] = inElem;
+				imaskBuf[sf] = imaskElem;
 			}
 			else{
 				inElem = inputBuf[sf];
 				imaskElem = imaskBuf[sf];
 			}
-
-			if((sf<SF) && (nf==0)){
-				inputBuf[sf] = inElem;
-				imaskBuf[sf] = imaskElem;
-			}
+			// ** hwkim moved to reduce exp
+//			if((sf<SF) && (nf==0)){
+//				inputBuf[sf] = inElem;
+//				imaskBuf[sf] = imaskElem;
+//			}
 
 			if(sf<SF){
 				auto const &w = weights.weights(tile);
@@ -1692,9 +1695,14 @@ void nonzero_activation_weight_stream_gen(
 				cout << "bit packing............." << endl;
 #endif
 
-				if(((mask_pack_ping[pe_way_cnt]==0) || ((sf==SF+1) && (~mask_pack_ping[pe_way_cnt]!=0)))
+				// ** hwkim added to reduce exp
+				if(sf < 2){
+					mask_pack_ping[pe_way_cnt] = mask_delay_buf[pe_way_cnt];
+					input_pack_ping[pe_way_cnt] = input_delay_buf[pe_way_cnt];
+					w_pack_ping[pe_way_cnt] = w_delay_buf[pe_way_cnt];
+				}
+				else if(((mask_pack_ping[pe_way_cnt]==0) || ((sf==SF+1) && (~mask_pack_ping[pe_way_cnt]!=0)))
 						&& (sf >= 2)){
-
 					packed_input[pe_way_cnt].write(input_pack_ping[pe_way_cnt]);
 					packed_weight[pe_way_cnt].write(w_pack_ping[pe_way_cnt]);
 					packed_mask[pe_way_cnt].write(mask_pack_ping[pe_way_cnt]);
@@ -1705,6 +1713,12 @@ void nonzero_activation_weight_stream_gen(
 #if defined(ACTIVATION_LOG) & defined(DEBUG)
 					cout << "push ping................" << hex << input_pack_ping[pe_way_cnt] << endl;
 #endif
+					// ** hwkim moved to reduce exp
+					mask_pack_ping[pe_way_cnt] = mask_delay_buf[pe_way_cnt];
+					input_pack_ping[pe_way_cnt] = input_delay_buf[pe_way_cnt];
+					w_pack_ping[pe_way_cnt] = w_delay_buf[pe_way_cnt];
+
+					sf_cnt[pe_way_cnt]+=WAY;		// ** hwkim moved to reduce exp
 				}
 				else if((mask_pack_pong[pe_way_cnt]==0) && (sf >= 2)){
 					packed_input[pe_way_cnt].write(input_pack_pong[pe_way_cnt]);
@@ -1717,33 +1731,57 @@ void nonzero_activation_weight_stream_gen(
 #if defined(ACTIVATION_LOG) & defined(DEBUG)
 					cout << "push pong................" << hex << input_pack_pong[pe_way_cnt] << endl;
 #endif
-				}
-
-				if((((mask_pack_ping[pe_way_cnt]==0) || ((sf==SF+1) && (~mask_pack_ping[pe_way_cnt]!=0)))
-						|| (mask_pack_pong[pe_way_cnt]==0))
-						&& (sf >= 2)){
-					sf_cnt[pe_way_cnt]+=WAY;
-				}
-
-				if((sf < 2) || (mask_pack_ping[pe_way_cnt]==0)){
-					mask_pack_ping[pe_way_cnt] = mask_delay_buf[pe_way_cnt];
-				}
-				else if(mask_pack_pong[pe_way_cnt]==0){
+					// ** hwkim moved to reduce exp
 					mask_pack_ping[pe_way_cnt] = mask_delay_buf[pe_way_cnt] | new_mask;
-				}
-				else{
-					mask_pack_ping[pe_way_cnt] = (mask_delay_buf[pe_way_cnt] | new_mask) & mask_pack_pong[pe_way_cnt];
-				}
-
-				if((sf < 2) || (mask_pack_ping[pe_way_cnt]==0)
-						|| (mask_pack_pong[pe_way_cnt]==0)){
 					input_pack_ping[pe_way_cnt] = input_delay_buf[pe_way_cnt];
 					w_pack_ping[pe_way_cnt] = w_delay_buf[pe_way_cnt];
+
+					sf_cnt[pe_way_cnt]+=WAY;		// ** hwkim moved to reduce exp
 				}
+				// ** hwkim added to reduce exp
 				else{
+					mask_pack_ping[pe_way_cnt] = (mask_delay_buf[pe_way_cnt] | new_mask) & mask_pack_pong[pe_way_cnt];
 					input_pack_ping[pe_way_cnt] = input_pack_pong[pe_way_cnt];
 					w_pack_ping[pe_way_cnt] = w_pack_pong[pe_way_cnt];
 				}
+
+				// ** hwkim moved to reduce exp
+//				if((((mask_pack_ping[pe_way_cnt]==0) || ((sf==SF+1) && (~mask_pack_ping[pe_way_cnt]!=0)))
+//						|| (mask_pack_pong[pe_way_cnt]==0))
+//						&& (sf >= 2)){
+//					sf_cnt[pe_way_cnt]+=WAY;
+//				}
+
+				// ** hwkim moved to reduce exp
+//				if((sf < 2) || (mask_pack_ping[pe_way_cnt]==0)){
+//					mask_pack_ping[pe_way_cnt] = mask_delay_buf[pe_way_cnt];
+//					// ** hwkim moved to reduce exp
+//					input_pack_ping[pe_way_cnt] = input_delay_buf[pe_way_cnt];
+//					w_pack_ping[pe_way_cnt] = w_delay_buf[pe_way_cnt];
+//				}
+//				else if(mask_pack_pong[pe_way_cnt]==0){
+//					mask_pack_ping[pe_way_cnt] = mask_delay_buf[pe_way_cnt] | new_mask;
+//					// ** hwkim moved to reduce exp
+//					input_pack_ping[pe_way_cnt] = input_delay_buf[pe_way_cnt];
+//					w_pack_ping[pe_way_cnt] = w_delay_buf[pe_way_cnt];
+//				}
+//				else{
+//					mask_pack_ping[pe_way_cnt] = (mask_delay_buf[pe_way_cnt] | new_mask) & mask_pack_pong[pe_way_cnt];
+//					// ** hwkim moved to reduce exp
+//					input_pack_ping[pe_way_cnt] = input_pack_pong[pe_way_cnt];
+//					w_pack_ping[pe_way_cnt] = w_pack_pong[pe_way_cnt];
+//				}
+
+				// ** hwkim moved to reduce exp
+//				if((sf < 2) || (mask_pack_ping[pe_way_cnt]==0)
+//						|| (mask_pack_pong[pe_way_cnt]==0)){
+//					input_pack_ping[pe_way_cnt] = input_delay_buf[pe_way_cnt];
+//					w_pack_ping[pe_way_cnt] = w_delay_buf[pe_way_cnt];
+//				}
+//				else{
+//					input_pack_ping[pe_way_cnt] = input_pack_pong[pe_way_cnt];
+//					w_pack_ping[pe_way_cnt] = w_pack_pong[pe_way_cnt];
+//				}
 
 				mask_delay_buf[pe_way_cnt] = (wmaskElem[pe] | imaskElem) >> (way_cnt*WAY);
 				input_delay_buf[pe_way_cnt] = inElem >> (way_cnt*WAY*SrcWidth);
