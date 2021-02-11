@@ -63,6 +63,7 @@
 #include <stdio.h>
 //extern int weighted_layer_cnt;
 //#define DEBUG
+//#define DDEBUG
 #endif
 
 template<
@@ -1628,7 +1629,6 @@ void nonzero_activation_weight_stream_gen(
 			else if(nf==0){
 				inElem = in.read();
 				imaskElem = in_mask.read();
-				// ** hwkim moved to reduce exp
 				inputBuf[sf] = inElem;
 				imaskBuf[sf] = imaskElem;
 			}
@@ -1636,11 +1636,6 @@ void nonzero_activation_weight_stream_gen(
 				inElem = inputBuf[sf];
 				imaskElem = imaskBuf[sf];
 			}
-			// ** hwkim moved to reduce exp
-//			if((sf<SF) && (nf==0)){
-//				inputBuf[sf] = inElem;
-//				imaskBuf[sf] = imaskElem;
-//			}
 
 			if(sf<SF){
 				auto const &w = weights.weights(tile);
@@ -1663,27 +1658,38 @@ void nonzero_activation_weight_stream_gen(
 			way_cnt = 0;
 			for(unsigned short pe_way_cnt=0; pe_way_cnt<PE*(SIMD/WAY); pe_way_cnt++){
 #pragma HLS UNROLL
-				ap_uint<WAY> new_mask = 0;
+				// ** hwkim added to reduce slack
+//				ap_uint<WAY> new_prev_mask = ~0x0;
 
+				/* hwkim modified to reduce slack
 				unsigned char next_bit_start = 0;
+				ap_uint<WAY> new_mask = 0;
 				for(unsigned char prev_bit_cnt=0; prev_bit_cnt<WAY; prev_bit_cnt++){
 					for(unsigned char next_bit_cnt=0; next_bit_cnt<WAY; next_bit_cnt++){
 #pragma HLS UNROLL
+						// ** hwkim modified to reduce slack
 						if(mask_pack_ping[pe_way_cnt][prev_bit_cnt]
 							   && (mask_delay_buf[pe_way_cnt][next_bit_cnt]==0)
 							   && (next_bit_cnt >= next_bit_start)){
+//						if((mask_pack_ping[pe_way_cnt][prev_bit_cnt] & new_prev_mask[prev_bit_cnt])
+//							   && ((mask_delay_buf[pe_way_cnt][next_bit_cnt] | new_mask[next_bit_cnt])==0)){
 
 							new_mask[next_bit_cnt] = 1;
+							// ** hwkim added to reduce slack
+//							new_prev_mask[prev_bit_cnt] = 0;
 
 							mask_pack_pong[pe_way_cnt][prev_bit_cnt] = 0;
 							input_pack_pong[pe_way_cnt](prev_bit_cnt*SrcWidth+(SrcWidth-1), prev_bit_cnt*SrcWidth)
 								= input_delay_buf[pe_way_cnt](next_bit_cnt*SrcWidth+(SrcWidth-1), next_bit_cnt*SrcWidth);
 							w_pack_pong[pe_way_cnt][prev_bit_cnt] = w_delay_buf[pe_way_cnt][next_bit_cnt];
 
+							// ** hwkim modified to reduce slack
 							next_bit_start = next_bit_cnt+1;
 							break;
 						}
-						else{
+						// ** hwkim modified to reduce slack
+						else{	// for the case: bit packing attempted but still have zero values...
+//						else if(new_prev_mask[prev_bit_cnt]){
 							mask_pack_pong[pe_way_cnt][prev_bit_cnt] = mask_pack_ping[pe_way_cnt][prev_bit_cnt];	// current input
 							input_pack_pong[pe_way_cnt](prev_bit_cnt*SrcWidth+(SrcWidth-1), prev_bit_cnt*SrcWidth)
 								= input_pack_ping[pe_way_cnt](prev_bit_cnt*SrcWidth+(SrcWidth-1), prev_bit_cnt*SrcWidth);
@@ -1691,18 +1697,118 @@ void nonzero_activation_weight_stream_gen(
 						}
 					}
 				}
+				 */
+
+				ap_uint<2*WAY-1> mask_delay_exp[WAY];
+				ap_uint<WAY> mask_delay_align_or[WAY-1];	//no need for 1st OR mask
+#if defined(ACTIVATION_LOG) & defined(DDEBUG)
+				cout << hex << "m_d_buf: " << mask_delay_buf[pe_way_cnt] << endl;
+				cout << "m_pi_buf: " << mask_pack_ping[pe_way_cnt] << endl;
+#endif
+				for(unsigned char shift_cnt=0; shift_cnt<WAY; shift_cnt++){
+#pragma HLS UNROLL
+					// rotate shift right, NOT, AND w/ input
+					mask_delay_exp[shift_cnt] = ~((mask_delay_buf[pe_way_cnt] << (WAY-shift_cnt))
+							| (mask_delay_buf[pe_way_cnt] >> shift_cnt)) & mask_pack_ping[pe_way_cnt];
+#if defined(ACTIVATION_LOG) & defined(DDEBUG)
+					cout << dec << "shift " << (int)shift_cnt << ", ";
+					cout << hex << "rotate, NOT, AND w/ input: " << mask_delay_exp[shift_cnt] << endl;
+#endif
+				}
+#if defined(ACTIVATION_LOG) & defined(DDEBUG)
+				cout << hex << "shift 0, final mask: " << mask_delay_exp[0] << endl;
+#endif
+				for(unsigned char shift_cnt=1; shift_cnt<WAY; shift_cnt++){
+#pragma HLS UNROLL
+					mask_delay_align_or[shift_cnt] = 0;
+					for(char search_cnt=0; search_cnt < shift_cnt; search_cnt++){
+						// expand, OR
+						// check for pack bits
+						mask_delay_align_or[shift_cnt] |= (ap_uint<WAY>)(((mask_delay_exp[search_cnt] << WAY) | mask_delay_exp[search_cnt]) >> (shift_cnt-search_cnt));
+						// check for delay bits
+						mask_delay_align_or[shift_cnt] |= (ap_uint<WAY>)mask_delay_exp[search_cnt];
+					}
+					mask_delay_exp[shift_cnt] &= ~(ap_uint<2*WAY-1>)mask_delay_align_or[shift_cnt];
+#if defined(ACTIVATION_LOG) & defined(DDEBUG)
+					cout << dec << "shift " << (int)shift_cnt << ", ";
+					cout << hex << "ORed: " << mask_delay_align_or[shift_cnt] << ", ";
+					cout << "final mask: " << mask_delay_exp[shift_cnt] << endl;
+#endif
+				}
+
+				ap_uint<SrcWidth*WAY> input_delay_shift[WAY];
+				ap_uint<WAY> w_delay_shift[WAY];
+#if defined(ACTIVATION_LOG) & defined(DDEBUG)
+				cout << hex << "i_d_buf: " << input_delay_buf[pe_way_cnt] << endl;
+				cout << "w_d_buf: " << w_delay_buf[pe_way_cnt] << endl;
+#endif
+				ap_uint<SrcWidth*WAY> mask_exp[WAY];
+				for(unsigned char shift_cnt=0; shift_cnt<WAY; shift_cnt++){
+					mask_exp[shift_cnt] = 0;
+					for(unsigned char bit_cnt=0; bit_cnt<WAY; bit_cnt++){
+						if(mask_delay_exp[shift_cnt][bit_cnt])
+							mask_exp[shift_cnt] |= (ap_uint<SrcWidth*WAY>)(~(ap_uint<SrcWidth>)0x0) << bit_cnt*SrcWidth;
+					}
+#if defined(ACTIVATION_LOG) & defined(DDEBUG)
+					cout << "input mask[" << (int)shift_cnt << "]: " << hex << mask_exp[shift_cnt] << endl;
+#endif
+				}
+
+				for(unsigned char shift_cnt=0; shift_cnt<WAY; shift_cnt++){
+					// rotate shift, AND w/ mask
+					input_delay_shift[shift_cnt] = ((input_delay_buf[pe_way_cnt] << (SrcWidth*(WAY-shift_cnt)))
+							| (input_delay_buf[pe_way_cnt] >> SrcWidth*shift_cnt)) & mask_exp[shift_cnt];
+					w_delay_shift[shift_cnt] = ((w_delay_buf[pe_way_cnt] << (WAY-shift_cnt))
+							| (w_delay_buf[pe_way_cnt] >> shift_cnt)) & mask_delay_exp[shift_cnt];
+
+#if defined(ACTIVATION_LOG) & defined(DDEBUG)
+					cout << dec << "masked i_d_buf[" << (int)shift_cnt << "]: " << hex << input_delay_shift[shift_cnt] << endl;
+					cout << dec << "masked w_d_buf[" << (int)shift_cnt << "]: " << hex << w_delay_shift[shift_cnt] << endl;
+#endif
+				}
+				ap_uint<SrcWidth*WAY> masked_new_input = 0;
+				ap_uint<WAY> masked_new_w = 0;
+				ap_uint<WAY> push_mask = 0;
+				ap_uint<SrcWidth*WAY> new_input_mask = 0;
+				ap_uint<WAY> remain_mask = 0;
+				for(unsigned char shift_cnt=0; shift_cnt<WAY; shift_cnt++){
+					masked_new_input |= input_delay_shift[shift_cnt];
+					masked_new_w |= w_delay_shift[shift_cnt];
+					push_mask |= (ap_uint<WAY>)mask_delay_exp[shift_cnt];
+					new_input_mask |= mask_exp[shift_cnt];
+					remain_mask |= ((ap_uint<WAY>)mask_delay_exp[shift_cnt] << shift_cnt)
+							| ((ap_uint<WAY>)mask_delay_exp[shift_cnt] >> (WAY-shift_cnt));
+				}
+//				ap_uint<SrcWidth*WAY> masked_org_input = ~new_input_mask & input_pack_ping[pe_way_cnt];
+//				ap_uint<WAY> masked_org_w = ~push_mask & w_pack_ping[pe_way_cnt];
+#if defined(ACTIVATION_LOG) & defined(DDEBUG)
+				cout << "ORed new input: " << hex << masked_new_input << endl;
+				cout << "ORed new weight: " << hex << masked_new_w << endl;
+//				cout << "masked org input: " << hex << masked_org_input << endl;
+//				cout << "masked org weight: " << hex << masked_org_w << endl;
+				cout << "remain mask for next ping: " << hex << remain_mask << endl;
+#endif
+				mask_pack_pong[pe_way_cnt] = ~push_mask & mask_pack_ping[pe_way_cnt];	// bits for new mask should be 0
+				input_pack_pong[pe_way_cnt] = masked_new_input | (~new_input_mask & input_pack_ping[pe_way_cnt]);
+				w_pack_pong[pe_way_cnt] = masked_new_w | (~push_mask & w_pack_ping[pe_way_cnt]);
+
 #if defined(ACTIVATION_LOG) & defined(DEBUG)
 				cout << "bit packing............." << endl;
 #endif
+				// ** hwkim moved to reduce slack
+//				mask_delay_buf[pe_way_cnt] = (wmaskElem[pe] | imaskElem) >> (way_cnt*WAY);
+//				input_delay_buf[pe_way_cnt] = inElem >> (way_cnt*WAY*SrcWidth);
+//				w_delay_buf[pe_way_cnt] = wgtElem[pe] >> (way_cnt*WAY);
 
-				// ** hwkim added to reduce exp
 				if(sf < 2){
 					mask_pack_ping[pe_way_cnt] = mask_delay_buf[pe_way_cnt];
 					input_pack_ping[pe_way_cnt] = input_delay_buf[pe_way_cnt];
 					w_pack_ping[pe_way_cnt] = w_delay_buf[pe_way_cnt];
 				}
-				else if(((mask_pack_ping[pe_way_cnt]==0) || ((sf==SF+1) && (~mask_pack_ping[pe_way_cnt]!=0)))
-						&& (sf >= 2)){
+				// ** hwkim modified to reduce slack
+				else if((mask_pack_ping[pe_way_cnt]==0) || ((sf==SF+1) && (~mask_pack_ping[pe_way_cnt]!=0))){
+//						&& (sf >= 2)){
+
 					packed_input[pe_way_cnt].write(input_pack_ping[pe_way_cnt]);
 					packed_weight[pe_way_cnt].write(w_pack_ping[pe_way_cnt]);
 					packed_mask[pe_way_cnt].write(mask_pack_ping[pe_way_cnt]);
@@ -1713,14 +1819,15 @@ void nonzero_activation_weight_stream_gen(
 #if defined(ACTIVATION_LOG) & defined(DEBUG)
 					cout << "push ping................" << hex << input_pack_ping[pe_way_cnt] << endl;
 #endif
-					// ** hwkim moved to reduce exp
 					mask_pack_ping[pe_way_cnt] = mask_delay_buf[pe_way_cnt];
 					input_pack_ping[pe_way_cnt] = input_delay_buf[pe_way_cnt];
 					w_pack_ping[pe_way_cnt] = w_delay_buf[pe_way_cnt];
 
-					sf_cnt[pe_way_cnt]+=WAY;		// ** hwkim moved to reduce exp
+					sf_cnt[pe_way_cnt]+=WAY;
 				}
-				else if((mask_pack_pong[pe_way_cnt]==0) && (sf >= 2)){
+				// ** hwkim modified to reduce slack
+				else if(mask_pack_pong[pe_way_cnt]==0){
+//						&& (sf >= 2)){
 					packed_input[pe_way_cnt].write(input_pack_pong[pe_way_cnt]);
 					packed_weight[pe_way_cnt].write(w_pack_pong[pe_way_cnt]);
 					packed_mask[pe_way_cnt].write(mask_pack_pong[pe_way_cnt]);
@@ -1731,58 +1838,22 @@ void nonzero_activation_weight_stream_gen(
 #if defined(ACTIVATION_LOG) & defined(DEBUG)
 					cout << "push pong................" << hex << input_pack_pong[pe_way_cnt] << endl;
 #endif
-					// ** hwkim moved to reduce exp
-					mask_pack_ping[pe_way_cnt] = mask_delay_buf[pe_way_cnt] | new_mask;
+					mask_pack_ping[pe_way_cnt] = mask_delay_buf[pe_way_cnt] | remain_mask;
 					input_pack_ping[pe_way_cnt] = input_delay_buf[pe_way_cnt];
 					w_pack_ping[pe_way_cnt] = w_delay_buf[pe_way_cnt];
 
-					sf_cnt[pe_way_cnt]+=WAY;		// ** hwkim moved to reduce exp
+					sf_cnt[pe_way_cnt]+=WAY;
 				}
-				// ** hwkim added to reduce exp
-				else{
-					mask_pack_ping[pe_way_cnt] = (mask_delay_buf[pe_way_cnt] | new_mask) & mask_pack_pong[pe_way_cnt];
+				else{	// bit packing attempted but still have zero values...
+					// ** hwkim modified to reduce slack
+//					mask_pack_ping[pe_way_cnt] = (mask_delay_buf[pe_way_cnt] | new_mask) & mask_pack_pong[pe_way_cnt];
+					mask_pack_ping[pe_way_cnt] = mask_pack_pong[pe_way_cnt];
+
 					input_pack_ping[pe_way_cnt] = input_pack_pong[pe_way_cnt];
 					w_pack_ping[pe_way_cnt] = w_pack_pong[pe_way_cnt];
 				}
 
-				// ** hwkim moved to reduce exp
-//				if((((mask_pack_ping[pe_way_cnt]==0) || ((sf==SF+1) && (~mask_pack_ping[pe_way_cnt]!=0)))
-//						|| (mask_pack_pong[pe_way_cnt]==0))
-//						&& (sf >= 2)){
-//					sf_cnt[pe_way_cnt]+=WAY;
-//				}
-
-				// ** hwkim moved to reduce exp
-//				if((sf < 2) || (mask_pack_ping[pe_way_cnt]==0)){
-//					mask_pack_ping[pe_way_cnt] = mask_delay_buf[pe_way_cnt];
-//					// ** hwkim moved to reduce exp
-//					input_pack_ping[pe_way_cnt] = input_delay_buf[pe_way_cnt];
-//					w_pack_ping[pe_way_cnt] = w_delay_buf[pe_way_cnt];
-//				}
-//				else if(mask_pack_pong[pe_way_cnt]==0){
-//					mask_pack_ping[pe_way_cnt] = mask_delay_buf[pe_way_cnt] | new_mask;
-//					// ** hwkim moved to reduce exp
-//					input_pack_ping[pe_way_cnt] = input_delay_buf[pe_way_cnt];
-//					w_pack_ping[pe_way_cnt] = w_delay_buf[pe_way_cnt];
-//				}
-//				else{
-//					mask_pack_ping[pe_way_cnt] = (mask_delay_buf[pe_way_cnt] | new_mask) & mask_pack_pong[pe_way_cnt];
-//					// ** hwkim moved to reduce exp
-//					input_pack_ping[pe_way_cnt] = input_pack_pong[pe_way_cnt];
-//					w_pack_ping[pe_way_cnt] = w_pack_pong[pe_way_cnt];
-//				}
-
-				// ** hwkim moved to reduce exp
-//				if((sf < 2) || (mask_pack_ping[pe_way_cnt]==0)
-//						|| (mask_pack_pong[pe_way_cnt]==0)){
-//					input_pack_ping[pe_way_cnt] = input_delay_buf[pe_way_cnt];
-//					w_pack_ping[pe_way_cnt] = w_delay_buf[pe_way_cnt];
-//				}
-//				else{
-//					input_pack_ping[pe_way_cnt] = input_pack_pong[pe_way_cnt];
-//					w_pack_ping[pe_way_cnt] = w_pack_pong[pe_way_cnt];
-//				}
-
+				// ** hwkim moved to reduce slack
 				mask_delay_buf[pe_way_cnt] = (wmaskElem[pe] | imaskElem) >> (way_cnt*WAY);
 				input_delay_buf[pe_way_cnt] = inElem >> (way_cnt*WAY*SrcWidth);
 				w_delay_buf[pe_way_cnt] = wgtElem[pe] >> (way_cnt*WAY);
