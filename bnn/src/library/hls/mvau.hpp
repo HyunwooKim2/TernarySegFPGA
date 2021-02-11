@@ -1181,7 +1181,6 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 	  // hwkim added for ternary
 	  auto  outElem = TDstI().template operator()<TO>();
 	  TOM outMaskElem;
-	  ap_uint<WAY> mask;
 
 	  // hwkim modified for sf separation
 //	  ap_uint<PE> sf_sync_flag = 0;
@@ -1246,7 +1245,12 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 //						  mask = (~(ap_uint<WAY>)0x0) >> (WAY-(sf_num_buf[pe][way_cnt]%WAY));
 					  // ** hwkim modified for OPTIMIZATION
 //					  mask = ~packed_mask[pe*(SIMD/WAY)+way_cnt].read();
-					  mask = ~packed_mask[pe_way_cnt].read();
+					  ap_uint<WAY> mask_tmp = ~packed_mask[pe_way_cnt].read();
+					  PI mask_exp = 0;
+					  for(unsigned char bit_cnt=0; bit_cnt<WAY; bit_cnt++){
+						  if(mask_tmp[bit_cnt])
+							  mask_exp |= (ap_uint<PI::width*WAY>)(~(ap_uint<PI::width>)0x0) << bit_cnt*PI::width;
+					  }
 
 				  	  // hwkim added and modified for ternary & debug (inElem_pe and dummy_w can be removed)
 //					  auto const  act = TSrcI()(packed_input[pe].read());
@@ -1275,13 +1279,13 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 					  // hwkim modified for way
 //				  	  accu[pe] = mac_masked<SIMD, SIMD>(accu[pe], wgt, act, r, mask);
 					  // hwkim modified for mask
-					  accu[pe] = mac_masked<WAY, WAY>(accu[pe], wgt, act, r, mask);	// should be modified - N = WAY
+					  accu[pe] = mac_masked<WAY>(accu[pe], wgt, act, r, mask_exp);	// should be modified - N = WAY
 
 #ifdef ACTIVATION_LOG
 					  // hwkim modified for way
 //				  	  accu_pm[pe] = mac<SIMD>(accu_pm[pe], wgt, act, r, 1);
-					  if(TSrcI::width==1)	// hwkim: rest layers except for the first layer
-						  accu_pm[pe] = mac_masked_pm<WAY, WAY>(accu[pe], wgt, act, r, mask);	// should be modified - N = WAY
+//					  if(TSrcI::width==1)	// hwkim: rest layers except for the first layer
+//						  accu_pm[pe] = mac_masked_pm<WAY, WAY>(accu[pe], wgt, act, r, mask);	// should be modified - N = WAY
 
 
 				  	  // hwkim added for debug
@@ -1529,6 +1533,7 @@ void nonzero_activation_weight_stream_gen(
 
 	ofstream nonz_i_log_file[PE][SIMD/WAY];
 	ofstream nonz_w_log_file[PE][SIMD/WAY];
+	ofstream nonz_m_log_file[PE][SIMD/WAY];
 	ofstream nonz_f_log_file[PE][SIMD/WAY];
 
 	for(unsigned char pe=0; pe<PE; pe++){
@@ -1537,19 +1542,24 @@ void nonzero_activation_weight_stream_gen(
 					+ "_" + to_string(pe) + "_" + to_string(way_cnt) + "_input_log.txt";
 			string nonz_w_log_file_name = snapshot_dir + "nonzero_" + to_string(LayerCnt+1)
 					+ "_" + to_string(pe) + "_" + to_string(way_cnt) + "_weight_log.txt";
+			string nonz_m_log_file_name = snapshot_dir + "nonzero_" + to_string(LayerCnt+1)
+								+ "_" + to_string(pe) + "_" + to_string(way_cnt) + "_mask_log.txt";
 			string nonz_f_log_file_name = snapshot_dir + "nonzero_" + to_string(LayerCnt+1)
 					+ "_" + to_string(pe) + "_" + to_string(way_cnt) + "_fanin_log.txt";
 
 			nonz_i_log_file[pe][way_cnt].open(nonz_i_log_file_name);
 			nonz_w_log_file[pe][way_cnt].open(nonz_w_log_file_name);
+			nonz_m_log_file[pe][way_cnt].open(nonz_m_log_file_name);
 			nonz_f_log_file[pe][way_cnt].open(nonz_f_log_file_name);
 
 			if(!nonz_i_log_file[pe][way_cnt].is_open())	cout << nonz_i_log_file_name << " open error!" << endl;
 			if(!nonz_w_log_file[pe][way_cnt].is_open())	cout << nonz_w_log_file_name << " open error!" << endl;
+			if(!nonz_m_log_file[pe][way_cnt].is_open())	cout << nonz_m_log_file_name << " open error!" << endl;
 			if(!nonz_f_log_file[pe][way_cnt].is_open())	cout << nonz_f_log_file_name << " open error!" << endl;
 
 			nonz_i_log_file[pe][way_cnt] << hex;
 			nonz_w_log_file[pe][way_cnt] << hex;
+			nonz_m_log_file[pe][way_cnt] << hex;
 			nonz_f_log_file[pe][way_cnt] << dec;
 		}
 	}
@@ -1815,6 +1825,7 @@ void nonzero_activation_weight_stream_gen(
 #ifdef ACTIVATION_LOG
 					nonz_i_log_file[pe][way_cnt] << (unsigned long)input_pack_ping[pe_way_cnt] << endl;
 					nonz_w_log_file[pe][way_cnt] << (unsigned long)w_pack_ping[pe_way_cnt] << endl;
+					nonz_m_log_file[pe][way_cnt] << (unsigned long)mask_pack_ping[pe_way_cnt] << endl;
 #endif
 #if defined(ACTIVATION_LOG) & defined(DEBUG)
 					cout << "push ping................" << hex << input_pack_ping[pe_way_cnt] << endl;
@@ -1834,6 +1845,7 @@ void nonzero_activation_weight_stream_gen(
 #ifdef ACTIVATION_LOG
 					nonz_i_log_file[pe][way_cnt] << (unsigned long)input_pack_pong[pe_way_cnt] << endl;
 					nonz_w_log_file[pe][way_cnt] << (unsigned long)w_pack_pong[pe_way_cnt] << endl;
+					nonz_m_log_file[pe][way_cnt] << (unsigned long)mask_pack_pong[pe_way_cnt] << endl;
 #endif
 #if defined(ACTIVATION_LOG) & defined(DEBUG)
 					cout << "push pong................" << hex << input_pack_pong[pe_way_cnt] << endl;
@@ -1927,6 +1939,7 @@ void nonzero_activation_weight_stream_gen(
 		for(unsigned char way_cnt=0; way_cnt<(SIMD/WAY); way_cnt++){
 			nonz_i_log_file[pe][way_cnt].close();
 			nonz_w_log_file[pe][way_cnt].close();
+			nonz_m_log_file[pe][way_cnt].close();
 			nonz_f_log_file[pe][way_cnt].close();
 		}
 	}

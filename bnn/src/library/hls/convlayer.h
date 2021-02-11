@@ -188,10 +188,12 @@ void ConvLayer_Batch(
 
 		ifstream nonz_i_log_file[PE][SIMD/WAY];
 		ifstream nonz_w_log_file[PE][SIMD/WAY];
+		ifstream nonz_m_log_file[PE][SIMD/WAY];
 		ifstream nonz_f_log_file[PE][SIMD/WAY];
 
 		ap_uint<WAY*TSrcI::width> nonz_i_buf;
 		ap_uint<WAY> nonz_w_buf;
+		ap_uint<WAY> nonz_m_buf;
 		ap_uint<FanInCntWidth> nonz_f_buf;
 
 		for(unsigned char pe=0; pe<PE; pe++){
@@ -200,16 +202,24 @@ void ConvLayer_Batch(
 						+ "_" + to_string(pe) + "_" + to_string(way_cnt) + "_input_log.txt";
 				string nonz_w_log_file_name = snapshot_dir + "nonzero_" + to_string(LayerCnt+1)
 						+ "_" + to_string(pe) + "_" + to_string(way_cnt) + "_weight_log.txt";
+				string nonz_m_log_file_name = snapshot_dir + "nonzero_" + to_string(LayerCnt+1)
+						+ "_" + to_string(pe) + "_" + to_string(way_cnt) + "_mask_log.txt";
 				string nonz_f_log_file_name = snapshot_dir + "nonzero_" + to_string(LayerCnt+1)
 						+ "_" + to_string(pe) + "_" + to_string(way_cnt) + "_fanin_log.txt";
 
 				nonz_i_log_file[pe][way_cnt].open(nonz_i_log_file_name);
 				nonz_w_log_file[pe][way_cnt].open(nonz_w_log_file_name);
+				nonz_m_log_file[pe][way_cnt].open(nonz_m_log_file_name);
 				nonz_f_log_file[pe][way_cnt].open(nonz_f_log_file_name);
 
 				if(!nonz_i_log_file[pe][way_cnt].is_open())	cout << nonz_i_log_file_name << " open error!" << endl;
+				else	cout << "Reading " << nonz_i_log_file_name << " to skip nonzero_activation_gen..." << endl;
 				if(!nonz_w_log_file[pe][way_cnt].is_open())	cout << nonz_w_log_file_name << " open error!" << endl;
+				else	cout << "Reading " << nonz_w_log_file_name << " to skip nonzero_activation_gen..." << endl;
+				if(!nonz_m_log_file[pe][way_cnt].is_open())	cout << nonz_m_log_file_name << " open error!" << endl;
+				else	cout << "Reading " << nonz_m_log_file_name << " to skip nonzero_activation_gen..." << endl;
 				if(!nonz_f_log_file[pe][way_cnt].is_open())	cout << nonz_f_log_file_name << " open error!" << endl;
+				else	cout << "Reading " << nonz_f_log_file_name << " to skip nonzero_activation_gen..." << endl;
 
 
 				while(!nonz_i_log_file[pe][way_cnt].eof()){
@@ -220,6 +230,11 @@ void ConvLayer_Batch(
 				while(!nonz_w_log_file[pe][way_cnt].eof()){
 					nonz_w_log_file[pe][way_cnt] >> hex >> nonz_w_buf;
 					packed_weight[pe*(SIMD/WAY)+way_cnt].write(nonz_w_buf);
+				}
+
+				while(!nonz_m_log_file[pe][way_cnt].eof()){
+					nonz_m_log_file[pe][way_cnt] >> hex >> nonz_m_buf;
+					packed_mask[pe*(SIMD/WAY)+way_cnt].write(nonz_m_buf);
 				}
 
 				while(!nonz_f_log_file[pe][way_cnt].eof()){

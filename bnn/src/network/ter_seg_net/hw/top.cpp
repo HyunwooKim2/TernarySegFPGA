@@ -650,7 +650,7 @@ void DoCompute(
 	int sep_sim_layer10_en = 1;
 	int sep_sim_layer11_en = 1;
 
-	int nonzero_layer1_en = 1;
+	int nonzero_layer1_en = 0;
 	int nonzero_layer2_en = 1;
 	int nonzero_layer3_en = 1;
 	int nonzero_layer4_en = 1;
