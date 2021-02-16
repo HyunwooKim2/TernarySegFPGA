@@ -87,11 +87,13 @@ auto mul(TC const &c, TD const &d, ap_resource_lut const&) -> decltype(c*d) {
   return  res;
 }
 
-// ** hwkim added to reduce slack
+// hwkim added for masked mac
+//- Request LUT
 template<typename TC, typename TD, typename TM>
-auto mul_masked(TC const &c, TD const &d, ap_resource_lut const&, TM const &mask) -> decltype(c*d) {
+auto mul_masked(TC const &c, TD const &d, ap_resource_lut const&, TM mask) -> decltype(c*d) {
 #pragma HLS inline
-  decltype(c*d) const  res = c*d&mask;
+	TC mask_casted(mask);
+  decltype(c*d) const  res = mask_casted&(c*d);
 #pragma HLS RESOURCE variable=res core=Mul_LUT
   return  res;
 }
@@ -134,44 +136,40 @@ inline T mac(T const &a, TC const &c, TD const &d) {
   return  mac<N>(a, c, d, ap_resource_dflt());
 }
 
-// hwkim added for ternary
-//- MAC with selectable implementation resource
-template<unsigned N, typename T, typename TC, typename TD, typename R, typename TM>
-T mac_masked(T const &a, TC const &c, TD const &d, R const &r, TM const &mask) {
+// hwkim added for masked mac
+template<unsigned N, typename T, typename TC, typename TD, typename R>
+T mac_masked(T const &a, TC const &c, TD const &d, R const &r, ap_uint<N> mask) {
 #pragma HLS inline
   T  res = a;
   for(unsigned  i = 0; i < N; i++) {
 #pragma HLS unroll
-//		  res += mask[i]? mul(c[i], d[i], r) : 0;
-	  res += mul_masked(c[i], d[i], r, mask[i]);	//((i+1)*(TM::width/N)-1,i*(TM::width/N)));
+	  res += mul_masked(c[i], d[i], r, mask[i]);
   }
   return  res;
 }
-// hwkim added for ternary
-template<unsigned N, typename T, typename TC, typename TD, typename TM>
-inline T mac_masked(T const &a, TC const &c, TD const &d, TM const &mask) {
+// hwkim added for masked mac
+template<unsigned N, typename T, typename TC, typename TD>
+inline T mac_masked(T const &a, TC const &c, TD const &d, ap_uint<N> mask) {
 #pragma HLS inline
   return  mac_masked<N>(a, c, d, ap_resource_dflt(), mask);
 }
-
-// hwkim added for ternary
-//- MAC with selectable implementation resource
-template<unsigned N, unsigned WAY, typename T, typename TC, typename TD, typename R>
-T mac_masked_pm(T const &a, TC const &c, TD const &d, R const &r, ap_uint<WAY> mask) {
+// hwkim added for masked mac
+template<unsigned N, typename T, typename TC, typename TD, typename R>
+T mac_masked_pm(T const &a, TC const &c, TD const &d, R const &r, ap_uint<N> mask) {
 #pragma HLS inline
   T  res = a;
   for(unsigned  i = 0; i < N; i++) {
 #pragma HLS unroll
-	  res += mul(c[i], d[i], r)? 1 : -1;
+	  if(mask[i])
+		  res += mul(c[i], d[i], r)? 1 : -1;
   }
   return  res;
 }
-// hwkim added for ternary
-template<unsigned N, unsigned WAY, typename T, typename TC, typename TD>
-inline T mac_masked_pm(T const &a, TC const &c, TD const &d, ap_uint<WAY> mask) {
+// hwkim added for masked mac
+template<unsigned N, typename T, typename TC, typename TD>
+inline T mac_masked_pm(T const &a, TC const &c, TD const &d, ap_uint<N> mask) {
 #pragma HLS inline
-  return  mac_masked<N, WAY>(a, c, d, ap_resource_dflt(), mask);
+  return  mac_masked<N>(a, c, d, ap_resource_dflt(), mask);
 }
-
 
 #endif

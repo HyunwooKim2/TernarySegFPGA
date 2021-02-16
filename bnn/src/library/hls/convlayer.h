@@ -196,6 +196,11 @@ void ConvLayer_Batch(
 		ap_uint<WAY> nonz_m_buf;
 		ap_uint<FanInCntWidth> nonz_f_buf;
 
+		while(!convInp.empty())
+			convInp.read();
+		while(!convInp_mask.empty())
+			convInp_mask.read();
+
 		for(unsigned char pe=0; pe<PE; pe++){
 			for(unsigned char way_cnt=0; way_cnt<(SIMD/WAY); way_cnt++){
 				string nonz_i_log_file_name = snapshot_dir + "nonzero_" + to_string(LayerCnt+1)
@@ -221,24 +226,38 @@ void ConvLayer_Batch(
 				if(!nonz_f_log_file[pe][way_cnt].is_open())	cout << nonz_f_log_file_name << " open error!" << endl;
 				else	cout << "Reading " << nonz_f_log_file_name << " to skip nonzero_activation_gen..." << endl;
 
-
-				while(!nonz_i_log_file[pe][way_cnt].eof()){
+//				while(!nonz_i_log_file[pe][way_cnt].eof()){
+				while(1){
 					nonz_i_log_file[pe][way_cnt] >> hex >> nonz_i_buf;
+					if(nonz_i_log_file[pe][way_cnt].eof())
+						break;
 					packed_input[pe*(SIMD/WAY)+way_cnt].write(nonz_i_buf);
 				}
 
-				while(!nonz_w_log_file[pe][way_cnt].eof()){
+//				while(!nonz_w_log_file[pe][way_cnt].eof()){
+				while(1){
 					nonz_w_log_file[pe][way_cnt] >> hex >> nonz_w_buf;
+					if(nonz_w_log_file[pe][way_cnt].eof()){
+						break;
+					}
 					packed_weight[pe*(SIMD/WAY)+way_cnt].write(nonz_w_buf);
 				}
 
-				while(!nonz_m_log_file[pe][way_cnt].eof()){
+//				while(!nonz_m_log_file[pe][way_cnt].eof()){
+				while(1){
 					nonz_m_log_file[pe][way_cnt] >> hex >> nonz_m_buf;
+					if(nonz_m_log_file[pe][way_cnt].eof()){
+						break;
+					}
 					packed_mask[pe*(SIMD/WAY)+way_cnt].write(nonz_m_buf);
 				}
 
-				while(!nonz_f_log_file[pe][way_cnt].eof()){
+//				while(!nonz_f_log_file[pe][way_cnt].eof()){
+				while(1){
 					nonz_f_log_file[pe][way_cnt] >> nonz_f_buf;
+					if(nonz_f_log_file[pe][way_cnt].eof()){
+						break;
+					}
 					sf_num[pe*(SIMD/WAY)+way_cnt].write(nonz_f_buf);
 				}
 			}
