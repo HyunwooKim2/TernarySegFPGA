@@ -1021,30 +1021,19 @@ template<unsigned MatrixW, unsigned MatrixH, unsigned SIMD, unsigned PE, unsigne
 #endif
   typename TDstElem,	// hwkim added for batch norm scale
   typename TSrcI = Identity, typename TDstI = Identity, typename TWeightI = Identity,
-//  typename TI,
   typename TO,
-  // hwkim added for ternary
-//  typename TIM, // type mask
   typename TOM,
-  //typename TW, typename TWM,
   typename PI, typename PW, typename PM,
   typename FI,
-
   typename TA,
   typename R>
 void Matrix_Vector_Activate_Batch_SkipSeparately(
-//		hls::stream<TI> & in,
-//		hls::stream<TIM> & in_mask,
 		hls::stream<TO> &out,
 		hls::stream<TOM> &out_mask,
-
-		// hwkim modified for ternary
-		//TW  const &weights,
 		hls::stream<PI> * packed_input,
 		hls::stream<PW> * packed_weight,
 		hls::stream<FI> * sf_num,
 		hls::stream<PM> * packed_mask,
-
 		TA  const &activation,
 		int const  reps,
 		R const &r)
@@ -1061,18 +1050,16 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
    */
 
   // hwkim added for debug
-//  for(unsigned char pe=0; pe<PE; pe++){
-//	  cout << packed_input[pe].size();
-//  }
-
-
-  // hwkim added for debug
 #ifdef ACTIVATION_LOG
   extern string snapshot_dir;
   extern string golden_file_dir;
   int compare_skip = 0;
-  ap_uint<OutWidth> act_buf_arr[NF];
-  ap_uint<PE> act_mask_buf_arr[NF];
+  // ** hwkim modified for PE interleaving
+//  ap_uint<OutWidth> act_buf_arr[NF];
+//  ap_uint<PE> act_mask_buf_arr[NF];
+  ap_uint<2*OutWidth> act_buf_arr[NF/2];
+  ap_uint<2*PE> act_mask_buf_arr[NF/2];
+
   ap_uint<NF*OutWidth> act_buf=0;
   ap_uint<NF*PE> act_mask_buf=0;
 
@@ -1112,40 +1099,39 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
   if(!last_layer_scaled_file.is_open())	cout << "last_layer_scaled_file open error" << endl;
 #endif
 
-  // input vector buffers
-//  TI	inputBuf[SF];
-//#pragma HLS ARRAY_PARTITION variable=inputBuf complete dim=1
-  // hwkim added for ternary
-//  TIM	imaskBuf[SF];
-//#pragma HLS ARRAY_PARTITION variable=imaskBuf complete dim=1
-
-  decltype(activation.init(0,0))  accu[PE];
+  // ** hwkim added for PE interleaving
+//  decltype(activation.init(0,0))  accu[PE];
+//  decltype(activation.init(0,0))  accu_pe_way[PE*SIMD/WAY];
+  decltype(activation.init(0,0))  accu[PE*2];
+  decltype(activation.init(0,0))  accu_pe_way[PE*SIMD/WAY*2];
 #pragma HLS ARRAY_PARTITION variable=accu complete dim=1
-  // ** hwkim added to reduce slack
-  decltype(activation.init(0,0))  accu_pe_way[PE*SIMD/WAY];
 #pragma HLS ARRAY_PARTITION variable=accu_pe_way complete dim=1
 
-// hwkim added for activation comparision using +- accumulation
 #ifdef ACTIVATION_LOG
-  decltype(activation.init(0,0))  accu_pm[PE];
-  // ** hwkim added to reduce slack
-  decltype(activation.init(0,0))  accu_pe_way_pm[PE*SIMD/WAY];
+  // ** hwkim added for PE interleaving
+//  decltype(activation.init(0,0))  accu_pm[PE];
+//  decltype(activation.init(0,0))  accu_pe_way_pm[PE*SIMD/WAY];
+  decltype(activation.init(0,0))  accu_pm[PE*2];
+  decltype(activation.init(0,0))  accu_pe_way_pm[PE*SIMD/WAY*2];
 #endif
 
-  for(unsigned char pe = 0; pe < PE; pe++) {
+  // ** hwkim added for PE interleaving
+//  for(unsigned char pe = 0; pe < PE; pe++) {
+  for(unsigned char pe = 0; pe < PE*2; pe++) {
 #pragma HLS UNROLL
-	  accu[pe] = activation.init(0, pe);
+	  accu[pe] = activation.init(0,0);
 #ifdef ACTIVATION_LOG
-	  accu_pm[pe] = activation.init(0, pe);
+	  accu_pm[pe] = activation.init(0,0);
 #endif
   }
 
-  // ** hwkim added to reduce slack
-  for(unsigned char pe_way_cnt = 0; pe_way_cnt < PE*SIMD/WAY; pe_way_cnt++) {
+  // ** hwkim added for PE interleaving
+//  for(unsigned char pe_way_cnt = 0; pe_way_cnt < PE*SIMD/WAY; pe_way_cnt++) {
+  for(unsigned char pe_way_cnt = 0; pe_way_cnt < PE*SIMD/WAY*2; pe_way_cnt++) {
 #pragma HLS UNROLL
-	  accu_pe_way[pe_way_cnt] = activation.init(0, pe_way_cnt);
+	  accu_pe_way[pe_way_cnt] = activation.init(0,0);
 #ifdef ACTIVATION_LOG
-	  accu_pe_way_pm[pe_way_cnt] = activation.init(0, pe_way_cnt);
+	  accu_pe_way_pm[pe_way_cnt] = activation.init(0,0);
 #endif
   }
 
@@ -1164,6 +1150,10 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
   unsigned const sf_ch = SF/9;
   unsigned short fan_in=0;
 
+  // ** hwkim added for PE interleaving
+  unsigned char mini_nf = 0;
+  unsigned const pe_way_num = PE*(SIMD/WAY);
+
   x = 0;
   y = 0;
   kx = 0;
@@ -1172,145 +1162,123 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 
 //	  TI  inElem;
   PI  inElem;
-  // hwkim added for ternary
-//  PI  inElem_pe[PE];
-//#pragma HLS ARRAY_PARTITION variable=inElem_pe complete dim=1
+  // ** hwkim modified for PE interleaving
+//  auto  outElem = TDstI().template operator()<TO>();
+//  TOM outMaskElem;
+  ap_uint<2*TO::width> outElem;
+  ap_uint<2*TOM::width> outMaskElem;
 
-  FI sf_num_buf[PE*SIMD/WAY];
-#pragma HLS ARRAY_PARTITION variable=sf_num_buf complete dim=1
   unsigned char sf_max = 0;
 
-  // hwkim added for ternary
-  auto  outElem = TDstI().template operator()<TO>();
-  TOM outMaskElem;
+  // ** hwkim modified for PE interleaving
+//  FI sf_num_buf[PE*SIMD/WAY];
+  FI sf_num_buf[PE*SIMD/WAY*2];
+#pragma HLS ARRAY_PARTITION variable=sf_num_buf complete dim=1
 
-  ap_uint<1> pe_way_sync[PE*SIMD/WAY];
+  // ** hwkim modified for PE interleaving
+//  ap_uint<1> pe_way_sync[PE*SIMD/WAY];
+  ap_uint<1> pe_way_sync[PE*SIMD/WAY*2];
 #pragma HLS ARRAY_PARTITION variable=pe_way_sync complete dim=1
-  ap_uint<PE*SIMD/WAY> pe_way_sync_vec = 0;
 
-  // ** hwkim modified to reduce slack
+  // ** hwkim modified for PE interleaving
+//  ap_uint<PE*SIMD/WAY> pe_way_sync_vec = 0;
+  ap_uint<PE*SIMD/WAY> pe_way_sync_vec[2];
+
   sf = 0;
-//  for(unsigned  i = 0; i < reps * TOTAL_FOLD / SF; i++) {
-////#pragma HLS LOOP_FLATTEN off
-//	  for(sf=0; sf<SF*SIMD; sf+=SIMD){
   for(unsigned  i = 0; i < reps * TOTAL_FOLD; i++) {
 #pragma HLS PIPELINE II=1 rewind
-
-		  unsigned char pe=0;
-		  unsigned char way_cnt=0;
-
-//		  for(unsigned char pe = 0; pe < PE; pe++) {
-//#pragma HLS UNROLL
-//			  if(sf == 0) {
-//				  accu[pe] = activation.init(nf, pe);
-//#ifdef ACTIVATION_LOG
-//				  accu_pm[pe] = activation.init(nf, pe);
-//#endif
-//			  }
-//		  }
-
-//		  for(unsigned short pe_way_cnt=0; pe_way_cnt<PE*(SIMD/WAY); pe_way_cnt++){
-//#pragma HLS UNROLL
-//			  if(sf == 0){
-//				  sf_num_buf[pe_way_cnt] = sf_num[pe_way_cnt].read();
-//			  }
-//		  }
-//		  if(sf == 0)
-//			  sf_max = 0;
-//		  for(unsigned short pe_way_cnt=0; pe_way_cnt<PE*(SIMD/WAY); pe_way_cnt++){
-//#pragma HLS UNROLL
-//			  if((pe_way_cnt==0) && (sf==0))
-//				  sf_max = sf_num_buf[pe_way_cnt];
-//			  else if((sf_max < sf_num_buf[pe_way_cnt]) && (sf==0))
-//				  sf_max = sf_num_buf[pe_way_cnt];
-//		  }
-
-		  pe = 0;
-		  way_cnt = 0;
 		  for(unsigned short pe_way_cnt=0; pe_way_cnt<PE*(SIMD/WAY); pe_way_cnt++){
 #pragma HLS UNROLL
-			  if(sf == 0){
-				  sf_num_buf[pe_way_cnt] = sf_num[pe_way_cnt].read();
-				  pe_way_sync[pe_way_cnt] = 0;
-			  }
-			  else if(sf < sf_num_buf[pe_way_cnt]){
-				  pe_way_sync[pe_way_cnt] = 0;
-			  }
-			  else{
-				  pe_way_sync[pe_way_cnt] = 1;
-			  }
-
-			  if(sf < sf_num_buf[pe_way_cnt]){
-
-				  ap_uint<WAY> mask = ~packed_mask[pe_way_cnt].read();
-
-//				  inElem_pe[pe] = packed_input[pe_way_cnt].read();
-				  inElem = packed_input[pe_way_cnt].read();
-
-				  ap_uint<SIMD> dummy_w = packed_weight[pe_way_cnt].read();
-
-//				  auto const  act = TSrcI()(inElem_pe[pe]);
-				  auto const  act = TSrcI()(inElem);
-
-				  auto const  wgt = TWeightI()(dummy_w);
-				  	  // hwkim modified for ternary
-//				  accu[pe] = mac<SIMD>(accu[pe], wgt, act, r		// hwkim modified for activation comparison using +- accumulation
-//#ifdef ACTIVATION_LOG
-//										  , 0
-//#endif
-//										  );
-				  // ** hwkim modified to reduce slack
-				  // hwkim modified for mask
-//				  accu[pe] = mac_masked<WAY>(accu[pe], wgt, act, r, mask);	// should be modified - N = WAY
-				  accu_pe_way[pe_way_cnt] = mac_masked<WAY>(accu_pe_way[pe_way_cnt], wgt, act, r, mask);	// should be modified - N = WAY
-
-
-#ifdef ACTIVATION_LOG
-				  // hwkim modified for way
-//				  	  accu_pm[pe] = mac<SIMD>(accu_pm[pe], wgt, act, r, 1);
-				  if(TSrcI::width==1)	// hwkim: rest layers except for the first layer
-//					  accu_pm[pe] = mac_masked_pm<WAY>(accu[pe], wgt, act, r, mask);	// should be modified - N = WAY
-					  accu_pe_way_pm[pe_way_cnt] = mac_masked_pm<WAY>(accu_pe_way_pm[pe_way_cnt], wgt, act, r, mask);	// should be modified - N = WAY
-
-#ifdef DEBUG
-				  // hwkim added for debug
-				  cout << fixed;
-				  cout.precision(8);
-				  cout << "nf " << (int)nf << ", accu[" << (int)pe << "]: " << accu[pe];
-//				  cout << hex << "\tact: " << inElem_pe[pe] << "\twgt: " << dummy_w << endl;
-				  cout << hex << "\tact: " << inElem << "\twgt: " << dummy_w << endl;
-#endif
-#endif
-			  }
-//			  if(sf < (sf_num_buf[pe_way_cnt] - SIMD)){
+			  // ** hwkim modified for PE interleaving
+//			  if(sf == 0){
+//				  sf_num_buf[pe_way_cnt] = sf_num[pe_way_cnt].read();
+//				  pe_way_sync[pe_way_cnt] = 0;
+//			  }
+//			  else if(sf < sf_num_buf[pe_way_cnt]){
 //				  pe_way_sync[pe_way_cnt] = 0;
 //			  }
 //			  else{
 //				  pe_way_sync[pe_way_cnt] = 1;
 //			  }
+			  unsigned short pe_way_mini_nf_index = mini_nf*(pe_way_num)+pe_way_cnt;
+			  if(sf == 0){
+				  sf_num_buf[pe_way_mini_nf_index] = sf_num[pe_way_mini_nf_index].read();
+				  pe_way_sync[pe_way_mini_nf_index] = 0;
+			  }
+			  else if(sf < (sf_num_buf[pe_way_mini_nf_index] - SIMD)){
+				  pe_way_sync[pe_way_mini_nf_index] = 0;
+			  }
+			  else{
+				  pe_way_sync[pe_way_mini_nf_index] = 1;
+			  }
 
-			  // ** hwkim added for OPTIMIZATION
-			  if(++way_cnt==(SIMD/WAY)){
-				  pe++;
-				  way_cnt=0;
+			  // ** hwkim modified for PE interleaving
+//			  if(sf < sf_num_buf[pe_way_cnt]){
+//				  ap_uint<WAY> mask = ~packed_mask[pe_way_cnt].read();
+//				  inElem = packed_input[pe_way_cnt].read();
+//				  ap_uint<SIMD> dummy_w = packed_weight[pe_way_cnt].read();
+//				  auto const  act = TSrcI()(inElem);
+//
+//				  auto const  wgt = TWeightI()(dummy_w);
+//				  accu_pe_way[pe_way_cnt] = mac_masked<WAY>(accu_pe_way[pe_way_cnt], wgt, act, r, mask);	// should be modified - N = WAY
+//#ifdef ACTIVATION_LOG
+//				  if(TSrcI::width==1)	// hwkim: rest layers except for the first layer
+//					  accu_pe_way_pm[pe_way_cnt] = mac_masked_pm<WAY>(accu_pe_way_pm[pe_way_cnt], wgt, act, r, mask);	// should be modified - N = WAY
+//
+//#ifdef DEBUG
+//				  cout << fixed;
+//				  cout.precision(8);
+//				  cout << "nf " << (int)nf << ", accu[" << (int)pe << "]: " << accu[pe];
+//				  cout << hex << "\tact: " << inElem << "\twgt: " << dummy_w << endl;
+//#endif
+//#endif
+//			  }
+			  if(sf < sf_num_buf[pe_way_mini_nf_index]){
+				  ap_uint<WAY> mask = ~packed_mask[pe_way_mini_nf_index].read();
+				  inElem = packed_input[pe_way_mini_nf_index].read();
+				  ap_uint<SIMD> dummy_w = packed_weight[pe_way_mini_nf_index].read();
+				  auto const  act = TSrcI()(inElem);
+				  auto const  wgt = TWeightI()(dummy_w);
+				  accu_pe_way[pe_way_mini_nf_index] = mac_masked<WAY>(accu_pe_way[pe_way_mini_nf_index], wgt, act, r, mask);	// should be modified - N = WAY
+#ifdef ACTIVATION_LOG
+				  if(TSrcI::width==1)	// hwkim: rest layers except for the first layer
+					  accu_pe_way_pm[pe_way_mini_nf_index] = mac_masked_pm<WAY>(accu_pe_way_pm[pe_way_mini_nf_index], wgt, act, r, mask);	// should be modified - N = WAY
+
+#ifdef DEBUG
+				  cout << fixed;
+				  cout.precision(8);
+				  cout << "nf " << (int)nf << ", accu[" << (int)pe_way_mini_nf_index << "]: " << accu_pe_way[pe_way_mini_nf_index];
+				  cout << hex << "\tact: " << inElem << "\twgt: " << dummy_w << endl;
+#endif
+#endif
 			  }
 		  }
 
+		  // ** hwkim modified for PE interleaving
+//		  for(unsigned short pe_way_cnt=0; pe_way_cnt<PE*(SIMD/WAY); pe_way_cnt++){
+//			  pe_way_sync_vec |= (ap_uint<PE*SIMD/WAY>)pe_way_sync[pe_way_cnt] << pe_way_cnt;
+//		  }
 		  for(unsigned short pe_way_cnt=0; pe_way_cnt<PE*(SIMD/WAY); pe_way_cnt++){
-			  pe_way_sync_vec |= (ap_uint<PE*SIMD/WAY>)pe_way_sync[pe_way_cnt] << pe_way_cnt;
+			  	  pe_way_sync_vec[mini_nf] |= (ap_uint<PE*SIMD/WAY>)pe_way_sync[mini_nf*(pe_way_num)+pe_way_cnt] << pe_way_cnt;
 		  }
 
-//			  if(sf >= (sf_max-SIMD)){
-		  if((~pe_way_sync_vec==0) || (sf==(SF-1)*SIMD)){
-			  // ** hwkim modified to reduce slack
+		  // ** hwkim modified for PE interleaving
+//		  if((~pe_way_sync_vec==0) || (sf==(SF-1)*SIMD)){
+		  if(((~(pe_way_sync_vec[0]&pe_way_sync_vec[1])==0) || (sf==(SF-1)*SIMD)) &&(mini_nf==1)){
+
 			  unsigned char pe=0;
 			  unsigned char way_cnt=0;
 			  for(unsigned char pe_way_cnt = 0; pe_way_cnt < PE*SIMD/WAY; pe_way_cnt++) {
 #pragma HLS UNROLL
 				  accu[pe] += accu_pe_way[pe_way_cnt];
+				  // ** hwkim added for PE interleaving
+				  accu[PE+pe] += accu_pe_way[pe_way_num+pe_way_cnt];
 #ifdef ACTIVATION_LOG
-				  if(TSrcI::width!=1)	// hwkim: for the first layer
+				  // ** hwkim modified for PE interleaving
+				  if(TSrcI::width==1){	// hwkim: for the rest layer
 					  accu_pm[pe] += accu_pe_way_pm[pe_way_cnt];
+					  accu_pm[PE+pe] += accu_pe_way_pm[pe_way_num+pe_way_cnt];
+				  }
 #endif
 				  if(++way_cnt==(SIMD/WAY)){
 					  pe++;
@@ -1318,21 +1286,19 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 				  }
 			  }
 
-			  for(unsigned char pe = 0; pe < PE; pe++) {
+			  // ** hwkim modified for PE interleaving
+//			  for(unsigned char pe = 0; pe < PE; pe++) {
+			  for(unsigned char pe = 0; pe < 2*PE; pe++) {
 #pragma HLS UNROLL
-
-	// hwkim modified for debug
-	// hwkim commented for 0-1 accumulation - not +- accum
 	#ifdef ACTIVATION_LOG
-				  if(TSrcI::width!=1)	// hwkim: for the first layer
+				  if(TSrcI::width!=1){	// hwkim: for the first layer
 					  accu_pm[pe] = accu[pe];
-
+				  }
 				  // write conv_out_minus_bias
 				  conv_out_log_file << fixed;
 				  conv_out_log_file.precision(8);
 				  conv_out_log_file.setf(ios_base::showpoint);
 				  conv_out_log_file <<  accu_pm[pe] << endl;//" | ";
-
 				  //compare golden with computed
 				  decltype(activation.init(0,0))	golden_buf;
 				  golden_conv_out_file >> golden_buf;
@@ -1344,47 +1310,46 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 					  conv_out_comp_file << "gold: " << golden_buf << ", accu[nf " << (int)nf << ",pe " << (int)pe << "]: " << accu[pe] << endl;
 				  }
 	#endif
-				  // hwkim modified for ternary
-	//			  TDstElem outElem_unit;
-	//			  outElem_unit = activation.activate(nf, pe, accu[pe], sf_num_buf[pe]);
 				  ap_uint<TDstElem::width+1> outElem_ter_unit;	// include zero mask
 				  // hwkim modified for way
 	//			  outElem_ter_unit = activation.activate(nf, pe, accu[pe], sf_num_buf[pe]);
-				  outElem_ter_unit = activation.activate(nf, pe, accu[pe], sf_num_buf[0]);
+				  // ** hwkim modified for PE interleaving
+//				  outElem_ter_unit = activation.activate(nf, pe, accu[pe], sf_num_buf[0]);
+				  unsigned char new_nf = nf*2+(int)(pe/PE);
+				  unsigned char new_pe = pe%PE;
+				  outElem_ter_unit = activation.activate(new_nf, new_pe, accu[pe], NULL);	// sf_num(fan-in) for PE should be modified!!!
 
 				  ap_uint<1> outMaskElem_unit;
 				  outMaskElem_unit = (ap_uint<1>)outElem_ter_unit[TDstI::width];
 				  TDstElem outElem_unit;
 				  outElem_unit = (TDstElem)outElem_ter_unit[TDstI::width-1];
 
-				  // hwkim modified for ternary
 				  outElem[pe] = *reinterpret_cast<ap_uint<TDstI::width> *>(&outElem_unit);
 				  outMaskElem[pe] = outMaskElem_unit;
 			  }
-//		  }
-
-
-//		  if(sf >= (sf_max-SIMD)){
-//		  if(~pe_way_sync==0){
 
 			  // sync all PE here - per every sliding window
 			  out.write(outElem);
 			  out_mask.write(outMaskElem);
 
-// hwkim added for debug
 #ifdef ACTIVATION_LOG
 			  act_buf_arr[nf] = outElem;
 			  act_mask_buf_arr[nf] = outMaskElem;
-		//			  cout << hex << (unsigned int)act_buf_arr[nf] << endl;
-			  if(nf==(NF-1)){
+			  // ** hwkim modified for PE interleaving
+//			  if(nf==(NF-1)){
+			  if(nf==(NF/2-1)){
+
 				act_buf = 0;
 				act_mask_buf = 0;
-				for(int nf_cnt=NF-1; nf_cnt>=0; nf_cnt--){
-					// hwkim: filling act_buf
-					act_buf = act_buf << OutWidth;	//OutWidth or PE
-					act_buf = act_buf | act_buf_arr[nf_cnt];
+				// ** hwkim modified for PE interleaving
+//				for(int nf_cnt=NF-1; nf_cnt>=0; nf_cnt--){
+//					act_buf = act_buf << OutWidth;	//OutWidth or PE
+//					act_mask_buf = act_mask_buf << PE;	//OutWidth or PE
+				for(int nf_cnt=NF/2-1; nf_cnt>=0; nf_cnt--){
+					act_buf = act_buf << 2*OutWidth;	//OutWidth or PE
+					act_mask_buf = act_mask_buf << 2*PE;	//OutWidth or PE
 
-					act_mask_buf = act_mask_buf << PE;	//OutWidth or PE
+					act_buf = act_buf | act_buf_arr[nf_cnt];
 					act_mask_buf = act_mask_buf | act_mask_buf_arr[nf_cnt];
 				}
 
@@ -1482,69 +1447,73 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 					}
 
 				}
-				if(x==0)
-					cout << dec << y << "/" << OFMHeight << endl;
 			}
 #endif
-			  // ** hwkim commented to reduce slack
-//			  if(++nf == NF) {
-//				  nf = 0;
-//				  if(++x==OFMDim){
-//					  x=0;
-//					  if(++y==OFMHeight){
-//						  y=0;
-//					  }
-//				  }
+
+			  // ** hwkim added for PE interleaving
+//			  for(unsigned char pe = 0; pe < PE; pe++) {
+//#pragma HLS UNROLL
+//				  accu[pe] = activation.init(nf, pe);
+//#ifdef ACTIVATION_LOG
+//				  accu_pm[pe] = activation.init(nf, pe);
+//#endif
+			  for(unsigned char pe = 0; pe < 2*PE; pe++) {
+#pragma HLS UNROLL
+				  accu[pe] = activation.init(0,0);	// hwkim: no meaning of nf/pe
+#ifdef ACTIVATION_LOG
+				  accu_pm[pe] = activation.init(0,0);
+#endif
+			  }
+
+			  // ** hwkim added for PE interleaving
+//			  for(unsigned char pe_way_cnt = 0; pe_way_cnt < PE*SIMD/WAY; pe_way_cnt++) {
+//#pragma HLS UNROLL
+//				  accu_pe_way[pe_way_cnt] = activation.init(nf, pe_way_cnt);
+//#ifdef ACTIVATION_LOG
+//				  accu_pe_way_pm[pe_way_cnt] = activation.init(nf, pe_way_cnt);
+//#endif
 //			  }
-
-			  // ** hwkim commented to reduce slack
-//			  pe_way_sync_vec = 0;
-
-			  for(unsigned char pe = 0; pe < PE; pe++) {
+			  for(unsigned char pe_way_cnt = 0; pe_way_cnt < 2*PE*SIMD/WAY; pe_way_cnt++) {
 #pragma HLS UNROLL
-				  accu[pe] = activation.init(nf, pe);
+				  accu_pe_way[pe_way_cnt] = activation.init(0,0);
 #ifdef ACTIVATION_LOG
-				  accu_pm[pe] = activation.init(nf, pe);
+				  accu_pe_way_pm[pe_way_cnt] = activation.init(0,0);
 #endif
 			  }
-			  // ** hwkim added to reduce slack
-			  for(unsigned char pe_way_cnt = 0; pe_way_cnt < PE*SIMD/WAY; pe_way_cnt++) {
-#pragma HLS UNROLL
-				  accu_pe_way[pe_way_cnt] = activation.init(nf, pe_way_cnt);
-#ifdef ACTIVATION_LOG
-				  accu_pe_way_pm[pe_way_cnt] = activation.init(nf, pe_way_cnt);
-#endif
-			  }
-//		  }
-
-
-//		  if((sf_max-SIMD) <= sf)
-//		  if(~pe_way_sync==0)
-//		  if(~pe_way_sync_vec==0){
-			  // ** hwkim commented to reduce slack
-//			  break;
 		  }
 
-		  // ** hwkim added to reduce slack
-		  sf+=SIMD;
-		  if((sf==SF*SIMD) || (~pe_way_sync_vec==0)){
-			  sf=0;
-			  pe_way_sync_vec = 0;
-			  if(++nf == NF) {
-				  nf = 0;
-				  if(++x==OFMDim){
-					  x=0;
-					  if(++y==OFMHeight){
-						  y=0;
-						  break;
+		  // ** hwkim added for PE interleaving
+		  if(++mini_nf==2){
+			  mini_nf=0;
+
+			  sf+=SIMD;
+			  // ** hwkim modified for PE interleaving
+//			  if((sf==SF*SIMD) || (~pe_way_sync_vec==0)){
+//				  pe_way_sync_vec = 0;
+			  if((sf==SF*SIMD)
+					  || (~(pe_way_sync_vec[0]&pe_way_sync_vec[1])==0)){
+				  pe_way_sync_vec[0] = 0;
+				  pe_way_sync_vec[1] = 0;
+
+				  sf=0;
+				  // ** hwkim added for PE interleaving
+//				  if(++nf == NF) {
+				  if(++nf == (NF>>1)) {	// NF/2
+
+					  nf = 0;
+					  if(++x==OFMDim){
+						  x=0;
+#ifdef ACTIVATION_LOG
+					  cout << dec << "y: " << (y+1) << "/" << OFMHeight << endl;
+#endif
+						  if(++y==OFMHeight){
+							  y=0;
+							  break;
+						  }
 					  }
 				  }
 			  }
 		  }
-//		  if(y==OFMHeight)
-//			  break;
-
-//	  }
   }
 
 #ifdef ACTIVATION_LOG
@@ -1703,12 +1672,25 @@ void nonzero_activation_weight_stream_gen(
 			}
 
 			if(sf<SF){
-				auto const &w = weights.weights(tile);
-				auto const &wm = wmasks.masks(tile);
+				// ** hwkim modified for PE interleaving
+//				auto const &w = weights.weights(tile);
+//				auto const &wm = wmasks.masks(tile);
+//				for(unsigned char pe=0; pe<PE; pe++){
+//#pragma HLS UNROLL
+//					wgtElem[pe] = w[pe];
+//					wmaskElem[pe] = wm[pe];
+//				}
 				for(unsigned char pe=0; pe<PE; pe++){
 #pragma HLS UNROLL
-					wgtElem[pe] = w[pe];
-					wmaskElem[pe] = wm[pe];
+					unsigned char new_tile = (int)(pe*2/PE)*SF + (nf*SF) + tile;	//(pe/(PE/2)), pe_offset+nf_offset+tile
+					unsigned char new_pe = pe%(PE/2);
+//					cout << "nf: " << (int)nf;
+//					cout << ", new_tile: " << (int)new_tile;
+//					cout << ", new_pe: " << (int)new_pe << endl;
+					auto const &w = weights.weights(new_tile);
+					auto const &wm = wmasks.masks(new_tile);
+					wgtElem[pe] = w[new_pe];
+					wmaskElem[pe] = wm[new_pe];
 				}
 			}
 

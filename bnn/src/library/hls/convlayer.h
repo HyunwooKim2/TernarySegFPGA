@@ -108,35 +108,26 @@ void ConvLayer_Batch(
 
   unsigned const MatrixW = ConvKernelDim * ConvKernelDim * IFMChannels;
   unsigned const MatrixH = OFMChannels;
-
-  // hwkim modified for debug - consider fractal
-  //unsigned const InpPerImage = IFMDim*IFMDim*IFMChannels/InStreamW * TSrcI::width;
-  //unsigned const InpPerImage = (float)(IFMDim*IFMDim*IFMChannels)/InStreamW * TSrcI::width;
-  // hwkim modified for segmentation
   unsigned const InpPerImage = (float)(IFMDim*IFMHeight*IFMChannels)/InStreamW * TSrcI::width;
 
   WidthAdjustedInputStream <InStreamW, SIMD*TSrcI::width, InpPerImage>  wa_in (in,  reps);
-  WidthAdjustedOutputStream <PE*TDstI::width, OutStreamW,
-  // hwkim modified for segmentation
-  	  //OFMDim * OFMDim * (OFMChannels / PE)> mvOut (out,  reps);
-  	  OFMDim * OFMHeight * (OFMChannels / PE)> mvOut (out,  reps);
-
-  // hwkim added for ternary
-  WidthAdjustedOutputStream <PE, OutMaskStreamW,
-  // hwkim modified for segmentation
-  	  //OFMDim * OFMDim * (OFMChannels / PE)> mvOut (out,  reps);
-  	  OFMDim * OFMHeight * (OFMChannels / PE)> mvOutMask (out_mask,  reps);
-
   hls::stream<ap_uint<SIMD*TSrcI::width> > convInp("StreamingConvLayer_Batch.convInp");
+  // ** hwkim modified for PE interleaving
+//  WidthAdjustedOutputStream <PE*TDstI::width, OutStreamW, OFMDim * OFMHeight * (OFMChannels / PE)> mvOut (out,  reps);
+  WidthAdjustedOutputStream <2*PE*TDstI::width, OutStreamW, OFMDim * OFMHeight * (OFMChannels / PE) / 2> mvOut (out,  reps);
 
   // hwkim added for ternary
   WidthAdjustedInputStream <InMaskStreamW, SIMD, InpPerImage>  wa_in_mask (in_mask,  reps);
   hls::stream<ap_uint<SIMD>> convInp_mask("StreamingConvLayer_Batch.convInp_mask");
+  // ** hwkim modified for PE interleaving
+//  WidthAdjustedOutputStream <PE, OutMaskStreamW, OFMDim * OFMHeight * (OFMChannels / PE)> mvOutMask (out_mask,  reps);
+  WidthAdjustedOutputStream <2*PE, OutMaskStreamW, OFMDim * OFMHeight * (OFMChannels / PE) / 2> mvOutMask (out_mask,  reps);
+
 
   ConvolutionInputGenerator<ConvKernelDim, IFMChannels, TSrcI::width, IFMDim, OFMDim,
 	  IFMHeight, OFMHeight, Top, Bottom, Left, Right,	// hwkim added for segmentation
   	  SIMD,
-	  Stride>	//1>	// hwkim modified for segmentation
+	  Stride>
   	  	  (wa_in,
 		  wa_in_mask,	// hwkim added for ternary
 		  convInp,
@@ -144,31 +135,30 @@ void ConvLayer_Batch(
 		  reps);
 
   // hwkim added for ternary
-//	hls::stream<ap_uint<SIMD*TSrcI::width>> packed_input[PE];
-//#pragma HLS STREAM variable=packed_input
-//	hls::stream<ap_uint<SIMD>> packed_weight[PE];
-//#pragma HLS STREAM variable=packed_weight
-//	hls::stream<unsigned short> sf_num[PE];
-//#pragma HLS STREAM variable=sf_num
-  // hwkim modified for way
-	hls::stream<ap_uint<WAY*TSrcI::width>> packed_input[PE*(SIMD/WAY)];
-#pragma HLS ARRAY_PARTITION variable=packed_input complete dim=1	// ** hwkim added for OPTIMIZATION
+  // ** hwkim modified for PE interleaving
+//	hls::stream<ap_uint<WAY*TSrcI::width>> packed_input[PE*(SIMD/WAY)];
+//	hls::stream<ap_uint<WAY>> packed_weight[PE*(SIMD/WAY)];
+//	hls::stream<ap_uint<FanInCntWidth>> sf_num[PE*(SIMD/WAY)];
+//	hls::stream<ap_uint<WAY>> packed_mask[PE*(SIMD/WAY)];
+	hls::stream<ap_uint<WAY*TSrcI::width>> packed_input[2*PE*(SIMD/WAY)];
+	hls::stream<ap_uint<WAY>> packed_weight[2*PE*(SIMD/WAY)];
+	hls::stream<ap_uint<FanInCntWidth>> sf_num[2*PE*(SIMD/WAY)];
+	hls::stream<ap_uint<WAY>> packed_mask[2*PE*(SIMD/WAY)];
+
+//#pragma HLS ARRAY_PARTITION variable=packed_input complete dim=1	// ** hwkim added for OPTIMIZATION
 #pragma HLS STREAM variable=packed_input
-	hls::stream<ap_uint<WAY>> packed_weight[PE*(SIMD/WAY)];
 #pragma HLS STREAM variable=packed_weight
-	hls::stream<ap_uint<FanInCntWidth>> sf_num[PE*(SIMD/WAY)];
 #pragma HLS STREAM variable=sf_num
-	hls::stream<ap_uint<WAY>> packed_mask[PE*(SIMD/WAY)];
-#pragma HLS STREAM variable=packed_weight
+#pragma HLS STREAM variable=packed_mask
 
 #ifdef SEP_SIM
 	if(nonzero_en==1)
 #endif
 		nonzero_activation_weight_stream_gen
-		<MatrixW, MatrixH, SIMD, PE, OFMDim, OFMHeight,
-			Top, Bottom, Left, Right,
-			TSrcI::width,
-			WAY
+		// ** hwkim modified for PE interleaving
+//		<MatrixW, MatrixH, SIMD, PE, OFMDim, OFMHeight, Top, Bottom, Left, Right, TSrcI::width, WAY
+		<MatrixW, MatrixH, SIMD, 2*PE, OFMDim, OFMHeight, Top, Bottom, Left, Right, TSrcI::width, WAY
+
 #ifdef ACTIVATION_LOG
 			, LayerCnt
 #endif
@@ -185,11 +175,15 @@ void ConvLayer_Batch(
 #ifdef SEP_SIM
 	else{
 		extern string snapshot_dir;
-
-		ifstream nonz_i_log_file[PE][SIMD/WAY];
-		ifstream nonz_w_log_file[PE][SIMD/WAY];
-		ifstream nonz_m_log_file[PE][SIMD/WAY];
-		ifstream nonz_f_log_file[PE][SIMD/WAY];
+		// ** hwkim modified for PE interleaving
+//		ifstream nonz_i_log_file[PE][SIMD/WAY];
+//		ifstream nonz_w_log_file[PE][SIMD/WAY];
+//		ifstream nonz_m_log_file[PE][SIMD/WAY];
+//		ifstream nonz_f_log_file[PE][SIMD/WAY];
+		ifstream nonz_i_log_file[2*PE][SIMD/WAY];
+		ifstream nonz_w_log_file[2*PE][SIMD/WAY];
+		ifstream nonz_m_log_file[2*PE][SIMD/WAY];
+		ifstream nonz_f_log_file[2*PE][SIMD/WAY];
 
 		ap_uint<WAY*TSrcI::width> nonz_i_buf;
 		ap_uint<WAY> nonz_w_buf;
@@ -201,7 +195,10 @@ void ConvLayer_Batch(
 		while(!convInp_mask.empty())
 			convInp_mask.read();
 
-		for(unsigned char pe=0; pe<PE; pe++){
+		// ** hwkim modified for PE interleaving
+//		for(unsigned char pe=0; pe<PE; pe++){
+		for(unsigned char pe=0; pe<2*PE; pe++){
+
 			for(unsigned char way_cnt=0; way_cnt<(SIMD/WAY); way_cnt++){
 				string nonz_i_log_file_name = snapshot_dir + "nonzero_" + to_string(LayerCnt+1)
 						+ "_" + to_string(pe) + "_" + to_string(way_cnt) + "_input_log.txt";
@@ -296,13 +293,13 @@ void ConvLayer_Batch(
 		TDstElem,	// hwkim added for batch norm scale
 		TSrcI, TDstI, TWeightI>
 			(
-//			static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>&>(convInp),
-//			static_cast<hls::stream<ap_uint<SIMD>>&>(convInp_mask),	// hwkim added for ternary
-			static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>(mvOut),
-			static_cast<hls::stream<ap_uint<PE>>&>(mvOutMask),
+			// ** hwkim modified for PE interleaving
+//			static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>(mvOut),
+//			static_cast<hls::stream<ap_uint<PE>>&>(mvOutMask),
+			static_cast<hls::stream<ap_uint<2*PE*TDstI::width>>&>(mvOut),
+			static_cast<hls::stream<ap_uint<2*PE>>&>(mvOutMask),
 
-			// hwkim modifeid for ternary
-			//weights,
+			// hwkim added for ternary
 			static_cast<hls::stream<ap_uint<WAY*TSrcI::width>>*>(packed_input),
 			static_cast<hls::stream<ap_uint<WAY>>*>(packed_weight),
 			static_cast<hls::stream<ap_uint<FanInCntWidth>>*>(sf_num),
