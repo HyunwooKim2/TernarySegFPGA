@@ -693,6 +693,7 @@ void DoCompute(
 			L0_SIMD, L0_PE,
 			L0_WAY,	// hwkim added for ternary
 			L0_FANWIDTH,	// hwkim added for ternary
+			2,	// NONZ_SCALE
 			ap_uint<1>,	// TDstElem, hwkim added for batch norm scale
 			Slice<ap_fixed<8, 1, AP_TRN, AP_SAT>>, Identity, Recast<Binary>>
 				(inter0_2,
@@ -764,6 +765,7 @@ void DoCompute(
 				L1_SIMD, L1_PE,
 				L1_WAY,	// hwkim added for ternary
 				L1_FANWIDTH,	// hwkim added for ternary
+				2,	// NONZ_SCALE
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
 					(inter1,
@@ -833,6 +835,7 @@ void DoCompute(
 				L2_SIMD, L2_PE,
 				L2_WAY,	// hwkim added for ternary
 				L2_FANWIDTH,	// hwkim added for ternary
+				2,	// NONZ_SCALE
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
 					(inter2,
@@ -902,6 +905,7 @@ void DoCompute(
 				L3_SIMD, L3_PE,
 				L3_WAY,	// hwkim added for ternary
 				L3_FANWIDTH,	// hwkim added for ternary
+				2,	// NONZ_SCALE
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
 					(inter3,
@@ -971,6 +975,7 @@ void DoCompute(
 				L4_SIMD, L4_PE,
 				L4_WAY,	// hwkim added for ternary
 				L4_FANWIDTH,	// hwkim added for ternary
+				2,	// NONZ_SCALE
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
 					(inter4,
@@ -1040,6 +1045,7 @@ void DoCompute(
 				L5_SIMD, L5_PE,
 				L5_WAY,	// hwkim added for ternary
 				L5_FANWIDTH,	// hwkim added for ternary
+				2,	// NONZ_SCALE
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
 					(inter5,
@@ -1125,6 +1131,7 @@ void DoCompute(
 				L6_SIMD, L6_PE,
 				L6_WAY,	// hwkim added for ternary
 				L6_FANWIDTH,	// hwkim added for ternary
+				2,	// NONZ_SCALE
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
 					(inter6,
@@ -1192,6 +1199,7 @@ void DoCompute(
 				L7_SIMD, L7_PE,
 				L7_WAY,	// hwkim added for ternary
 				L7_FANWIDTH,	// hwkim added for ternary
+				2,	// NONZ_SCALE
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
 					(inter7,
@@ -1277,6 +1285,7 @@ void DoCompute(
 				L8_SIMD, L8_PE,
 				L8_WAY,	// hwkim added for ternary
 				L8_FANWIDTH,	// hwkim added for ternary
+				2,	// NONZ_SCALE
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
 					(inter8,
@@ -1340,6 +1349,7 @@ void DoCompute(
 				L9_SIMD, L9_PE,
 				L9_WAY,	// hwkim added for ternary
 				L9_FANWIDTH,	// hwkim added for ternary
+				2,	// NONZ_SCALE
 				ap_uint<1>,	// hwkim added for batch norm scale
 				Recast<XnorMul>>
 					(inter9,
@@ -1408,6 +1418,7 @@ void DoCompute(
 				L10_SIMD, L10_PE,
 				L10_WAY,	// hwkim added for ternary
 				L10_FANWIDTH,	// hwkim added for ternary
+				1,	// NONZ_SCALE
 				ap_fixed<24,16,AP_TRN,AP_SAT>,	// hwkim added for batch norm scale
 				Recast<XnorMul>,
 				Slice<ap_fixed<24,16,AP_TRN,AP_SAT> >>	//Slice<ap_int<16> >>	// hwkim modified for batch norm scale

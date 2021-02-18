@@ -80,6 +80,7 @@ template<
 		unsigned int PE,		// number of PEs
 		unsigned char WAY,	// hwkim added for ternary
 		unsigned char FanInCntWidth,	// hwkim added for ternary, log2(fan-in/WAY)
+		unsigned NONZ_SCALE,
 		typename TDstElem,	// hwkim added for batch norm scale
 		typename TSrcI = Identity,      // redefine I/O interpretation as needed for input activations
 		typename TDstI = Identity,		// redefine I/O interpretation as needed for output activations
@@ -114,14 +115,14 @@ void ConvLayer_Batch(
   hls::stream<ap_uint<SIMD*TSrcI::width> > convInp("StreamingConvLayer_Batch.convInp");
   // ** hwkim modified for PE interleaving
 //  WidthAdjustedOutputStream <PE*TDstI::width, OutStreamW, OFMDim * OFMHeight * (OFMChannels / PE)> mvOut (out,  reps);
-  WidthAdjustedOutputStream <2*PE*TDstI::width, OutStreamW, OFMDim * OFMHeight * (OFMChannels / PE) / 2> mvOut (out,  reps);
+  WidthAdjustedOutputStream <NONZ_SCALE*PE*TDstI::width, OutStreamW, OFMDim * OFMHeight * (OFMChannels / PE) / 2> mvOut (out,  reps);
 
   // hwkim added for ternary
   WidthAdjustedInputStream <InMaskStreamW, SIMD, InpPerImage>  wa_in_mask (in_mask,  reps);
   hls::stream<ap_uint<SIMD>> convInp_mask("StreamingConvLayer_Batch.convInp_mask");
   // ** hwkim modified for PE interleaving
 //  WidthAdjustedOutputStream <PE, OutMaskStreamW, OFMDim * OFMHeight * (OFMChannels / PE)> mvOutMask (out_mask,  reps);
-  WidthAdjustedOutputStream <2*PE, OutMaskStreamW, OFMDim * OFMHeight * (OFMChannels / PE) / 2> mvOutMask (out_mask,  reps);
+  WidthAdjustedOutputStream <NONZ_SCALE*PE, OutMaskStreamW, OFMDim * OFMHeight * (OFMChannels / PE) / 2> mvOutMask (out_mask,  reps);
 
 
   ConvolutionInputGenerator<ConvKernelDim, IFMChannels, TSrcI::width, IFMDim, OFMDim,
@@ -140,10 +141,10 @@ void ConvLayer_Batch(
 //	hls::stream<ap_uint<WAY>> packed_weight[PE*(SIMD/WAY)];
 //	hls::stream<ap_uint<FanInCntWidth>> sf_num[PE*(SIMD/WAY)];
 //	hls::stream<ap_uint<WAY>> packed_mask[PE*(SIMD/WAY)];
-	hls::stream<ap_uint<WAY*TSrcI::width>> packed_input[2*PE*(SIMD/WAY)];
-	hls::stream<ap_uint<WAY>> packed_weight[2*PE*(SIMD/WAY)];
-	hls::stream<ap_uint<FanInCntWidth>> sf_num[2*PE*(SIMD/WAY)];
-	hls::stream<ap_uint<WAY>> packed_mask[2*PE*(SIMD/WAY)];
+	hls::stream<ap_uint<WAY*TSrcI::width>> packed_input[NONZ_SCALE*PE*(SIMD/WAY)];
+	hls::stream<ap_uint<WAY>> packed_weight[NONZ_SCALE*PE*(SIMD/WAY)];
+	hls::stream<ap_uint<FanInCntWidth>> sf_num[NONZ_SCALE*PE*(SIMD/WAY)];
+	hls::stream<ap_uint<WAY>> packed_mask[NONZ_SCALE*PE*(SIMD/WAY)];
 
 //#pragma HLS ARRAY_PARTITION variable=packed_input complete dim=1	// ** hwkim added for OPTIMIZATION
 #pragma HLS STREAM variable=packed_input
@@ -157,7 +158,7 @@ void ConvLayer_Batch(
 		nonzero_activation_weight_stream_gen
 		// ** hwkim modified for PE interleaving
 //		<MatrixW, MatrixH, SIMD, PE, OFMDim, OFMHeight, Top, Bottom, Left, Right, TSrcI::width, WAY
-		<MatrixW, MatrixH, SIMD, 2*PE, OFMDim, OFMHeight, Top, Bottom, Left, Right, TSrcI::width, WAY
+		<MatrixW, MatrixH, SIMD, PE, OFMDim, OFMHeight, Top, Bottom, Left, Right, TSrcI::width, WAY, NONZ_SCALE
 
 #ifdef ACTIVATION_LOG
 			, LayerCnt
@@ -180,10 +181,10 @@ void ConvLayer_Batch(
 //		ifstream nonz_w_log_file[PE][SIMD/WAY];
 //		ifstream nonz_m_log_file[PE][SIMD/WAY];
 //		ifstream nonz_f_log_file[PE][SIMD/WAY];
-		ifstream nonz_i_log_file[2*PE][SIMD/WAY];
-		ifstream nonz_w_log_file[2*PE][SIMD/WAY];
-		ifstream nonz_m_log_file[2*PE][SIMD/WAY];
-		ifstream nonz_f_log_file[2*PE][SIMD/WAY];
+		ifstream nonz_i_log_file[NONZ_SCALE*PE][SIMD/WAY];
+		ifstream nonz_w_log_file[NONZ_SCALE*PE][SIMD/WAY];
+		ifstream nonz_m_log_file[NONZ_SCALE*PE][SIMD/WAY];
+		ifstream nonz_f_log_file[NONZ_SCALE*PE][SIMD/WAY];
 
 		ap_uint<WAY*TSrcI::width> nonz_i_buf;
 		ap_uint<WAY> nonz_w_buf;
@@ -197,7 +198,7 @@ void ConvLayer_Batch(
 
 		// ** hwkim modified for PE interleaving
 //		for(unsigned char pe=0; pe<PE; pe++){
-		for(unsigned char pe=0; pe<2*PE; pe++){
+		for(unsigned char pe=0; pe<NONZ_SCALE*PE; pe++){
 
 			for(unsigned char way_cnt=0; way_cnt<(SIMD/WAY); way_cnt++){
 				string nonz_i_log_file_name = snapshot_dir + "nonzero_" + to_string(LayerCnt+1)
@@ -284,9 +285,8 @@ void ConvLayer_Batch(
 			activation,
 			reps* OFMDim * OFMHeight, r);	//reps* OFMDim * OFMDim, r);	// hwkim modified for segmentation
 			*/
-	Matrix_Vector_Activate_Batch_SkipSeparately<MatrixW, MatrixH, SIMD, PE, OFMDim,
-		OFMHeight, Top, Bottom, Left, Right,	// hwkim modified for segmentation
-		WAY,
+	Matrix_Vector_Activate_Batch_SkipSeparately<MatrixW, MatrixH, SIMD, PE, OFMDim, OFMHeight,
+		Top, Bottom, Left, Right, WAY, NONZ_SCALE,
 #ifdef ACTIVATION_LOG
 		LayerCnt, (PE*TDstI::width),
 #endif
@@ -296,8 +296,8 @@ void ConvLayer_Batch(
 			// ** hwkim modified for PE interleaving
 //			static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>(mvOut),
 //			static_cast<hls::stream<ap_uint<PE>>&>(mvOutMask),
-			static_cast<hls::stream<ap_uint<2*PE*TDstI::width>>&>(mvOut),
-			static_cast<hls::stream<ap_uint<2*PE>>&>(mvOutMask),
+			static_cast<hls::stream<ap_uint<NONZ_SCALE*PE*TDstI::width>>&>(mvOut),
+			static_cast<hls::stream<ap_uint<NONZ_SCALE*PE>>&>(mvOutMask),
 
 			// hwkim added for ternary
 			static_cast<hls::stream<ap_uint<WAY*TSrcI::width>>*>(packed_input),
