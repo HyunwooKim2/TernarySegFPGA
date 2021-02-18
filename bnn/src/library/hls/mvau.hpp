@@ -1295,8 +1295,8 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 	//					  accu_pm[PE+pe] += accu_pe_way_pm[pe_way_num+pe_way_cnt];
 						  accu_pm[nonz_scale_cnt*PE+pe] += accu_pe_way_pm[nonz_scale_cnt*(pe_way_num)+pe_way_cnt];
 					  }
-				  }
 #endif
+				  }
 				  if(++way_cnt==(SIMD/WAY)){
 					  pe++;
 					  way_cnt=0;
