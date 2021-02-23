@@ -467,7 +467,11 @@ void read_activation_file(
 //			act_snap_buf = act_snap_buf | (*reinterpret_cast<ap_uint<64> *>(&act_snap_long));
 //		}
 		for(int word_cnt=0; word_cnt<OutWidth/4; word_cnt++){
-			if(act_snap_ch_arr[word_cnt]>0x40)
+			if(act_snap_ch_arr[word_cnt]==NULL){
+//				cout << "here" << endl;
+				break;
+			}
+			else if(act_snap_ch_arr[word_cnt]>0x40)
 				act_snap_int = act_snap_ch_arr[word_cnt]-55;
 			else
 				act_snap_int = act_snap_ch_arr[word_cnt]-0x30;
@@ -650,8 +654,8 @@ void DoCompute(
 	int sep_sim_layer10_en = 1;
 	int sep_sim_layer11_en = 1;
 
-	int nonzero_layer1_en = 1;
-	int nonzero_layer2_en = 1;
+	int nonzero_layer1_en = 0;
+	int nonzero_layer2_en = 0;
 	int nonzero_layer3_en = 1;
 	int nonzero_layer4_en = 1;
 	int nonzero_layer5_en = 1;

@@ -2066,7 +2066,11 @@ void Matrix_Vector_Activate_Batch_Ternary_Masking(
   unsigned int x=0, y=0, kx=0, ky=0;
   unsigned const fan_in_step = MatrixW/9;
   unsigned const sf_ch = SF/9;
-  unsigned int fan_in=0;
+  // ** hwkim modified for no zero skip ternary
+//  unsigned int fan_in=0;
+  unsigned short fan_in[PE];
+#pragma HLS ARRAY_PARTITION variable=fan_in complete dim=0
+
   unsigned int sf_ch_cnt=0;
 
   // hwkim modified for dependency
@@ -2114,6 +2118,8 @@ void Matrix_Vector_Activate_Batch_Ternary_Masking(
 				  accu[pe] = activation.init(nf, pe);
 #ifdef ACTIVATION_LOG
 				  accu_pm[pe] = activation.init(nf, pe);
+				  // ** hwkim added for no zero skip ternary
+				  fan_in[pe] = 0;
 #endif
 			  }
 		  }
@@ -2132,29 +2138,29 @@ void Matrix_Vector_Activate_Batch_Ternary_Masking(
 //			  auto const  act_mask = TSrcI()(inElem_mask);
 			  auto const  packed_mask = ~(wm[pe] | inElem_mask);	//wgt_mask & act_mask;
 #ifdef ACTIVATION_LOG
-			  cout << dec;
-			  cout << "(" << y << "," << x << ") ";
-			  cout << "[" << ky << "," << kx << "] ";
-			  cout << "nf" << (int)nf;
-			  cout << " sf" << (int)sf;
-			  cout << " pe" << (int)pe;
-			  cout << " wgt: ";
-			  cout << hex;
-			  cout.width(10);
-			  cout << w[pe];
-			  cout << ", act: ";
-			  cout.width(10);
-			  cout << inElem;
-			  cout << ", wm: ";
-			  cout.width(10);
-			  cout << wm[pe];
-			  cout << ", im: ";
-			  cout.width(10);
-			  cout << inElem_mask;
-			  cout << ", pm: ";
-			  cout.width(10);
-			  cout << packed_mask;
-			  cout << endl;
+//			  cout << dec;
+//			  cout << "(" << y << "," << x << ") ";
+//			  cout << "[" << ky << "," << kx << "] ";
+//			  cout << "nf" << (int)nf;
+//			  cout << " sf" << (int)sf;
+//			  cout << " pe" << (int)pe;
+//			  cout << " wgt: ";
+//			  cout << hex;
+//			  cout.width(10);
+//			  cout << w[pe];
+//			  cout << ", act: ";
+//			  cout.width(10);
+//			  cout << inElem;
+//			  cout << ", wm: ";
+//			  cout.width(10);
+//			  cout << wm[pe];
+//			  cout << ", im: ";
+//			  cout.width(10);
+//			  cout << inElem_mask;
+//			  cout << ", pm: ";
+//			  cout.width(10);
+//			  cout << packed_mask;
+//			  cout << endl;
 #endif
 
 			  // hwkim modified for padding
@@ -2183,8 +2189,10 @@ void Matrix_Vector_Activate_Batch_Ternary_Masking(
 				  // hwkim modified for no zero skip ternary
 //				  accu_pm[pe] = mac<SIMD>(accu_pm[pe], wgt, act, r, 1);
 				  accu_pm[pe] = mac_masked_pm<SIMD>(accu_pm[pe], wgt, act, r, packed_mask);
-				  cout << dec << "accu_pm: " << accu_pm[pe] << endl;
+//				  cout << dec << "accu_pm: " << accu_pm[pe] << endl;
 #endif
+				  // ** hwkim added for no zero skip ternary
+				  fan_in[pe] = fan_in_cnt<SIMD>(fan_in[pe], packed_mask);
 			  }
 		  }
 
@@ -2200,9 +2208,11 @@ void Matrix_Vector_Activate_Batch_Ternary_Masking(
 				  ||(y>(OFMHeight-1-Bottom) && ky>(3-1-Bottom))){
 				  ;
 			  }
-			  else{
-				  fan_in += fan_in_step;
-			  }
+			  // ** hwkim commented for no zero skip ternary
+//			  else{
+//				  fan_in += fan_in_step;
+//			  }
+
 			  if(++kx==3){
 				  kx=0;
 				  if(++ky==3){
@@ -2254,7 +2264,10 @@ void Matrix_Vector_Activate_Batch_Ternary_Masking(
 #endif
 		  		// hwkim added for ternary
 		  		ap_uint<TDstElem::width+1> outElem_ter_unit;	// include zero mask
-		  		outElem_ter_unit = activation.activate(nf, pe, accu[pe], fan_in);	// ??? should be modified?
+		  		// ** hwkim commented for no zero skip ternary
+//		  		outElem_ter_unit = activation.activate(nf, pe, accu[pe], fan_in);
+		  		outElem_ter_unit = activation.activate(nf, pe, accu[pe], fan_in[pe]);
+
 		  		ap_uint<1> outMaskElem_unit;
 		  		outMaskElem_unit = (ap_uint<1>)outElem_ter_unit[TDstI::width];
 
@@ -2264,14 +2277,11 @@ void Matrix_Vector_Activate_Batch_Ternary_Masking(
 		  		outElem_unit = (TDstElem)outElem_ter_unit[TDstI::width-1];
 
 		  		outElem[pe] = *reinterpret_cast<ap_uint<TDstI::width> *>(&outElem_unit);
-
-		  		// hwkim added for ternary
 		  		outMaskElem[pe] = outMaskElem_unit;
 		  	}
 		  	out.write(outElem);
-		  	out_mask.write(outMaskElem);	// hwkim added for ternary
-		  	// hwkim modified for positive only accumulation
-	  		fan_in=0;
+		  	out_mask.write(outMaskElem);
+//	  		fan_in=0;	// ** hwkim commented for no zero skip ternary
 
 // hwkim added for debug
 #ifdef ACTIVATION_LOG
