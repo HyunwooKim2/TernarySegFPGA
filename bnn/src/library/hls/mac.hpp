@@ -230,7 +230,7 @@ inline T fan_in_cnt(T const &a, ap_uint<N> mask) {
 	  T  res = a;
 	  for(unsigned  i = 0; i < N; i++) {
 	#pragma HLS unroll
-		  res += ~mask[i];
+		  res += mask[i];
 	  }
 	  return  res;
 }

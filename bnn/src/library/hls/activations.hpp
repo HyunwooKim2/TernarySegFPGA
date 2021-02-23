@@ -161,14 +161,16 @@ public:
 //			result = (TR)0;
 
 	    // hwkim modified for ternary
-		auto new_thres = (m_thresholds[pe][nf][0] + fan_in)/2;
+//		cout << "th_p: " << m_thresholds[pe][nf][0];
+//		cout << " th_n: " << m_thresholds[pe][nf][1];
+//		cout << " conv_out: " << accu;
+		auto th_sh_accu = (accu << 1) - fan_in;
 //	    result[0] = Compare()(m_thresholds[pe][nf][0], accu);	// +1(1), -1(0)
-		result[0] = Compare()(new_thres, accu);	// +1(1), -1(0)
-	    new_thres = (m_thresholds[pe][nf][1] + fan_in)/2;
+		result[0] = Compare()(m_thresholds[pe][nf][0], th_sh_accu);	// +1(1), -1(0)
 	    // hwkim modified for equal case
 	//    result[1] = Compare()(m_thresholds[pe][nf][1], accu) & (~result[0]);	// zero mask, 0(1), others(0)
 //	    result[1] = (m_thresholds[pe][nf][1] <= accu) & (~result[0]);	// zero mask, 0(1), others(0)
-	    result[1] = (new_thres <= accu) & (~result[0]);	// zero mask, 0(1), others(0)
+	    result[1] = (m_thresholds[pe][nf][1] <= th_sh_accu) & (~result[0]);	// zero mask, 0(1), others(0)
 
 		return result;
     }

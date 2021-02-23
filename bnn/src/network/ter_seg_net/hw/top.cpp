@@ -643,11 +643,11 @@ void DoCompute(
 #ifdef SEP_SIM
   string snapshot_file_name;
 	int sep_sim_layer1_en = 0;
-	int sep_sim_layer2_en = 1;
-	int sep_sim_layer3_en = 1;
-	int sep_sim_layer4_en = 1;
-	int sep_sim_layer5_en = 1;
-	int sep_sim_layer6_en = 1;
+	int sep_sim_layer2_en = 0;
+	int sep_sim_layer3_en = 0;
+	int sep_sim_layer4_en = 0;
+	int sep_sim_layer5_en = 0;
+	int sep_sim_layer6_en = 0;
 	int sep_sim_layer7_en = 1;
 	int sep_sim_layer8_en = 1;
 	int sep_sim_layer9_en = 1;

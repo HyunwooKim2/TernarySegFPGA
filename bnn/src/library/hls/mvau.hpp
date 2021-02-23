@@ -2263,6 +2263,8 @@ void Matrix_Vector_Activate_Batch_Ternary_Masking(
 		  		}
 #endif
 		  		// hwkim added for ternary
+//		  		cout << dec << "pe: " << (int)pe << " accu: " << accu[pe] << " accu_pm: " << accu_pm[pe];
+//		  		cout << "fan_in: " << fan_in[pe] << endl;
 		  		ap_uint<TDstElem::width+1> outElem_ter_unit;	// include zero mask
 		  		// ** hwkim commented for no zero skip ternary
 //		  		outElem_ter_unit = activation.activate(nf, pe, accu[pe], fan_in);
