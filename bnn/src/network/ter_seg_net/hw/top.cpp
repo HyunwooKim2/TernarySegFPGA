@@ -1561,17 +1561,20 @@ void BlackBoxJam(
 //#pragma HLS RESOURCE variable=weights8.m_weights core=RAM_1P_LUTRAM
 //#pragma HLS RESOURCE variable=weights9.m_weights core=RAM_1P_LUTRAM
 //#pragma HLS RESOURCE variable=weights10.m_weights core=RAM_1P_LUTRAM
-#pragma HLS RESOURCE variable=threshs0.m_thresholds core=RAM_1P_LUTRAM
-#pragma HLS RESOURCE variable=threshs1.m_thresholds core=RAM_1P_LUTRAM
-#pragma HLS RESOURCE variable=threshs2.m_thresholds core=RAM_1P_LUTRAM
-#pragma HLS RESOURCE variable=threshs3.m_thresholds core=RAM_1P_LUTRAM
-#pragma HLS RESOURCE variable=threshs4.m_thresholds core=RAM_1P_LUTRAM
-#pragma HLS RESOURCE variable=threshs5.m_thresholds core=RAM_1P_LUTRAM
-#pragma HLS RESOURCE variable=threshs6.m_thresholds core=RAM_1P_LUTRAM
-#pragma HLS RESOURCE variable=threshs7.m_thresholds core=RAM_1P_LUTRAM
-#pragma HLS RESOURCE variable=threshs8.m_thresholds core=RAM_1P_LUTRAM
-#pragma HLS RESOURCE variable=threshs9.m_thresholds core=RAM_1P_LUTRAM
-#pragma HLS RESOURCE variable=threshs10.m_thresholds core=RAM_1P_LUTRAM
+
+// ** hwkim commented for PE interleaving
+//#pragma HLS RESOURCE variable=threshs0.m_thresholds core=RAM_1P_LUTRAM
+//#pragma HLS RESOURCE variable=threshs1.m_thresholds core=RAM_1P_LUTRAM
+//#pragma HLS RESOURCE variable=threshs2.m_thresholds core=RAM_1P_LUTRAM
+//#pragma HLS RESOURCE variable=threshs3.m_thresholds core=RAM_1P_LUTRAM
+//#pragma HLS RESOURCE variable=threshs4.m_thresholds core=RAM_1P_LUTRAM
+//#pragma HLS RESOURCE variable=threshs5.m_thresholds core=RAM_1P_LUTRAM
+//#pragma HLS RESOURCE variable=threshs6.m_thresholds core=RAM_1P_LUTRAM
+//#pragma HLS RESOURCE variable=threshs7.m_thresholds core=RAM_1P_LUTRAM
+//#pragma HLS RESOURCE variable=threshs8.m_thresholds core=RAM_1P_LUTRAM
+//#pragma HLS RESOURCE variable=threshs9.m_thresholds core=RAM_1P_LUTRAM
+//#pragma HLS RESOURCE variable=threshs10.m_thresholds core=RAM_1P_LUTRAM
+
 //#pragma HLS RESOURCE variable=threshs10.m_scales core=RAM_1P_LUTRAM
 
 // hwkim added for ternary

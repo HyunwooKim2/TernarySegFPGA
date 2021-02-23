@@ -1192,6 +1192,11 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 #pragma HLS PIPELINE II=1 rewind
 		  for(unsigned short pe_way_cnt=0; pe_way_cnt<PE*(SIMD/WAY); pe_way_cnt++){
 #pragma HLS UNROLL
+
+			  // ** hwkim added for PE interleaving
+			  if(y==OFMHeight)
+				  break;
+
 			  // ** hwkim modified for PE interleaving
 //			  if(sf == 0){
 //				  sf_num_buf[pe_way_cnt] = sf_num[pe_way_cnt].read();
@@ -1206,9 +1211,10 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 			  unsigned short pe_way_mini_nf_index = mini_nf*(pe_way_num)+pe_way_cnt;
 			  if(sf == 0){
 				  sf_num_buf[pe_way_mini_nf_index] = sf_num[pe_way_mini_nf_index].read();
-				  pe_way_sync[pe_way_mini_nf_index] = 0;
+//				  pe_way_sync[pe_way_mini_nf_index] = 0;
 			  }
-			  else if(sf < (sf_num_buf[pe_way_mini_nf_index] - SIMD)){
+//			  else
+			  if(sf < (sf_num_buf[pe_way_mini_nf_index] - SIMD)){
 				  pe_way_sync[pe_way_mini_nf_index] = 0;
 			  }
 			  else{
@@ -1526,12 +1532,15 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 					  if(++x==OFMDim){
 						  x=0;
 #ifdef ACTIVATION_LOG
-					  cout << dec << "y: " << (y+1) << "/" << OFMHeight << endl;
+						  cout << dec << "y: " << (y+1) << "/" << OFMHeight << endl;
 #endif
-						  if(++y==OFMHeight){
-							  y=0;
-							  break;
-						  }
+					  // hwkim modified for PE interleaving
+//						  if(++y==OFMHeight){
+//							  y=0;
+//							  break;
+//						  }
+					  	  ++y;
+
 					  }
 				  }
 			  }
