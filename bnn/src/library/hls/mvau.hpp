@@ -1971,7 +1971,7 @@ template<unsigned MatrixW, unsigned MatrixH, unsigned SIMD, unsigned PE, unsigne
   typename TWM,
   typename TA,
   typename R>
-void Matrix_Vector_Activate_Batch_Ternary_Masking(
+void Matrix_Vector_Activate_Batch_Ternary_Masking(	// hwkim: from Batch_Padding
 		hls::stream<TI> & in,
 		hls::stream<TIM> & in_mask,	// hwkim added for ternary
 		hls::stream<TO> &out,
@@ -2118,9 +2118,9 @@ void Matrix_Vector_Activate_Batch_Ternary_Masking(
 				  accu[pe] = activation.init(nf, pe);
 #ifdef ACTIVATION_LOG
 				  accu_pm[pe] = activation.init(nf, pe);
+#endif
 				  // ** hwkim added for no zero skip ternary
 				  fan_in[pe] = 0;
-#endif
 			  }
 		  }
 
@@ -2420,6 +2420,417 @@ void Matrix_Vector_Activate_Batch_Ternary_Masking(
   last_layer_scaled_file.close();
 #endif
 }
+
+// ** hwkim added for no zero skip, masked deconvolution
+template<
+  unsigned IFMChannels, unsigned MatrixH, unsigned SIMD, unsigned PE,
+  unsigned OFMDim, unsigned OFMHeight, unsigned Top, unsigned Bottom, unsigned Left, unsigned Right,
+#ifdef ACTIVATION_LOG
+  unsigned int LayerCnt, unsigned int OutWidth,
+#endif
+  typename TDstElem,
+  typename TSrcI = Identity, typename TDstI = Identity, typename TWeightI = Identity,
+  typename TI, typename TO,
+  typename TIM, typename TOM,
+  typename TW, typename TWM,
+  typename TA, typename R
+>
+void Matrix_Vector_Activate_Batch_Ternary_Skip_Masking(	// hwkim: from Batch_Skipping
+		hls::stream<TI> & in,
+		hls::stream<TIM> & in_mask,
+		hls::stream<TO> &out,
+		hls::stream<TOM> &out_mask,
+		TW  const &weights,
+		TWM const &wmasks,
+		TA  const &activation,
+		int const  reps,
+		R const &r) {
+
+  unsigned const  NF = MatrixH / PE;
+
+  // hwkim modified for debug
+#ifdef ACTIVATION_LOG
+  extern string snapshot_dir;
+  extern string golden_file_dir;
+  int compare_skip = 0;
+  ap_uint<OutWidth> act_buf_arr[NF];
+  ap_uint<NF*OutWidth> act_buf=0;
+  ap_uint<PE> act_mask_buf_arr[NF];
+  ap_uint<NF*PE> act_mask_buf=0;
+
+  string conv_out_file_name = snapshot_dir + "conv_" + to_string(LayerCnt+1) + "_out_minusBias.txt";
+  string act_file_name = snapshot_dir + "activation_" + to_string(LayerCnt+1) + "_log.txt";
+  string act_mask_file_name = snapshot_dir + "activation_mask_" + to_string(LayerCnt+1) + "_log.txt";
+  string golden_conv_out_file_name = golden_file_dir + "binConv" + to_string(LayerCnt+1) + "_minusBias.txt";
+  string golden_act_file_name = golden_file_dir + "Sign" + to_string(LayerCnt+1) + ".txt";
+  string golden_mask_file_name = golden_file_dir + "Sign" + to_string(LayerCnt+1) + "_flag.txt";
+  string conv_out_comp_file_name = "conv_" + to_string(LayerCnt+1) + "_out_minusBias_comp.txt";
+  string act_comp_file_name = "act_" + to_string(LayerCnt+1) + "_comp.txt";
+  string mask_comp_file_name = "mask_" + to_string(LayerCnt+1) + "_comp.txt";
+
+  ofstream conv_out_log_file(conv_out_file_name);
+  ofstream activation_log_file(act_file_name);
+  ofstream activation_mask_log_file(act_mask_file_name);
+  ifstream golden_conv_out_file(golden_conv_out_file_name);
+  FILE * golden_file = fopen(golden_act_file_name.c_str(),"rt");
+  FILE * golden_mask_file = fopen(golden_mask_file_name.c_str(),"rt");
+  ofstream conv_out_comp_file(conv_out_comp_file_name);
+  ofstream act_comp_file(act_comp_file_name);
+  ofstream mask_comp_file(mask_comp_file_name);
+
+  if(!conv_out_log_file.is_open())	cout << "conv_out_log_file open error" << endl;
+  if(!activation_log_file.is_open())	cout << act_file_name << " open error!!" << endl;
+  if(!activation_mask_log_file.is_open())	cout << act_mask_file_name << " open error!!" << endl;
+  if(!golden_conv_out_file.is_open())	cout << "golden_conv_out_file open error" << endl;
+  if(golden_file==NULL){
+	  cout << golden_act_file_name << " open error!!" << endl;
+	  compare_skip = 1;
+  }
+  if(golden_mask_file==NULL)	cout << golden_mask_file_name << " open error!!" << endl;
+  if(!conv_out_comp_file.is_open())	cout << "conv_out_comp_file open error" << endl;
+  if(!act_comp_file.is_open())	cout << act_comp_file_name << " open error!" << endl;
+  if(!mask_comp_file.is_open())	cout << mask_comp_file_name << " open error!" << endl;
+
+#endif
+
+  // input vector buffers
+  //TI  inputBuf[SF];
+  TI  inputBuf[4*IFMChannels/SIMD];	// hwkim: ky < 2, kx < 2
+//#pragma HLS ARRAY_PARTITION variable=inputBuf complete dim=1
+  TI  imaskBuf[4*IFMChannels/SIMD];
+
+  decltype(activation.init(0,0))  accu[PE];
+#pragma HLS ARRAY_PARTITION variable=accu complete dim=0
+
+  // hwkim modified for activation comparison using +- accumulation
+#ifdef ACTIVATION_LOG
+  decltype(activation.init(0,0))  accu_pm[PE];
+#endif
+
+  unsigned  nf   = 0;
+  unsigned  sf   = 0;
+  unsigned  tile = 0;
+  unsigned const TOTAL_FOLD = (reps/4 + reps + reps) * NF * (IFMChannels/SIMD);	// for padding of 0, 1, 0, 1 only
+  	  	  	  	  	  	  	  //(reps/4 + reps/4*2*2 + reps/4*4) * NF * (IFMChannels/SIMD);
+
+  // hwkim modified for padding
+  unsigned int x=0, y=0, kx=0, ky=0;
+  unsigned int simd_cnt=0;
+  unsigned int w_addr=0;
+  unsigned int sf_max=0;
+
+  // hwkim modified for padding (fan-in scaling)
+	//unsigned const FAN_IN = IFMChannels*3*3;
+//  unsigned int fan_in = 0;
+//  unsigned const fan_in_step = IFMChannels;
+  unsigned short fan_in[PE];
+#pragma HLS ARRAY_PARTITION variable=fan_in complete dim=0
+
+  //for(unsigned  i = 0; i < reps * TOTAL_FOLD; i++) {
+  for(unsigned  i = 0; i < TOTAL_FOLD; i++) {
+#pragma HLS PIPELINE II=1
+
+	//tile: sf -> kx -> ky -> nf
+    TI  inElem;
+    TIM imaskElem;
+    if(nf == 0) {
+    	// hwkim modified for weight flip
+    	if(((y==0)&&(ky==0))
+			|| ((x==0)&&(kx==0))){
+    		;	// skip
+    	}
+    	else{
+			inElem = in.read();
+			inputBuf[sf] = inElem;
+			imaskElem = in_mask.read();
+			imaskBuf[sf] = imaskElem;
+    	}
+    }
+    else {
+      inElem = inputBuf[sf];
+      imaskElem = imaskBuf[sf];
+    }
+
+    // Threshold Initialisation
+    if(sf == 0) {
+      for(unsigned  pe = 0; pe < PE; pe++) {
+#pragma HLS UNROLL
+	    accu[pe] = activation.init(nf, pe);
+// hwkim added for activation comparison using +- accumulation
+#ifdef ACTIVATION_LOG
+	    accu_pm[pe] = activation.init(nf, pe);
+#endif
+	    fan_in[pe] = 0;
+      }
+    }
+
+    // compute matrix-vector product for each processing element
+//    auto const &w = weights.weights(tile);
+    w_addr = nf*3*3*(IFMChannels/SIMD)
+    		// hwkim modified for weight flip
+    		//+ (((y&0x1) + ((!(y&0x1)-ky)<<1))*3 + (x&0x1) + ((!(x&0x1)-kx)<<1))*(IFMChannels/SIMD)
+			+ (((y&0x1) + (ky<<1))*3 + (x&0x1) + (kx<<1))*(IFMChannels/SIMD)
+			+ simd_cnt;
+//    cout << "(" << y << "," << x << ") " << "[" << ky << "," << kx << "] " << "simd_cnt: " << simd_cnt;
+//    cout << dec << ", w_addr: " << w_addr << endl;
+    auto const &w = weights.weights(w_addr);
+    auto const &wm = wmasks.masks(w_addr);
+
+    for(unsigned  pe = 0; pe < PE; pe++) {
+#pragma HLS UNROLL
+      auto const  wgt = TWeightI()(w[pe]);
+      auto const  act = TSrcI()(inElem);
+      auto const	packed_mask = ~(wm[pe] | imaskElem);
+
+      if(((y==0)&&((1-ky)==1))
+    		  || ((x==0)&&((1-kx)==1))){
+    	  ;	// skip
+      }
+      else{
+    	  // hwkim modified for activation comparison using +- accumulation
+//    	  accu[pe] = mac<SIMD>(accu[pe], wgt, act, r
+//#ifdef ACTIVATION_LOG
+//    			  , 0
+//#endif
+//    			  );
+    	  accu[pe] = mac_masked<SIMD>(accu[pe], wgt, act, r, packed_mask);
+#ifdef ACTIVATION_LOG
+//    	  accu_pm[pe] = mac<SIMD>(accu_pm[pe], wgt, act, r, 1);
+    	  accu_pm[pe] = mac_masked_pm<SIMD>(accu_pm[pe], wgt, act, r, packed_mask);
+#endif
+    	  fan_in[pe] = fan_in_cnt<SIMD>(fan_in[pe], packed_mask);
+    	  cout << dec << "pe: " << (int)pe;
+    	  cout << ", simd: " << (int)simd_cnt;
+    	  cout << hex << ", i: " << inElem;
+    	  cout << ", w: " << w[pe];
+    	  cout << ", i_m: " << imaskElem;
+    	  cout << ", w_m: " << wm[pe];
+    	  cout << ", p_m: " << packed_mask;
+    	  cout << dec << ", accu: " << accu_pm[pe] << endl;
+    	  // hwkim modified for positive only accumulation
+//    	  if((pe==0) && (simd_cnt==0))
+//    		  fan_in += fan_in_step;
+      }
+    }
+
+    // hwkim added for debug
+//    if(((y==0)&&((1-ky)==1))
+//		|| ((x==0)&&((1-kx)==1))){
+//		cout << "(skipped) ";	// skip
+//	}
+//	cout << "y: " << y;
+//	cout << ", x: " << x;
+//	cout << ", ky: " << (!(y&0x1)-ky);
+//	cout << ", kx: " << (!(x&0x1)-kx);
+//	cout << ", simd_cnt: " << simd_cnt;
+//	cout << ", w_addr: " << w_addr;
+//	cout << ", sf: " << sf;
+//	cout << ", nf: " << nf;
+//	cout << ", fanin: " << fan_in << endl;
+
+    // keep track of which folded synapse/neuron we are processing
+    //++tile;
+    //if(++sf == SF) {
+    if(++sf==((1<<(!(y&0x1)+!(x&0x1)))*(IFMChannels/SIMD))){
+    	// hwkim added for debug
+//    	cout << "sf_max = 1<<(!(y&0x1)+!(x&0x1)): " << dec << (1<<(!(y&0x1)+!(x&0x1))) << endl;
+
+      auto  outElem = TDstI().template operator()<TO>();
+      TOM	omaskElem;
+
+      for (unsigned  pe = 0; pe < PE; pe++) {
+#pragma HLS UNROLL
+// hwkim commented for 0-1 accumulation - not +- accum
+#ifdef ACTIVATION_LOG
+			conv_out_log_file << setprecision(8) << accu_pm[pe] << endl;//" | ";
+			decltype(activation.init(0,0))	golden_buf;
+			golden_conv_out_file >> golden_buf;
+			if(accu_pm[pe]!=golden_buf){
+				conv_out_comp_file << fixed;
+				conv_out_comp_file.precision(8);
+				conv_out_comp_file.setf(ios_base::showpoint);
+				conv_out_comp_file << "differ @ (" << y << "," << x << ") gold: " << golden_buf << ", accu[" << nf << ", " << pe << "]: " << accu_pm[pe] << endl;
+			}
+#endif
+			// hwkim modified for positive only accum
+			//outElem[pe] = activation.activate(nf, pe, accu[pe]);
+//			outElem[pe] = activation.activate(nf, pe, accu[pe], fan_in);
+
+			ap_uint<TDstElem::width+1> outElem_ter_unit;
+			TDstElem outElem_unit;
+			ap_uint<1> outMaskElem_unit;
+
+			outElem_ter_unit = activation.activate(nf, pe, accu[pe], fan_in[pe]);
+			outElem_unit = (TDstElem)outElem_ter_unit[TDstI::width-1];
+			outMaskElem_unit = (ap_uint<1>)outElem_ter_unit[TDstI::width];
+
+	  		outElem[pe] = *reinterpret_cast<ap_uint<TDstI::width> *>(&outElem_unit);
+	  		omaskElem[pe] = outMaskElem_unit;
+      }
+     out.write(outElem);
+     out_mask.write(omaskElem);
+
+      // hwkim modified for debug
+#ifdef ACTIVATION_LOG
+     // hwkim added for debug
+     act_buf_arr[nf] = outElem;
+     act_mask_buf_arr[nf] = omaskElem;
+		if(nf==(NF-1)){
+			act_buf = 0;
+			act_mask_buf = 0;
+
+			for(int nf_cnt=NF-1; nf_cnt>=0; nf_cnt--){
+				// hwkim: filling act_buf
+				act_buf = act_buf << OutWidth;	//OutWidth or PE
+				act_buf = act_buf | act_buf_arr[nf_cnt];
+
+				act_mask_buf = act_mask_buf << PE;	//OutWidth or PE
+				act_mask_buf = act_mask_buf | act_mask_buf_arr[nf_cnt];
+			}
+
+			// hwkim: compare activation with gold result
+			ap_uint<NF*OutWidth> gold_buf = 0;
+			char gold_buf_ch[(NF*OutWidth)/4+1];
+			char gold_buf_ch64[17];
+			gold_buf_ch64[16] = 0;
+			unsigned long gold_buf_long;
+
+			if(compare_skip==0){
+				// hwkim: write activation log
+				activation_log_file << uppercase << hex;
+				if((NF*OutWidth)>=64){
+					for(int i=0; i<(NF*OutWidth)/64; i++){
+						activation_log_file << (unsigned long long )(act_buf >> 64*(NF*OutWidth/64-i-1));
+					}
+					activation_log_file << endl;
+				}
+				else{
+					activation_log_file << (unsigned long long )act_buf << endl;
+				}
+
+				// hwkim: write activation mask log
+				activation_mask_log_file << uppercase << hex;
+				if((NF*PE)>=64){
+					for(int i=0; i<(NF*PE)/64; i++){
+						activation_mask_log_file << (unsigned long long )(act_mask_buf >> 64*(NF*PE/64-i-1));
+					}
+					activation_mask_log_file << endl;
+				}
+				else{
+					activation_mask_log_file << (unsigned long long )act_mask_buf << endl;
+				}
+
+				// read golden results (activation)
+				fscanf(golden_file, "%s", gold_buf_ch);
+				for(int word_cnt=0; word_cnt<(NF*OutWidth)/64; word_cnt++){	// there's no layers with channel count smaller than 64
+					for(int i=0; i<64/4; i++){
+						gold_buf_ch64[i] = gold_buf_ch[word_cnt*16+i];
+					}
+					gold_buf_long = strtoul(gold_buf_ch64, NULL, 16);
+					gold_buf = gold_buf << 64;
+					gold_buf = gold_buf | (*reinterpret_cast<ap_uint<64> *>(&gold_buf_long));
+				}
+
+				if(act_buf!=gold_buf){
+					act_comp_file << dec << "@(" << setw(2) << y << "," << setw(2) << x << ")" << hex << " golden: ";
+					if((NF*OutWidth)>=64){
+						for(int i=0; i<(NF*OutWidth)/64; i++){
+							act_comp_file << (unsigned long long )(gold_buf >> 64*(NF*OutWidth/64-i-1));
+						}
+						act_comp_file << "," << endl << setw(17) << hex << "act: ";
+						for(int i=0; i<(NF*OutWidth)/64; i++){
+							act_comp_file << (unsigned long long )(act_buf >> 64*(NF*OutWidth/64-i-1));
+						}
+						act_comp_file << endl;
+					}
+					else{
+						act_comp_file << (unsigned long long )gold_buf << "," << setw(17);
+						act_comp_file << hex << "act: "  << (unsigned long long )act_buf << endl;
+					}
+				}
+
+				// read golden results (zero mask)
+				fscanf(golden_mask_file, "%s", gold_buf_ch);
+				for(int word_cnt=0; word_cnt<(NF*OutWidth)/64; word_cnt++){	// there's no layers with channel count smaller than 64
+					for(int i=0; i<64/4; i++){
+						gold_buf_ch64[i] = gold_buf_ch[word_cnt*16+i];
+					}
+					gold_buf_long = strtoul(gold_buf_ch64, NULL, 16);
+					gold_buf = gold_buf << 64;
+					gold_buf = gold_buf | (*reinterpret_cast<ap_uint<64> *>(&gold_buf_long));
+				}
+
+				if(act_mask_buf!=gold_buf){
+					mask_comp_file << dec << "@(" << setw(2) << y << "," << setw(2) << x << ")";
+					mask_comp_file << hex << " golden: ";
+					if((NF*PE)>=64){
+						for(int i=0; i<(NF*PE)/64; i++){
+							mask_comp_file << (unsigned long long )(gold_buf >> 64*(NF*PE/64-i-1));
+						}
+						mask_comp_file << "," << endl << setw(17) << hex << "act: ";
+						for(int i=0; i<(NF*PE)/64; i++){
+							mask_comp_file << (unsigned long long )(act_mask_buf >> 64*(NF*PE/64-i-1));
+						}
+						mask_comp_file << endl;
+					}
+					else{
+						mask_comp_file << (unsigned long long )gold_buf << "," << setw(17);
+						mask_comp_file << hex << "act: "  << (unsigned long long )act_mask_buf << endl;
+					}
+				}
+			}
+			if(x==0)
+				cout << dec << y << "/" << OFMHeight << endl;
+		}
+#endif
+
+      // next folded neuron or image
+      sf = 0;
+//      if(++nf == NF) {
+//	    nf   = 0;
+//	    tile = 0;
+//      }
+    }
+
+
+    if(++simd_cnt==IFMChannels/SIMD){
+    	simd_cnt=0;
+    	if(++kx==(!(x&0x1)+1)){
+    		kx=0;
+    		if(++ky==(!(y&0x1)+1)){
+    			ky=0;
+//    			fan_in = 0;
+    			if(++nf==NF){
+    				nf=0;
+//    				cout << "==================================" << endl;
+    				if(++x==OFMDim){
+    					x=0;
+        				cout << dec << y << "/" << OFMHeight << endl;
+    					if(++y==OFMHeight){
+    						y=0;
+    					}
+    				}
+    			}
+    		}
+    	}
+    }
+
+
+  }
+
+#ifdef ACTIVATION_LOG
+  conv_out_log_file.close();
+  activation_log_file.close();
+  activation_mask_log_file.close();
+  golden_conv_out_file.close();
+  fclose(golden_file);
+  fclose(golden_mask_file);
+  conv_out_comp_file.close();
+  act_comp_file.close();
+  mask_comp_file.close();
+#endif
+}
+
 
 
 

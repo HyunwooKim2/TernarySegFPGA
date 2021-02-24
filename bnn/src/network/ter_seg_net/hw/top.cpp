@@ -1106,8 +1106,16 @@ void DoCompute(
 	#ifdef ACTIVATION_LOG
 				6,
 	#endif
-				L6_SIMD, L6_PE, Recast<XnorMul>>
-					(inter6, inter7, weights6, threshs6, numReps, ap_resource_lut());
+				L6_SIMD, L6_PE,
+				ap_uint<1>,	// ** hwkim added for no zero skip ternary
+				Recast<XnorMul>>
+					(inter6,
+					inter6_mask,	// ** hwkim added for no zero skip ternary
+					inter7,
+					inter7_mask,	// ** hwkim added for no zero skip ternary
+					weights6,
+					wmasks6,	// ** hwkim added for no zero skip ternary
+					threshs6, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 			else{
 				snapshot_file_name = snapshot_dir + "activation_7_log.txt";
@@ -1224,8 +1232,16 @@ void DoCompute(
 	#ifdef ACTIVATION_LOG
 				8,
 	#endif
-				L8_SIMD, L8_PE, Recast<XnorMul>>
-					(inter8, inter9, weights8, threshs8, numReps, ap_resource_lut());
+				L8_SIMD, L8_PE,
+				ap_uint<1>,	// ** hwkim added for no zero skip ternary
+				Recast<XnorMul>>
+					(inter8,
+					inter8_mask,	// ** hwkim added for no zero skip ternary
+					inter9,
+					inter9_mask,	// ** hwkim added for no zero skip ternary
+					weights8,
+					wmasks8,	// ** hwkim added for no zero skip ternary
+					threshs8, numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 		else{
 			snapshot_file_name = snapshot_dir + "activation_9_log.txt";

@@ -321,17 +321,25 @@ template<
 
 		unsigned int SIMD, 				// number of SIMD lanes
 		unsigned int PE,				// number of PEs
+		typename TDstElem,
 		typename TSrcI = Identity,      // redefine I/O interpretation as needed for input activations
 		typename TDstI = Identity,		// redefine I/O interpretation as needed for output activations
 		typename TWeightI = Identity,	// redefine I/O interpretation as needed for weigths
 		int InStreamW, int OutStreamW,  // safely deducible (stream width must be int though!)
-		typename TW,   typename TA,  typename R
+		int InMaskStreamW, int OutMaskStreamW,  // ** hwkim added for no zero skip ternary
+		typename TW,
+		typename TM,	// ** hwkim added for no zero skip ternary
+		typename TA,  typename R
 >
-void UpConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
-			    hls::stream<ap_uint<OutStreamW>> &out,
-			    TW const        &weights,
-			    TA const        &activation,
-			    unsigned const   reps,
+void UpConvLayer_Batch(
+				hls::stream<ap_uint<InStreamW>>  &in,
+				hls::stream<ap_uint<InMaskStreamW>>  &in_mask,	// ** hwkim added for no zero skip ternary
+				hls::stream<ap_uint<OutStreamW>> &out,
+				hls::stream<ap_uint<OutMaskStreamW>> &out_mask,	// ** hwkim added for no zero skip ternary
+				TW const	&weights,
+				TM const	&wmasks,	// ** hwkim added for no zero skip ternary
+				TA const	&activation,
+				unsigned const   reps,
 				R const &r) {
 #pragma HLS INLINE
   unsigned const MatrixW = ConvKernelDim * ConvKernelDim * IFMChannels;
@@ -340,24 +348,52 @@ void UpConvLayer_Batch(hls::stream<ap_uint<InStreamW>>  &in,
 
   WidthAdjustedInputStream <InStreamW, SIMD*TSrcI::width, InpPerImage>  wa_in (in,  reps);
   WidthAdjustedOutputStream <PE*TDstI::width, OutStreamW, OFMDim * OFMHeight * (OFMChannels / PE)> mvOut (out,  reps);
-
   hls::stream<ap_uint<SIMD*TSrcI::width> > convInp("StreamingConvLayer_Batch.convInp");
+
+  // ** hwkim added for no zero skip ternary
+  WidthAdjustedInputStream <InMaskStreamW, SIMD, InpPerImage>  wa_in_mask (in_mask,  reps);
+  WidthAdjustedOutputStream <PE, OutMaskStreamW, OFMDim * OFMHeight * (OFMChannels / PE)> mvOutMask (out_mask,  reps);
+  hls::stream<ap_uint<SIMD> > convInp_mask("StreamingConvLayer_Batch.convInp");
 
   TConvolutionInputGenerator<ConvKernelDim, IFMChannels, TSrcI::width, IFMDim, OFMDim, IFMHeight, OFMHeight,
   	  //Top, Bottom, Left, Right,
 	  SIMD>
-  	  (wa_in, convInp, reps);
+  	  (
+		  wa_in,
+		  wa_in_mask,	// ** hwkim added for no zero skip ternary
+		  convInp,
+		  convInp_mask,	// ** hwkim added for no zero skip ternary
+		  reps);
 
-	Matrix_Vector_Activate_Batch_Skipping<IFMChannels, MatrixH, SIMD, PE, OFMDim,
-		OFMHeight, Top, Bottom, Left, Right,	// hwkim modified for segmentation
+//	Matrix_Vector_Activate_Batch_Skipping<IFMChannels, MatrixH, SIMD, PE, OFMDim,
+//		OFMHeight, Top, Bottom, Left, Right,	// hwkim modified for segmentation
+//#ifdef ACTIVATION_LOG
+//		LayerCnt,
+//		(PE*TDstI::width),
+//#endif
+//		TSrcI, TDstI, TWeightI>
+//		(static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>&>(convInp),
+//		static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>  (mvOut),
+//		weights, activation, reps* OFMDim * OFMHeight, r);
+
+  // ** hwkim added for no zero skip ternary
+	Matrix_Vector_Activate_Batch_Ternary_Skip_Masking<IFMChannels, MatrixH, SIMD, PE, OFMDim,
+		OFMHeight, Top, Bottom, Left, Right,
 #ifdef ACTIVATION_LOG
-		LayerCnt,
-		(PE*TDstI::width),
+		LayerCnt, (PE*TDstI::width),
 #endif
+		TDstElem,
 		TSrcI, TDstI, TWeightI>
-		(static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>&>(convInp),
-		static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>  (mvOut),
-		weights, activation, reps* OFMDim * OFMHeight, r);
+			(static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>&>(convInp),
+				convInp_mask,
+				static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>  (mvOut),
+				static_cast<hls::stream<ap_uint<PE>>&>  (mvOutMask),
+				weights,
+				wmasks,
+				activation,
+				reps* OFMDim * OFMHeight, r);
+
+
 }
 
 #endif
