@@ -145,12 +145,14 @@ void ConvLayer_Batch(
 	hls::stream<ap_uint<WAY>> packed_weight[NONZ_SCALE*PE*(SIMD/WAY)];
 	hls::stream<ap_uint<FanInCntWidth>> sf_num[NONZ_SCALE*PE*(SIMD/WAY)];
 	hls::stream<ap_uint<WAY>> packed_mask[NONZ_SCALE*PE*(SIMD/WAY)];
-
-//#pragma HLS ARRAY_PARTITION variable=packed_input complete dim=1	// ** hwkim added for OPTIMIZATION
 #pragma HLS STREAM variable=packed_input
 #pragma HLS STREAM variable=packed_weight
 #pragma HLS STREAM variable=sf_num
 #pragma HLS STREAM variable=packed_mask
+#pragma HLS ARRAY_PARTITION variable=packed_input complete dim=1
+#pragma HLS ARRAY_PARTITION variable=packed_weight complete dim=1
+#pragma HLS ARRAY_PARTITION variable=sf_num complete dim=1
+#pragma HLS ARRAY_PARTITION variable=packed_mask complete dim=1
 
 #ifdef SEP_SIM
 	if(nonzero_en==1)
