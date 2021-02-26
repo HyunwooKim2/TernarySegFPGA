@@ -114,15 +114,15 @@ void ConvLayer_Batch(
   WidthAdjustedInputStream <InStreamW, SIMD*TSrcI::width, InpPerImage>  wa_in (in,  reps);
   hls::stream<ap_uint<SIMD*TSrcI::width> > convInp("StreamingConvLayer_Batch.convInp");
   // ** hwkim modified for PE interleaving
-//  WidthAdjustedOutputStream <PE*TDstI::width, OutStreamW, OFMDim * OFMHeight * (OFMChannels / PE)> mvOut (out,  reps);
-  WidthAdjustedOutputStream <NONZ_SCALE*PE*TDstI::width, OutStreamW, OFMDim * OFMHeight * (OFMChannels / PE) / 2> mvOut (out,  reps);
+  WidthAdjustedOutputStream <PE*TDstI::width, OutStreamW, OFMDim * OFMHeight * (OFMChannels / PE)> mvOut (out,  reps);
+//  WidthAdjustedOutputStream <NONZ_SCALE*PE*TDstI::width, OutStreamW, OFMDim * OFMHeight * (OFMChannels / PE) / 2> mvOut (out,  reps);
 
   // hwkim added for ternary
   WidthAdjustedInputStream <InMaskStreamW, SIMD, InpPerImage>  wa_in_mask (in_mask,  reps);
   hls::stream<ap_uint<SIMD>> convInp_mask("StreamingConvLayer_Batch.convInp_mask");
   // ** hwkim modified for PE interleaving
-//  WidthAdjustedOutputStream <PE, OutMaskStreamW, OFMDim * OFMHeight * (OFMChannels / PE)> mvOutMask (out_mask,  reps);
-  WidthAdjustedOutputStream <NONZ_SCALE*PE, OutMaskStreamW, OFMDim * OFMHeight * (OFMChannels / PE) / 2> mvOutMask (out_mask,  reps);
+  WidthAdjustedOutputStream <PE, OutMaskStreamW, OFMDim * OFMHeight * (OFMChannels / PE)> mvOutMask (out_mask,  reps);
+//  WidthAdjustedOutputStream <NONZ_SCALE*PE, OutMaskStreamW, OFMDim * OFMHeight * (OFMChannels / PE) / 2> mvOutMask (out_mask,  reps);
 
 
   ConvolutionInputGenerator<ConvKernelDim, IFMChannels, TSrcI::width, IFMDim, OFMDim,
@@ -260,6 +260,13 @@ void ConvLayer_Batch(
 					}
 					sf_num[pe*(SIMD/WAY)+way_cnt].write(nonz_f_buf);
 				}
+
+//				  cout << dec << "------------------ pe:way: " << (int)pe << ":" << (int)way_cnt << endl;
+//				  cout << "sf num: " << sf_num[pe*(SIMD/WAY)+way_cnt].size() << endl;
+//				  cout << "pi: " << packed_input[pe*(SIMD/WAY)+way_cnt].size() << endl;
+//				  cout << "pw: " << packed_weight[pe*(SIMD/WAY)+way_cnt].size() << endl;
+//				  cout << "pm: " << packed_mask[pe*(SIMD/WAY)+way_cnt].size() << endl;
+
 			}
 		}
 	}
@@ -296,10 +303,10 @@ void ConvLayer_Batch(
 		TSrcI, TDstI, TWeightI>
 			(
 			// ** hwkim modified for PE interleaving
-//			static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>(mvOut),
-//			static_cast<hls::stream<ap_uint<PE>>&>(mvOutMask),
-			static_cast<hls::stream<ap_uint<NONZ_SCALE*PE*TDstI::width>>&>(mvOut),
-			static_cast<hls::stream<ap_uint<NONZ_SCALE*PE>>&>(mvOutMask),
+			static_cast<hls::stream<ap_uint<PE*TDstI::width>>&>(mvOut),
+			static_cast<hls::stream<ap_uint<PE>>&>(mvOutMask),
+//			static_cast<hls::stream<ap_uint<NONZ_SCALE*PE*TDstI::width>>&>(mvOut),
+//			static_cast<hls::stream<ap_uint<NONZ_SCALE*PE>>&>(mvOutMask),
 
 			// hwkim added for ternary
 			static_cast<hls::stream<ap_uint<WAY*TSrcI::width>>*>(packed_input),

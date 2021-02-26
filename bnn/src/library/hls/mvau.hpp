@@ -1056,10 +1056,10 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
   extern string golden_file_dir;
   int compare_skip = 0;
   // ** hwkim modified for PE interleaving
-//  ap_uint<OutWidth> act_buf_arr[NF];
-//  ap_uint<PE> act_mask_buf_arr[NF];
-  ap_uint<NONZ_SCALE*OutWidth> act_buf_arr[NF/NONZ_SCALE];
-  ap_uint<NONZ_SCALE*PE> act_mask_buf_arr[NF/NONZ_SCALE];
+  ap_uint<OutWidth> act_buf_arr[NF];
+  ap_uint<PE> act_mask_buf_arr[NF];
+//  ap_uint<NONZ_SCALE*OutWidth> act_buf_arr[NF/NONZ_SCALE];
+//  ap_uint<NONZ_SCALE*PE> act_mask_buf_arr[NF/NONZ_SCALE];
 
   ap_uint<NF*OutWidth> act_buf=0;
   ap_uint<NF*PE> act_mask_buf=0;
@@ -1101,24 +1101,24 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 #endif
 
   // ** hwkim added for PE interleaving
-//  decltype(activation.init(0,0))  accu[PE];
-//  decltype(activation.init(0,0))  accu_pe_way[PE*SIMD/WAY];
-  decltype(activation.init(0,0))  accu[PE*NONZ_SCALE];
-  decltype(activation.init(0,0))  accu_pe_way[PE*SIMD/WAY*NONZ_SCALE];
+  decltype(activation.init(0,0))  accu[PE];
+  decltype(activation.init(0,0))  accu_pe_way[PE*SIMD/WAY];
+//  decltype(activation.init(0,0))  accu[PE*NONZ_SCALE];
+//  decltype(activation.init(0,0))  accu_pe_way[PE*SIMD/WAY*NONZ_SCALE];
 #pragma HLS ARRAY_PARTITION variable=accu complete dim=1
 #pragma HLS ARRAY_PARTITION variable=accu_pe_way complete dim=1
 
 #ifdef ACTIVATION_LOG
   // ** hwkim added for PE interleaving
-//  decltype(activation.init(0,0))  accu_pm[PE];
-//  decltype(activation.init(0,0))  accu_pe_way_pm[PE*SIMD/WAY];
-  decltype(activation.init(0,0))  accu_pm[PE*NONZ_SCALE];
-  decltype(activation.init(0,0))  accu_pe_way_pm[PE*SIMD/WAY*NONZ_SCALE];
+  decltype(activation.init(0,0))  accu_pm[PE];
+  decltype(activation.init(0,0))  accu_pe_way_pm[PE*SIMD/WAY];
+//  decltype(activation.init(0,0))  accu_pm[PE*NONZ_SCALE];
+//  decltype(activation.init(0,0))  accu_pe_way_pm[PE*SIMD/WAY*NONZ_SCALE];
 #endif
 
   // ** hwkim added for PE interleaving
-//  for(unsigned char pe = 0; pe < PE; pe++) {
-  for(unsigned char pe = 0; pe < PE*NONZ_SCALE; pe++) {
+  for(unsigned char pe = 0; pe < PE; pe++) {
+//  for(unsigned char pe = 0; pe < PE*NONZ_SCALE; pe++) {
 #pragma HLS UNROLL
 	  accu[pe] = activation.init(0,0);
 #ifdef ACTIVATION_LOG
@@ -1127,8 +1127,8 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
   }
 
   // ** hwkim added for PE interleaving
-//  for(unsigned char pe_way_cnt = 0; pe_way_cnt < PE*SIMD/WAY; pe_way_cnt++) {
-  for(unsigned char pe_way_cnt = 0; pe_way_cnt < PE*SIMD/WAY*NONZ_SCALE; pe_way_cnt++) {
+  for(unsigned char pe_way_cnt = 0; pe_way_cnt < PE*SIMD/WAY; pe_way_cnt++) {
+//  for(unsigned char pe_way_cnt = 0; pe_way_cnt < PE*SIMD/WAY*NONZ_SCALE; pe_way_cnt++) {
 #pragma HLS UNROLL
 
 	  accu_pe_way[pe_way_cnt] = activation.init(0,0);
@@ -1153,7 +1153,7 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
   unsigned short fan_in=0;
 
   // ** hwkim added for PE interleaving
-  unsigned char mini_nf = 0;
+//  unsigned char mini_nf = 0;
   unsigned const pe_way_num = PE*(SIMD/WAY);
 
   x = 0;
@@ -1165,28 +1165,33 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 //	  TI  inElem;
   PI  inElem;
   // ** hwkim modified for PE interleaving
-//  auto  outElem = TDstI().template operator()<TO>();
-//  TOM outMaskElem;
-  ap_uint<NONZ_SCALE*TO::width> outElem;
-  ap_uint<NONZ_SCALE*TOM::width> outMaskElem;
+  auto  outElem = TDstI().template operator()<TO>();
+  TOM outMaskElem;
+//  ap_uint<NONZ_SCALE*TO::width> outElem;
+//  ap_uint<NONZ_SCALE*TOM::width> outMaskElem;
 
   unsigned char sf_max = 0;
 
   // ** hwkim modified for PE interleaving
-//  FI sf_num_buf[PE*SIMD/WAY];
-  FI sf_num_buf[PE*SIMD/WAY*NONZ_SCALE];
+  FI sf_num_buf[PE*SIMD/WAY];
+//  FI sf_num_buf[PE*SIMD/WAY*NONZ_SCALE];
 #pragma HLS ARRAY_PARTITION variable=sf_num_buf complete dim=1
 
   // ** hwkim modified for PE interleaving
-//  ap_uint<1> pe_way_sync[PE*SIMD/WAY];
-  ap_uint<1> pe_way_sync[PE*SIMD/WAY*NONZ_SCALE];
+  ap_uint<1> pe_way_sync[PE*SIMD/WAY];
+//  ap_uint<1> pe_way_sync[PE*SIMD/WAY*NONZ_SCALE];
 #pragma HLS ARRAY_PARTITION variable=pe_way_sync complete dim=1
 
   // ** hwkim modified for PE interleaving
-//  ap_uint<PE*SIMD/WAY> pe_way_sync_vec = 0;
-  ap_uint<PE*SIMD/WAY> pe_way_sync_vec[NONZ_SCALE];
+  ap_uint<PE*SIMD/WAY> pe_way_sync_vec = 0;
+//  ap_uint<PE*SIMD/WAY> pe_way_sync_vec[NONZ_SCALE];
 #pragma HLS ARRAY_PARTITION variable=pe_way_sync_vec complete dim=1
-  ap_uint<PE*SIMD/WAY> pe_way_sync_vec_anded;
+//  ap_uint<PE*SIMD/WAY> pe_way_sync_vec_anded;
+
+  // ** hwkim added to reduce MVTU logic size
+//  ap_uint<WAY*NONZ_SCALE> integ_mask = 0;
+//  ap_uint<PI::width*NONZ_SCALE> integ_inElem = 0;
+//  ap_uint<WAY*NONZ_SCALE> integ_w = 0;
 
   sf = 0;
   for(unsigned  i = 0; i < reps * TOTAL_FOLD; i++) {
@@ -1210,99 +1215,134 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 //			  }
 //			  unsigned short pe_way_mini_nf_index = mini_nf*(pe_way_num)+pe_way_cnt;
 			  if(sf == 0){
-				  sf_num_buf[mini_nf*(pe_way_num)+pe_way_cnt] = sf_num[mini_nf*(pe_way_num)+pe_way_cnt].read();
-//				  pe_way_sync[mini_nf*(pe_way_num)+pe_way_cnt] = 0;
+//				  sf_num_buf[mini_nf*(pe_way_num)+pe_way_cnt] = sf_num[mini_nf*(pe_way_num)+pe_way_cnt].read();
+				  sf_num_buf[pe_way_cnt] = sf_num[(nf%NONZ_SCALE)*(pe_way_num)+pe_way_cnt].read();
 			  }
-//			  else
-			  if(sf < (sf_num_buf[mini_nf*(pe_way_num)+pe_way_cnt] - SIMD)){
-				  pe_way_sync[mini_nf*(pe_way_num)+pe_way_cnt] = 0;
+//			  if(sf < (sf_num_buf[mini_nf*(pe_way_num)+pe_way_cnt] - SIMD)){
+//				  pe_way_sync[mini_nf*(pe_way_num)+pe_way_cnt] = 0;
+			  if(sf < (sf_num_buf[pe_way_cnt] - SIMD)){
+				  pe_way_sync[pe_way_cnt] = 0;
 			  }
 			  else{
-				  pe_way_sync[mini_nf*(pe_way_num)+pe_way_cnt] = 1;
+//				  pe_way_sync[mini_nf*(pe_way_num)+pe_way_cnt] = 1;
+				  pe_way_sync[pe_way_cnt] = 1;
 			  }
 
 			  // ** hwkim modified for PE interleaving
-//			  if(sf < sf_num_buf[pe_way_cnt]){
+			  if(sf < sf_num_buf[pe_way_cnt]){
 //				  ap_uint<WAY> mask = ~packed_mask[pe_way_cnt].read();
 //				  inElem = packed_input[pe_way_cnt].read();
 //				  ap_uint<SIMD> dummy_w = packed_weight[pe_way_cnt].read();
-//				  auto const  act = TSrcI()(inElem);
-//
-//				  auto const  wgt = TWeightI()(dummy_w);
-//				  accu_pe_way[pe_way_cnt] = mac_masked<WAY>(accu_pe_way[pe_way_cnt], wgt, act, r, mask);	// should be modified - N = WAY
-//#ifdef ACTIVATION_LOG
-//				  if(TSrcI::width==1)	// hwkim: rest layers except for the first layer
-//					  accu_pe_way_pm[pe_way_cnt] = mac_masked_pm<WAY>(accu_pe_way_pm[pe_way_cnt], wgt, act, r, mask);	// should be modified - N = WAY
-//
-//#ifdef DEBUG
-//				  cout << fixed;
-//				  cout.precision(8);
-//				  cout << "nf " << (int)nf << ", accu[" << (int)pe << "]: " << accu[pe];
-//				  cout << hex << "\tact: " << inElem << "\twgt: " << dummy_w << endl;
-//#endif
-//#endif
-//			  }
-			  if(sf < sf_num_buf[mini_nf*(pe_way_num)+pe_way_cnt]){
-				  ap_uint<WAY> mask = ~packed_mask[mini_nf*(pe_way_num)+pe_way_cnt].read();
-				  inElem = packed_input[mini_nf*(pe_way_num)+pe_way_cnt].read();
-				  ap_uint<SIMD> dummy_w = packed_weight[mini_nf*(pe_way_num)+pe_way_cnt].read();
+				  // ** hwkim modified to reduce MVTU logic size
+				  ap_uint<WAY> mask = ~packed_mask[(nf%NONZ_SCALE)*(pe_way_num)+pe_way_cnt].read();
+				  inElem = packed_input[(nf%NONZ_SCALE)*(pe_way_num)+pe_way_cnt].read();
+				  ap_uint<SIMD> dummy_w = packed_weight[(nf%NONZ_SCALE)*(pe_way_num)+pe_way_cnt].read();
+//				  if(nf%NONZ_SCALE == 0){
+//					  integ_mask = 0;
+//					  integ_inElem = 0;
+//					  integ_w = 0;
+//					  for(unsigned char nonz_scale_cnt=0; nonz_scale_cnt<NONZ_SCALE; nonz_scale_cnt++){
+//#pragma HLS UNROLL
+//						  ap_uint<WAY> mask_tmp = packed_mask[(nonz_scale_cnt)*(pe_way_num)+pe_way_cnt].read();
+//						  PI inElem_tmp = packed_input[(nonz_scale_cnt)*(pe_way_num)+pe_way_cnt].read();
+//						  ap_uint<SIMD> w_tmp = packed_weight[(nonz_scale_cnt)*(pe_way_num)+pe_way_cnt].read();
+////						  integ_mask |= (ap_uint<WAY*NONZ_SCALE>)packed_mask[(nonz_scale_cnt)*(pe_way_num)+pe_way_cnt].read() << WAY*nonz_scale_cnt;
+////						  integ_inElem |= (ap_uint<PI::width*NONZ_SCALE>)packed_input[(nonz_scale_cnt)*(pe_way_num)+pe_way_cnt].read() << PI*nonz_scale_cnt;
+////						  integ_w |= (ap_uint<WAY*NONZ_SCALE>)packed_weight[(nonz_scale_cnt)*(pe_way_num)+pe_way_cnt].read() << WAY*nonz_scale_cnt;
+//						  integ_mask |= (ap_uint<WAY*NONZ_SCALE>)mask_tmp << WAY*nonz_scale_cnt;
+//						  integ_inElem |= (ap_uint<PI::width*NONZ_SCALE>)inElem_tmp << PI::width*nonz_scale_cnt;
+//						  integ_w |= (ap_uint<WAY*NONZ_SCALE>)w_tmp << WAY*nonz_scale_cnt;
+//						  cout << hex << (unsigned long long)mask_tmp << " " << (unsigned long long)integ_mask << endl;
+//						  cout << (unsigned long long)inElem_tmp << " " << (unsigned long long)integ_inElem << endl;
+//						  cout << (unsigned long long)w_tmp << " " << (unsigned long long)integ_w << endl;
+//					  }
+//				  }
+//				  ap_uint<WAY> mask = ~(ap_uint<WAY>)(integ_mask >> WAY*(nf%NONZ_SCALE));
+//				  inElem = (PI)(integ_inElem >> (PI::width)*(nf%NONZ_SCALE));
+//				  ap_uint<WAY> dummy_w = (ap_uint<WAY>)(integ_w >> WAY*(nf%NONZ_SCALE));
+//				  cout << "---------------" << endl;
+//				  cout << mask << endl;
+//				  cout << inElem << endl;
+//				  cout << dummy_w << endl;
+//				  cout << "---------------" << endl;
+
+
 				  auto const  act = TSrcI()(inElem);
 				  auto const  wgt = TWeightI()(dummy_w);
-				  accu_pe_way[mini_nf*(pe_way_num)+pe_way_cnt] = mac_masked<WAY>(accu_pe_way[mini_nf*(pe_way_num)+pe_way_cnt], wgt, act, r, mask);	// should be modified - N = WAY
+
+				  accu_pe_way[pe_way_cnt] = mac_masked<WAY>(accu_pe_way[pe_way_cnt], wgt, act, r, mask);	// should be modified - N = WAY
 #ifdef ACTIVATION_LOG
 				  if(TSrcI::width==1)	// hwkim: rest layers except for the first layer
-					  accu_pe_way_pm[mini_nf*(pe_way_num)+pe_way_cnt] = mac_masked_pm<WAY>(accu_pe_way_pm[mini_nf*(pe_way_num)+pe_way_cnt], wgt, act, r, mask);	// should be modified - N = WAY
+					  accu_pe_way_pm[pe_way_cnt] = mac_masked_pm<WAY>(accu_pe_way_pm[pe_way_cnt], wgt, act, r, mask);	// should be modified - N = WAY
 
 #ifdef DEBUG
 				  cout << fixed;
 				  cout.precision(8);
-				  cout << "nf " << (int)nf << ", accu[" << (int)(mini_nf*(pe_way_num)+pe_way_cnt) << "]: " << accu_pe_way[mini_nf*(pe_way_num)+pe_way_cnt];
+				  cout << "nf " << (int)nf << ", accu[" << (int)pe << "]: " << accu[pe];
 				  cout << hex << "\tact: " << inElem << "\twgt: " << dummy_w << endl;
 #endif
 #endif
 			  }
+//			  if(sf < sf_num_buf[mini_nf*(pe_way_num)+pe_way_cnt]){
+//				  ap_uint<WAY> mask = ~packed_mask[mini_nf*(pe_way_num)+pe_way_cnt].read();
+//				  inElem = packed_input[mini_nf*(pe_way_num)+pe_way_cnt].read();
+//				  ap_uint<SIMD> dummy_w = packed_weight[mini_nf*(pe_way_num)+pe_way_cnt].read();
+//				  auto const  act = TSrcI()(inElem);
+//				  auto const  wgt = TWeightI()(dummy_w);
+//				  accu_pe_way[mini_nf*(pe_way_num)+pe_way_cnt] = mac_masked<WAY>(accu_pe_way[mini_nf*(pe_way_num)+pe_way_cnt], wgt, act, r, mask);	// should be modified - N = WAY
+//#ifdef ACTIVATION_LOG
+//				  if(TSrcI::width==1)	// hwkim: rest layers except for the first layer
+//					  accu_pe_way_pm[mini_nf*(pe_way_num)+pe_way_cnt] = mac_masked_pm<WAY>(accu_pe_way_pm[mini_nf*(pe_way_num)+pe_way_cnt], wgt, act, r, mask);	// should be modified - N = WAY
+//
+//#ifdef DEBUG
+//				  cout << fixed;
+//				  cout.precision(8);
+//				  cout << "nf " << (int)nf << ", accu[" << (int)(mini_nf*(pe_way_num)+pe_way_cnt) << "]: " << accu_pe_way[mini_nf*(pe_way_num)+pe_way_cnt];
+//				  cout << hex << "\tact: " << inElem << "\twgt: " << dummy_w << endl;
+//#endif
+//#endif
+//			  }
 		  }
 
 		  // ** hwkim modified for PE interleaving
-//		  for(unsigned short pe_way_cnt=0; pe_way_cnt<PE*(SIMD/WAY); pe_way_cnt++){
-//			  pe_way_sync_vec |= (ap_uint<PE*SIMD/WAY>)pe_way_sync[pe_way_cnt] << pe_way_cnt;
-//		  }
 		  for(unsigned short pe_way_cnt=0; pe_way_cnt<PE*(SIMD/WAY); pe_way_cnt++){
-#pragma HLS UNROLL
-			  pe_way_sync_vec[mini_nf] |= (ap_uint<PE*SIMD/WAY>)pe_way_sync[mini_nf*(pe_way_num)+pe_way_cnt] << pe_way_cnt;
+			  pe_way_sync_vec |= (ap_uint<PE*SIMD/WAY>)pe_way_sync[pe_way_cnt] << pe_way_cnt;
 		  }
+//		  for(unsigned short pe_way_cnt=0; pe_way_cnt<PE*(SIMD/WAY); pe_way_cnt++){
+//#pragma HLS UNROLL
+//			  pe_way_sync_vec[mini_nf] |= (ap_uint<PE*SIMD/WAY>)pe_way_sync[mini_nf*(pe_way_num)+pe_way_cnt] << pe_way_cnt;
+//		  }
 
 		  // ** hwkim added for PE interleaving
-		  for(unsigned char nonz_scale_cnt=0; nonz_scale_cnt<NONZ_SCALE; nonz_scale_cnt++){
-#pragma HLS UNROLL
-			  pe_way_sync_vec_anded &= pe_way_sync_vec[nonz_scale_cnt];
-		  }
+//		  for(unsigned char nonz_scale_cnt=0; nonz_scale_cnt<NONZ_SCALE; nonz_scale_cnt++){
+//#pragma HLS UNROLL
+//			  pe_way_sync_vec_anded &= pe_way_sync_vec[nonz_scale_cnt];
+//		  }
 
 		  // ** hwkim modified for PE interleaving
-//		  if((~pe_way_sync_vec==0) || (sf==(SF-1)*SIMD)){
-//		  if(((~(pe_way_sync_vec[0]&pe_way_sync_vec[1])==0) || (sf==(SF-1)*SIMD)) &&(mini_nf==1)){
-		  if(((~pe_way_sync_vec_anded==0) || (sf==(SF-1)*SIMD)) &&(mini_nf==(NONZ_SCALE-1))){
+		  if((~pe_way_sync_vec==0) || (sf==(SF-1)*SIMD)){
+//		  if(((~pe_way_sync_vec_anded==0) || (sf==(SF-1)*SIMD)) &&(mini_nf==(NONZ_SCALE-1))){
 
 			  unsigned char pe=0;
 			  unsigned char way_cnt=0;
 			  for(unsigned char pe_way_cnt = 0; pe_way_cnt < PE*SIMD/WAY; pe_way_cnt++) {
 #pragma HLS UNROLL
-//				  accu[pe] += accu_pe_way[pe_way_cnt];
-//				  // ** hwkim added for PE interleaving
-//				  accu[PE+pe] += accu_pe_way[pe_way_num+pe_way_cnt];
-				  for(unsigned char nonz_scale_cnt=0; nonz_scale_cnt<NONZ_SCALE; nonz_scale_cnt++){
-#pragma HLS UNROLL
-					  accu[nonz_scale_cnt*PE+pe] += accu_pe_way[nonz_scale_cnt*(pe_way_num)+pe_way_cnt];
-
-#ifdef ACTIVATION_LOG
-					  // ** hwkim modified for PE interleaving
-					  if(TSrcI::width==1){	// hwkim: for the rest layer
-	//					  accu_pm[pe] += accu_pe_way_pm[pe_way_cnt];
-	//					  accu_pm[PE+pe] += accu_pe_way_pm[pe_way_num+pe_way_cnt];
-						  accu_pm[nonz_scale_cnt*PE+pe] += accu_pe_way_pm[nonz_scale_cnt*(pe_way_num)+pe_way_cnt];
-					  }
-#endif
+				  accu[pe] += accu_pe_way[pe_way_cnt];
+				  if(TSrcI::width==1){	// hwkim: for the rest layer
+					  accu_pm[pe] += accu_pe_way_pm[pe_way_cnt];
 				  }
+//				  // ** hwkim added for PE interleaving
+//				  for(unsigned char nonz_scale_cnt=0; nonz_scale_cnt<NONZ_SCALE; nonz_scale_cnt++){
+//#pragma HLS UNROLL
+//					  accu[nonz_scale_cnt*PE+pe] += accu_pe_way[nonz_scale_cnt*(pe_way_num)+pe_way_cnt];
+//
+//#ifdef ACTIVATION_LOG
+//					  // ** hwkim modified for PE interleaving
+//					  if(TSrcI::width==1){	// hwkim: for the rest layer
+//						  accu_pm[nonz_scale_cnt*PE+pe] += accu_pe_way_pm[nonz_scale_cnt*(pe_way_num)+pe_way_cnt];
+//					  }
+//#endif
+//				  }
 				  if(++way_cnt==(SIMD/WAY)){
 					  pe++;
 					  way_cnt=0;
@@ -1310,8 +1350,8 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 			  }
 
 			  // ** hwkim modified for PE interleaving
-//			  for(unsigned char pe = 0; pe < PE; pe++) {
-			  for(unsigned char pe = 0; pe < NONZ_SCALE*PE; pe++) {
+			  for(unsigned char pe = 0; pe < PE; pe++) {
+//			  for(unsigned char pe = 0; pe < NONZ_SCALE*PE; pe++) {
 #pragma HLS UNROLL
 
 	#ifdef ACTIVATION_LOG
@@ -1338,10 +1378,10 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 				  // hwkim modified for way
 	//			  outElem_ter_unit = activation.activate(nf, pe, accu[pe], sf_num_buf[pe]);
 				  // ** hwkim modified for PE interleaving
-//				  outElem_ter_unit = activation.activate(nf, pe, accu[pe], sf_num_buf[0]);
-				  unsigned char new_nf = nf*NONZ_SCALE+(int)(pe/PE);
-				  unsigned char new_pe = pe%PE;
-				  outElem_ter_unit = activation.activate(new_nf, new_pe, accu[pe], NULL);	// sf_num(fan-in) for PE should be modified!!!
+				  outElem_ter_unit = activation.activate(nf, pe, accu[pe], sf_num_buf[0]);
+//				  unsigned char new_nf = nf*NONZ_SCALE+(int)(pe/PE);
+//				  unsigned char new_pe = pe%PE;
+//				  outElem_ter_unit = activation.activate(new_nf, new_pe, accu[pe], NULL);	// sf_num(fan-in) for PE should be modified!!!
 
 				  ap_uint<1> outMaskElem_unit;
 				  outMaskElem_unit = (ap_uint<1>)outElem_ter_unit[TDstI::width];
@@ -1360,18 +1400,18 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 			  act_buf_arr[nf] = outElem;
 			  act_mask_buf_arr[nf] = outMaskElem;
 			  // ** hwkim modified for PE interleaving
-//			  if(nf==(NF-1)){
-			  if(nf==(NF/NONZ_SCALE-1)){
+			  if(nf==(NF-1)){
+//			  if(nf==(NF/NONZ_SCALE-1)){
 
 				act_buf = 0;
 				act_mask_buf = 0;
 				// ** hwkim modified for PE interleaving
-//				for(int nf_cnt=NF-1; nf_cnt>=0; nf_cnt--){
-//					act_buf = act_buf << OutWidth;	//OutWidth or PE
-//					act_mask_buf = act_mask_buf << PE;	//OutWidth or PE
-				for(int nf_cnt=NF/NONZ_SCALE-1; nf_cnt>=0; nf_cnt--){
-					act_buf = act_buf << NONZ_SCALE*OutWidth;	//OutWidth or PE
-					act_mask_buf = act_mask_buf << NONZ_SCALE*PE;	//OutWidth or PE
+				for(int nf_cnt=NF-1; nf_cnt>=0; nf_cnt--){
+					act_buf = act_buf << OutWidth;	//OutWidth or PE
+					act_mask_buf = act_mask_buf << PE;	//OutWidth or PE
+//				for(int nf_cnt=NF/NONZ_SCALE-1; nf_cnt>=0; nf_cnt--){
+//					act_buf = act_buf << NONZ_SCALE*OutWidth;	//OutWidth or PE
+//					act_mask_buf = act_mask_buf << NONZ_SCALE*PE;	//OutWidth or PE
 
 					act_buf = act_buf | act_buf_arr[nf_cnt];
 					act_mask_buf = act_mask_buf | act_mask_buf_arr[nf_cnt];
@@ -1475,59 +1515,56 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 #endif
 
 			  // ** hwkim added for PE interleaving
-//			  for(unsigned char pe = 0; pe < PE; pe++) {
-//#pragma HLS UNROLL
-//				  accu[pe] = activation.init(nf, pe);
-//#ifdef ACTIVATION_LOG
-//				  accu_pm[pe] = activation.init(nf, pe);
-//#endif
-			  for(unsigned char pe = 0; pe < NONZ_SCALE*PE; pe++) {
+			  for(unsigned char pe = 0; pe < PE; pe++) {
 #pragma HLS UNROLL
-				  accu[pe] = activation.init(0,0);	// hwkim: no meaning of nf/pe
+				  accu[pe] = activation.init(nf, pe);
 #ifdef ACTIVATION_LOG
-				  accu_pm[pe] = activation.init(0,0);
+				  accu_pm[pe] = activation.init(nf, pe);
 #endif
+//			  for(unsigned char pe = 0; pe < NONZ_SCALE*PE; pe++) {
+//#pragma HLS UNROLL
+//				  accu[pe] = activation.init(0,0);	// hwkim: no meaning of nf/pe
+//#ifdef ACTIVATION_LOG
+//				  accu_pm[pe] = activation.init(0,0);
+//#endif
 			  }
 
 			  // ** hwkim added for PE interleaving
-//			  for(unsigned char pe_way_cnt = 0; pe_way_cnt < PE*SIMD/WAY; pe_way_cnt++) {
-//#pragma HLS UNROLL
-//				  accu_pe_way[pe_way_cnt] = activation.init(nf, pe_way_cnt);
-//#ifdef ACTIVATION_LOG
-//				  accu_pe_way_pm[pe_way_cnt] = activation.init(nf, pe_way_cnt);
-//#endif
-//			  }
-			  for(unsigned char pe_way_cnt = 0; pe_way_cnt < NONZ_SCALE*PE*SIMD/WAY; pe_way_cnt++) {
+			  for(unsigned char pe_way_cnt = 0; pe_way_cnt < PE*SIMD/WAY; pe_way_cnt++) {
 #pragma HLS UNROLL
-				  accu_pe_way[pe_way_cnt] = activation.init(0,0);
+				  accu_pe_way[pe_way_cnt] = activation.init(nf, pe_way_cnt);
 #ifdef ACTIVATION_LOG
-				  accu_pe_way_pm[pe_way_cnt] = activation.init(0,0);
+				  accu_pe_way_pm[pe_way_cnt] = activation.init(nf, pe_way_cnt);
 #endif
 			  }
+//			  for(unsigned char pe_way_cnt = 0; pe_way_cnt < NONZ_SCALE*PE*SIMD/WAY; pe_way_cnt++) {
+//#pragma HLS UNROLL
+//				  accu_pe_way[pe_way_cnt] = activation.init(0,0);
+//#ifdef ACTIVATION_LOG
+//				  accu_pe_way_pm[pe_way_cnt] = activation.init(0,0);
+//#endif
+//			  }
 		  }
 
 		  // ** hwkim added for PE interleaving
-		  if(++mini_nf==NONZ_SCALE){
-			  mini_nf=0;
+//		  if(++mini_nf==NONZ_SCALE){
+//			  mini_nf=0;
 
 			  sf+=SIMD;
 			  // ** hwkim modified for PE interleaving
-//			  if((sf==SF*SIMD) || (~pe_way_sync_vec==0)){
-//				  pe_way_sync_vec = 0;
-			  if((sf==SF*SIMD)	// constant (MACRO)
-//					  || (~(pe_way_sync_vec[0]&pe_way_sync_vec[1])==0)){
-//				  pe_way_sync_vec[0] = 0;
-//				  pe_way_sync_vec[1] = 0;
-					  || (~pe_way_sync_vec_anded==0)){
-				  for(unsigned char nonz_scale_cnt=0; nonz_scale_cnt<NONZ_SCALE; nonz_scale_cnt++)
-#pragma HLS UNROLL
-					  pe_way_sync_vec[nonz_scale_cnt] = 0;
-				  pe_way_sync_vec_anded = 0;
+			  if((sf==SF*SIMD) || (~pe_way_sync_vec==0)){
+				  pe_way_sync_vec = 0;
+//			  if((sf==SF*SIMD)	// constant (MACRO)
+//					  || (~pe_way_sync_vec_anded==0)){
+//				  for(unsigned char nonz_scale_cnt=0; nonz_scale_cnt<NONZ_SCALE; nonz_scale_cnt++)
+//#pragma HLS UNROLL
+//					  pe_way_sync_vec[nonz_scale_cnt] = 0;
+//				  pe_way_sync_vec_anded = 0;
 
 				  sf=0;
 				  // ** hwkim added for PE interleaving
-//				  if(++nf == NF) {
-				  if(++nf == (NF/NONZ_SCALE)) {		// constant (MACRO)
+				  if(++nf == NF) {
+//				  if(++nf == (NF/NONZ_SCALE)) {		// constant (MACRO)
 
 					  nf = 0;
 					  if(++x==OFMDim){
@@ -1545,7 +1582,7 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 					  }
 				  }
 			  }
-		  }
+//		  }
   }
 
 #ifdef ACTIVATION_LOG
