@@ -1185,7 +1185,7 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
   // ** hwkim modified for PE interleaving
   ap_uint<PE*SIMD/WAY> pe_way_sync_vec = 0;
 //  ap_uint<PE*SIMD/WAY> pe_way_sync_vec[NONZ_SCALE];
-#pragma HLS ARRAY_PARTITION variable=pe_way_sync_vec complete dim=1
+//#pragma HLS ARRAY_PARTITION variable=pe_way_sync_vec complete dim=1
 //  ap_uint<PE*SIMD/WAY> pe_way_sync_vec_anded;
 
   // ** hwkim added to reduce MVTU logic size
@@ -1328,9 +1328,11 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 			  for(unsigned char pe_way_cnt = 0; pe_way_cnt < PE*SIMD/WAY; pe_way_cnt++) {
 #pragma HLS UNROLL
 				  accu[pe] += accu_pe_way[pe_way_cnt];
+#ifdef ACTIVATION_LOG
 				  if(TSrcI::width==1){	// hwkim: for the rest layer
 					  accu_pm[pe] += accu_pe_way_pm[pe_way_cnt];
 				  }
+#endif
 //				  // ** hwkim added for PE interleaving
 //				  for(unsigned char nonz_scale_cnt=0; nonz_scale_cnt<NONZ_SCALE; nonz_scale_cnt++){
 //#pragma HLS UNROLL

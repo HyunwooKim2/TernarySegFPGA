@@ -278,7 +278,7 @@ void ConvolutionInputGenerator(
         	  // In parallel we write in the buffer, in the current block write if we still need to
         	  ap_uint<SIMD*Input_precision> inElem;
         	  // hwkim modified for ternary
-        	  ap_uint<SIMD*Input_precision> imaskElem;
+        	  ap_uint<SIMD> imaskElem;
 
         	  // hwkim modified for debug
 			  if(in.empty())	printf("ConvInpGen in stream read empty!!\n");
