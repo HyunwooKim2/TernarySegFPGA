@@ -309,7 +309,7 @@
 #define L10_WAY	4
 
 // log2(fan-in/WAY)*WAY
-#define L0_FANWIDTH	5	//3*3*3/(3/3)=27 -> 5-bit
+#define L0_FANWIDTH	4	//3*3*3/(3/3)=27 -> 5-bit
 #define L1_FANWIDTH	7	//3*3*64/(32/4)= -> 7-bit
 #define L2_FANWIDTH	7
 #define L3_FANWIDTH	8
@@ -319,7 +319,7 @@
 #define L7_FANWIDTH	8
 #define L8_FANWIDTH	8
 #define L9_FANWIDTH	7
-#define L10_FANWIDTH	8
+#define L10_FANWIDTH	7
 
 
 #endif //__LAYER_CONFIG_H_

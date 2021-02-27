@@ -1220,7 +1220,9 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 			  }
 //			  if(sf < (sf_num_buf[mini_nf*(pe_way_num)+pe_way_cnt] - SIMD)){
 //				  pe_way_sync[mini_nf*(pe_way_num)+pe_way_cnt] = 0;
-			  if(sf < (sf_num_buf[pe_way_cnt] - SIMD)){
+			  // ** hwkim modified to reduce sf_num bit-width
+//			  if(sf < (sf_num_buf[pe_way_cnt] - SIMD)){
+			  if(sf < (sf_num_buf[pe_way_cnt]-1)){
 				  pe_way_sync[pe_way_cnt] = 0;
 			  }
 			  else{
@@ -1278,7 +1280,7 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 #ifdef DEBUG
 				  cout << fixed;
 				  cout.precision(8);
-				  cout << "nf " << (int)nf << ", accu[" << (int)pe << "]: " << accu[pe];
+				  cout << "nf " << (int)nf << ", accu[" << (int)pe_way_cnt << "]: " << accu[pe_way_cnt];
 				  cout << hex << "\tact: " << inElem << "\twgt: " << dummy_w << endl;
 #endif
 #endif
@@ -1320,8 +1322,9 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 //		  }
 
 		  // ** hwkim modified for PE interleaving
-		  if((~pe_way_sync_vec==0) || (sf==(SF-1)*SIMD)){
-//		  if(((~pe_way_sync_vec_anded==0) || (sf==(SF-1)*SIMD)) &&(mini_nf==(NONZ_SCALE-1))){
+//		  if((~pe_way_sync_vec==0) || (sf==(SF-1)*SIMD)){
+		  if((~pe_way_sync_vec==0) || (sf==(SF-1))){	// ** hwkim modified to reduce sf_num bit-width
+//		  if(((~pe_way_sync_vec_anded==0) || (sf==(SF-1)*SIMD)) &&(mini_nf==(NONZ_SCALE-1))){	// for fine-grained
 
 			  unsigned char pe=0;
 			  unsigned char way_cnt=0;
@@ -1551,10 +1554,13 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 		  // ** hwkim added for PE interleaving
 //		  if(++mini_nf==NONZ_SCALE){
 //			  mini_nf=0;
+		  	  // ** hwkim modified to reduce sf_num bit-width
+//			  sf+=SIMD;
+		  	  sf++;
 
-			  sf+=SIMD;
 			  // ** hwkim modified for PE interleaving
-			  if((sf==SF*SIMD) || (~pe_way_sync_vec==0)){
+//			  if((sf==SF*SIMD) || (~pe_way_sync_vec==0)){
+		  	  if((sf==SF) || (~pe_way_sync_vec==0)){		// ** hwkim modified to reduce sf_num bit-width
 				  pe_way_sync_vec = 0;
 //			  if((sf==SF*SIMD)	// constant (MACRO)
 //					  || (~pe_way_sync_vec_anded==0)){
@@ -1886,6 +1892,31 @@ void nonzero_activation_weight_stream_gen(
 				input_pack_pong[pe_way_cnt] = masked_new_input | (~push_input_mask & input_pack_ping[pe_way_cnt]);
 				w_pack_pong[pe_way_cnt] = masked_new_w | (~push_mask & w_pack_ping[pe_way_cnt]);
 
+
+				// ** hwkim moved for fan-in count
+////				if(sf < 2){
+////					;
+////				}
+////				else
+//				if((sf==SF+1) && (~mask_pack_ping[pe_way_cnt]!=0)){
+////					for(unsigned char bit_cnt=0; bit_cnt<WAY; bit_cnt++)
+////#pragma HLS UNROLL
+////						sf_cnt[pe_way_cnt]+=mask_pack_ping[pe_way_cnt][bit_cnt];
+//					sf_cnt[pe_way_cnt]+=WAY;
+//				}
+//				else if((sf >= 2) && ((mask_pack_ping[pe_way_cnt]==0) || (mask_pack_pong[pe_way_cnt]==0))){
+//					sf_cnt[pe_way_cnt]+=WAY;
+//				}
+////				else if((sf==SF+1) && (~mask_pack_ping[pe_way_cnt]!=0)){
+//////					for(unsigned char bit_cnt=0; bit_cnt<WAY; bit_cnt++)
+//////#pragma HLS UNROLL
+//////						sf_cnt[pe_way_cnt]+=mask_pack_ping[pe_way_cnt][bit_cnt];
+////					sf_cnt[pe_way_cnt]+=WAY;
+////				}
+////				else if(mask_pack_pong[pe_way_cnt]==0){
+////					sf_cnt[pe_way_cnt]+=WAY;
+////				}
+
 				if(sf < 2){
 					mask_pack_ping[pe_way_cnt] = mask_delay_buf[pe_way_cnt];
 					input_pack_ping[pe_way_cnt] = input_delay_buf[pe_way_cnt];
@@ -1908,7 +1939,9 @@ void nonzero_activation_weight_stream_gen(
 					input_pack_ping[pe_way_cnt] = input_delay_buf[pe_way_cnt];
 					w_pack_ping[pe_way_cnt] = w_delay_buf[pe_way_cnt];
 
-					sf_cnt[pe_way_cnt]+=WAY;
+					// ** hwkim moved for fan-in count
+//					sf_cnt[pe_way_cnt]+=WAY;
+					sf_cnt[pe_way_cnt]++;
 				}
 				else if(mask_pack_pong[pe_way_cnt]==0){
 					packed_input[pe_way_cnt].write(input_pack_pong[pe_way_cnt]);
@@ -1926,7 +1959,9 @@ void nonzero_activation_weight_stream_gen(
 					input_pack_ping[pe_way_cnt] = input_delay_buf[pe_way_cnt];
 					w_pack_ping[pe_way_cnt] = w_delay_buf[pe_way_cnt];
 
-					sf_cnt[pe_way_cnt]+=WAY;
+					// ** hwkim moved for fan-in count
+//					sf_cnt[pe_way_cnt]+=WAY;
+					sf_cnt[pe_way_cnt]++;
 				}
 				else{	// bit packing attempted but still have zero values...
 					mask_pack_ping[pe_way_cnt] = mask_pack_pong[pe_way_cnt];
