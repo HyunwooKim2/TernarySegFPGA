@@ -172,4 +172,18 @@ inline T mac_masked_pm(T const &a, TC const &c, TD const &d, ap_uint<N> mask) {
   return  mac_masked<N>(a, c, d, ap_resource_dflt(), mask);
 }
 
+template<unsigned N, typename T>
+inline T fan_in_cnt(T const &a, ap_uint<N> mask) {
+#pragma HLS inline
+	  T  res = a;
+	  for(unsigned  i = 0; i < N; i++) {
+	#pragma HLS unroll
+		  res += mask[i];
+	  }
+	  return  res;
+}
+
+
+
+
 #endif

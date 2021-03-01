@@ -1116,27 +1116,6 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 //  decltype(activation.init(0,0))  accu_pe_way_pm[PE*SIMD/WAY*NONZ_SCALE];
 #endif
 
-  // ** hwkim added for PE interleaving
-  for(unsigned char pe = 0; pe < PE; pe++) {
-//  for(unsigned char pe = 0; pe < PE*NONZ_SCALE; pe++) {
-#pragma HLS UNROLL
-	  accu[pe] = activation.init(0,0);
-#ifdef ACTIVATION_LOG
-	  accu_pm[pe] = activation.init(0,0);
-#endif
-  }
-
-  // ** hwkim added for PE interleaving
-  for(unsigned char pe_way_cnt = 0; pe_way_cnt < PE*SIMD/WAY; pe_way_cnt++) {
-//  for(unsigned char pe_way_cnt = 0; pe_way_cnt < PE*SIMD/WAY*NONZ_SCALE; pe_way_cnt++) {
-#pragma HLS UNROLL
-
-	  accu_pe_way[pe_way_cnt] = activation.init(0,0);
-#ifdef ACTIVATION_LOG
-	  accu_pe_way_pm[pe_way_cnt] = activation.init(0,0);
-#endif
-  }
-
   unsigned char nf   = 0;
   unsigned char sf   = 0;
   unsigned char tile = 0; // invariant: tile = nf*SF + sf
@@ -1150,7 +1129,12 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 
   unsigned const fan_in_step = MatrixW/9;
   unsigned const sf_ch = SF/9;
-  unsigned short fan_in=0;
+  // ** hwkim modified for fan-in count
+//  unsigned short fan_in=0;
+  unsigned short fan_in[PE];
+#pragma HLS ARRAY_PARTITION variable=fan_in complete dim=0
+  unsigned short fan_in_pe_way[PE*(SIMD/WAY)];
+#pragma HLS ARRAY_PARTITION variable=fan_in_pe_way complete dim=0
 
   // ** hwkim added for PE interleaving
 //  unsigned char mini_nf = 0;
@@ -1163,7 +1147,7 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
   nf = 0;
 
 //	  TI  inElem;
-  PI  inElem;
+//  PI  inElem;
   // ** hwkim modified for PE interleaving
   auto  outElem = TDstI().template operator()<TO>();
   TOM outMaskElem;
@@ -1194,6 +1178,32 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 //  ap_uint<WAY*NONZ_SCALE> integ_w = 0;
 
   sf = 0;
+
+  // ** hwkim added for PE interleaving
+  for(unsigned char pe = 0; pe < PE; pe++) {
+//  for(unsigned char pe = 0; pe < PE*NONZ_SCALE; pe++) {
+#pragma HLS UNROLL
+	  accu[pe] = activation.init(0,0);
+#ifdef ACTIVATION_LOG
+	  accu_pm[pe] = activation.init(0,0);
+	  // ** hwkim added for PE interleaving
+	  fan_in[pe] = 0;
+#endif
+  }
+
+  // ** hwkim added for PE interleaving
+  for(unsigned short pe_way_cnt = 0; pe_way_cnt < PE*SIMD/WAY; pe_way_cnt++) {
+//  for(unsigned char pe_way_cnt = 0; pe_way_cnt < PE*SIMD/WAY*NONZ_SCALE; pe_way_cnt++) {
+#pragma HLS UNROLL
+
+	  accu_pe_way[pe_way_cnt] = activation.init(0,0);
+#ifdef ACTIVATION_LOG
+	  accu_pe_way_pm[pe_way_cnt] = activation.init(0,0);
+#endif
+	  // ** hwkim added for fan-in count
+	  fan_in_pe_way[pe_way_cnt] = 0;
+  }
+
   for(unsigned  i = 0; i < reps * TOTAL_FOLD; i++) {
 #pragma HLS PIPELINE II=1 rewind
 	  // ** hwkim added for PE interleaving
@@ -1237,7 +1247,7 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 //				  ap_uint<SIMD> dummy_w = packed_weight[pe_way_cnt].read();
 				  // ** hwkim modified to reduce MVTU logic size
 				  ap_uint<WAY> mask = ~packed_mask[(nf%NONZ_SCALE)*(pe_way_num)+pe_way_cnt].read();
-				  inElem = packed_input[(nf%NONZ_SCALE)*(pe_way_num)+pe_way_cnt].read();
+				  PI inElem = packed_input[(nf%NONZ_SCALE)*(pe_way_num)+pe_way_cnt].read();
 				  ap_uint<SIMD> dummy_w = packed_weight[(nf%NONZ_SCALE)*(pe_way_num)+pe_way_cnt].read();
 //				  if(nf%NONZ_SCALE == 0){
 //					  integ_mask = 0;
@@ -1284,6 +1294,8 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 				  cout << hex << "\tact: " << inElem << "\twgt: " << dummy_w << endl;
 #endif
 #endif
+				  // ** hwkim added for fan-in count
+				  fan_in_pe_way[pe_way_cnt] = fan_in_cnt<WAY>(fan_in_pe_way[pe_way_cnt], mask);
 			  }
 //			  if(sf < sf_num_buf[mini_nf*(pe_way_num)+pe_way_cnt]){
 //				  ap_uint<WAY> mask = ~packed_mask[mini_nf*(pe_way_num)+pe_way_cnt].read();
@@ -1328,7 +1340,7 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 
 			  unsigned char pe=0;
 			  unsigned char way_cnt=0;
-			  for(unsigned char pe_way_cnt = 0; pe_way_cnt < PE*SIMD/WAY; pe_way_cnt++) {
+			  for(unsigned short pe_way_cnt = 0; pe_way_cnt < PE*SIMD/WAY; pe_way_cnt++) {
 #pragma HLS UNROLL
 				  accu[pe] += accu_pe_way[pe_way_cnt];
 #ifdef ACTIVATION_LOG
@@ -1336,6 +1348,9 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 					  accu_pm[pe] += accu_pe_way_pm[pe_way_cnt];
 				  }
 #endif
+				  // ** hwkim added for fan-in count
+				  fan_in[pe] += fan_in_pe_way[pe_way_cnt];
+
 //				  // ** hwkim added for PE interleaving
 //				  for(unsigned char nonz_scale_cnt=0; nonz_scale_cnt<NONZ_SCALE; nonz_scale_cnt++){
 //#pragma HLS UNROLL
@@ -1383,7 +1398,7 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 				  // hwkim modified for way
 	//			  outElem_ter_unit = activation.activate(nf, pe, accu[pe], sf_num_buf[pe]);
 				  // ** hwkim modified for PE interleaving
-				  outElem_ter_unit = activation.activate(nf, pe, accu[pe], sf_num_buf[0]);
+				  outElem_ter_unit = activation.activate(nf, pe, accu[pe], fan_in[pe]);	//sf_num_buf[0]);	// ** hwkim modified for fan-in count
 //				  unsigned char new_nf = nf*NONZ_SCALE+(int)(pe/PE);
 //				  unsigned char new_pe = pe%PE;
 //				  outElem_ter_unit = activation.activate(new_nf, new_pe, accu[pe], NULL);	// sf_num(fan-in) for PE should be modified!!!
@@ -1532,15 +1547,19 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 //#ifdef ACTIVATION_LOG
 //				  accu_pm[pe] = activation.init(0,0);
 //#endif
+				  // ** hwkim added for fan-in count
+				  fan_in[pe] = 0;
 			  }
 
 			  // ** hwkim added for PE interleaving
-			  for(unsigned char pe_way_cnt = 0; pe_way_cnt < PE*SIMD/WAY; pe_way_cnt++) {
+			  for(unsigned short pe_way_cnt = 0; pe_way_cnt < PE*SIMD/WAY; pe_way_cnt++) {
 #pragma HLS UNROLL
 				  accu_pe_way[pe_way_cnt] = activation.init(nf, pe_way_cnt);
 #ifdef ACTIVATION_LOG
 				  accu_pe_way_pm[pe_way_cnt] = activation.init(nf, pe_way_cnt);
 #endif
+				  // ** hwkim added for fan-in count
+				  fan_in_pe_way[pe_way_cnt] = 0;
 			  }
 //			  for(unsigned char pe_way_cnt = 0; pe_way_cnt < NONZ_SCALE*PE*SIMD/WAY; pe_way_cnt++) {
 //#pragma HLS UNROLL
