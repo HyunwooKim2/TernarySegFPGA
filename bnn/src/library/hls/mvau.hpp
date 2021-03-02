@@ -1226,7 +1226,9 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 //			  unsigned short pe_way_mini_nf_index = mini_nf*(pe_way_num)+pe_way_cnt;
 			  if(sf == 0){
 //				  sf_num_buf[mini_nf*(pe_way_num)+pe_way_cnt] = sf_num[mini_nf*(pe_way_num)+pe_way_cnt].read();
-				  sf_num_buf[pe_way_cnt] = sf_num[(nf%NONZ_SCALE)*(pe_way_num)+pe_way_cnt].read();
+				  // ** hwkim modified for packed_input fifo read carried dependence
+//				  sf_num_buf[pe_way_cnt] = sf_num[(nf%NONZ_SCALE)*(pe_way_num)+pe_way_cnt].read();
+				  sf_num_buf[pe_way_cnt] = sf_num[pe_way_cnt].read();
 			  }
 //			  if(sf < (sf_num_buf[mini_nf*(pe_way_num)+pe_way_cnt] - SIMD)){
 //				  pe_way_sync[mini_nf*(pe_way_num)+pe_way_cnt] = 0;
@@ -1246,9 +1248,14 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 //				  inElem = packed_input[pe_way_cnt].read();
 //				  ap_uint<SIMD> dummy_w = packed_weight[pe_way_cnt].read();
 				  // ** hwkim modified to reduce MVTU logic size
-				  ap_uint<WAY> mask = ~packed_mask[(nf%NONZ_SCALE)*(pe_way_num)+pe_way_cnt].read();
-				  PI inElem = packed_input[(nf%NONZ_SCALE)*(pe_way_num)+pe_way_cnt].read();
-				  ap_uint<SIMD> dummy_w = packed_weight[(nf%NONZ_SCALE)*(pe_way_num)+pe_way_cnt].read();
+//				  ap_uint<WAY> mask = ~packed_mask[(nf%NONZ_SCALE)*(pe_way_num)+pe_way_cnt].read();
+//				  PI inElem = packed_input[(nf%NONZ_SCALE)*(pe_way_num)+pe_way_cnt].read();
+//				  ap_uint<SIMD> dummy_w = packed_weight[(nf%NONZ_SCALE)*(pe_way_num)+pe_way_cnt].read();
+				  // ** hwkim modified for packed_input fifo read carried dependence
+				  ap_uint<WAY> mask = ~packed_mask[pe_way_cnt].read();
+				  PI inElem = packed_input[pe_way_cnt].read();
+				  ap_uint<SIMD> dummy_w = packed_weight[pe_way_cnt].read();
+
 //				  if(nf%NONZ_SCALE == 0){
 //					  integ_mask = 0;
 //					  integ_inElem = 0;

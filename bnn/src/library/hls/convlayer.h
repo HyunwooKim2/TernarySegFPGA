@@ -272,6 +272,81 @@ void ConvLayer_Batch(
 	}
 #endif
 
+
+	// ** hwkim added for PE interleaving
+	hls::stream<ap_uint<WAY*TSrcI::width>> integ_packed_input[PE*(SIMD/WAY)];
+	hls::stream<ap_uint<WAY>> integ_packed_weight[PE*(SIMD/WAY)];
+	hls::stream<ap_uint<FanInCntWidth>> integ_sf_num[PE*(SIMD/WAY)];
+	hls::stream<ap_uint<WAY>> integ_packed_mask[PE*(SIMD/WAY)];
+#pragma HLS STREAM variable=integ_packed_input
+#pragma HLS STREAM variable=integ_packed_weight
+#pragma HLS STREAM variable=integ_sf_num
+#pragma HLS STREAM variable=integ_packed_mask
+#pragma HLS ARRAY_PARTITION variable=integ_packed_input complete dim=1
+#pragma HLS ARRAY_PARTITION variable=integ_packed_weight complete dim=1
+#pragma HLS ARRAY_PARTITION variable=integ_sf_num complete dim=1
+#pragma HLS ARRAY_PARTITION variable=integ_packed_mask complete dim=1
+	unsigned const  NF = MatrixH / PE;
+	unsigned const  SF = MatrixW / SIMD;
+	unsigned const  PE_WAY_NUM = PE*(SIMD/WAY);
+	ap_uint<FanInCntWidth> sf_num_tmp[PE_WAY_NUM];
+	ap_uint<1> pe_way_sync[PE_WAY_NUM];
+#pragma HLS ARRAY_PARTITION variable=pe_way_sync complete dim=1
+	ap_uint<PE_WAY_NUM>	pe_way_sync_vec = 0;
+//	ofstream integ_sf_num_log("integ_sf_num_log.txt");
+//	if(!integ_sf_num_log.is_open())	cout << "integ_sf_num_log file open error" << endl;
+//	ofstream integ_packed_input_log("integ_packed_input_log.txt");
+//	if(!integ_packed_input_log.is_open())	cout << "integ_packed_input_log file open error" << endl;
+//	cout << packed_input[0].size() << endl;
+	for(unsigned int swu_cnt=0; swu_cnt<(OFMHeight*OFMDim*NF/NONZ_SCALE); swu_cnt++){
+		for(unsigned char nonz_scale_cnt=0; nonz_scale_cnt<NONZ_SCALE; nonz_scale_cnt++){
+//			for(unsigned int sf_cnt=0; sf_cnt<sf_num_tmp[pe_way_cnt]; sf_cnt++){
+			pe_way_sync_vec = 0;
+			for(unsigned int sf_cnt=0; sf_cnt<SF; sf_cnt++){
+#pragma HLS PIPELINE II=1
+				if(~pe_way_sync_vec == 0)
+					break;
+				for(unsigned short pe_way_cnt=0; pe_way_cnt<PE*(SIMD/WAY); pe_way_cnt++){
+#pragma HLS UNROLL
+					if(sf_cnt==0){
+						sf_num_tmp[pe_way_cnt] = sf_num[nonz_scale_cnt*PE_WAY_NUM+pe_way_cnt].read();
+						integ_sf_num[pe_way_cnt].write(sf_num_tmp[pe_way_cnt]);
+					}
+					if(sf_cnt < sf_num_tmp[pe_way_cnt]){
+						integ_packed_input[pe_way_cnt].write(packed_input[nonz_scale_cnt*PE_WAY_NUM+pe_way_cnt].read());
+						integ_packed_weight[pe_way_cnt].write(packed_weight[nonz_scale_cnt*PE_WAY_NUM+pe_way_cnt].read());
+						integ_packed_mask[pe_way_cnt].write(packed_mask[nonz_scale_cnt*PE_WAY_NUM+pe_way_cnt].read());
+					}
+					if(sf_cnt==0){
+						pe_way_sync[pe_way_cnt] = 0;
+					}
+					else if(sf_cnt >= sf_num_tmp[pe_way_cnt]){
+						pe_way_sync[pe_way_cnt] = 1;
+					}
+#ifdef ACTIVATION_LOG
+					if(sf_num_tmp[pe_way_cnt]==0){
+						cout << "Error! SWU has all zero values" << endl;
+					}
+#endif
+					pe_way_sync_vec |= (ap_uint<PE_WAY_NUM>)pe_way_sync[pe_way_cnt] << pe_way_cnt;
+//					if(pe_way_cnt==0){
+//						integ_packed_input_log << hex << (unsigned long long)integ_packed_input[0].read() << endl;
+//					}
+				}
+//				if(pe_way_cnt==0){
+//					integ_sf_num_log << dec << (unsigned long long)sf_num_tmp[0] << endl;
+//				}
+			}
+		}
+	}
+//	integ_sf_num_log.close();
+//	integ_packed_input_log.close();
+//	cout << packed_input[0].size() << endl;
+//	cout << packed_input[PE_WAY_NUM].size() << endl;
+//	cout << integ_packed_input[0].size() << endl;
+
+
+
   // hwkim modified for padding
   /*
   Matrix_Vector_Activate_Batch<MatrixW, MatrixH, SIMD, PE, TSrcI, TDstI, TWeightI>
@@ -308,11 +383,15 @@ void ConvLayer_Batch(
 //			static_cast<hls::stream<ap_uint<NONZ_SCALE*PE*TDstI::width>>&>(mvOut),
 //			static_cast<hls::stream<ap_uint<NONZ_SCALE*PE>>&>(mvOutMask),
 
-			// hwkim added for ternary
-			static_cast<hls::stream<ap_uint<WAY*TSrcI::width>>*>(packed_input),
-			static_cast<hls::stream<ap_uint<WAY>>*>(packed_weight),
-			static_cast<hls::stream<ap_uint<FanInCntWidth>>*>(sf_num),
-			static_cast<hls::stream<ap_uint<WAY>>*>(packed_mask),
+			// ** hwkim added for PE interleaving
+//			static_cast<hls::stream<ap_uint<WAY*TSrcI::width>>*>(packed_input),
+//			static_cast<hls::stream<ap_uint<WAY>>*>(packed_weight),
+//			static_cast<hls::stream<ap_uint<FanInCntWidth>>*>(sf_num),
+//			static_cast<hls::stream<ap_uint<WAY>>*>(packed_mask),
+			static_cast<hls::stream<ap_uint<WAY*TSrcI::width>>*>(integ_packed_input),
+			static_cast<hls::stream<ap_uint<WAY>>*>(integ_packed_weight),
+			static_cast<hls::stream<ap_uint<FanInCntWidth>>*>(integ_sf_num),
+			static_cast<hls::stream<ap_uint<WAY>>*>(integ_packed_mask),
 
 			activation,
 			reps * OFMDim * OFMHeight, r);	//reps* OFMDim * OFMDim, r);	// hwkim modified for segmentation
