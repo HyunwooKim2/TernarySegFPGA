@@ -469,7 +469,11 @@ void read_activation_file(
 //			act_snap_buf = act_snap_buf | (*reinterpret_cast<ap_uint<64> *>(&act_snap_long));
 //		}
 		for(int word_cnt=0; word_cnt<OutWidth/4; word_cnt++){
-			if(act_snap_ch_arr[word_cnt]>0x40)
+			if(act_snap_ch_arr[word_cnt]==NULL){
+//				cout << "here" << endl;
+				break;
+			}
+			else if(act_snap_ch_arr[word_cnt]>0x40)
 				act_snap_int = act_snap_ch_arr[word_cnt]-55;
 			else
 				act_snap_int = act_snap_ch_arr[word_cnt]-0x30;
@@ -640,7 +644,7 @@ void DoCompute(
 
 #ifdef SEP_SIM
   string snapshot_file_name;
-	int sep_sim_layer1_en = 1;
+	int sep_sim_layer1_en = 0;
 	int sep_sim_layer2_en = 1;
 	int sep_sim_layer3_en = 1;
 	int sep_sim_layer4_en = 1;
@@ -687,7 +691,8 @@ void DoCompute(
 		// Layer 1 - fixed point input, binary weight
 		//////////////////////////////////////////////////////////////////
 		ConvLayer_Batch
-			<L0_K, L0_IFM_CH, L0_IFM_DIM, L0_OFM_CH, L0_OFM_DIM, L0_IFM_HEIGHT, L0_OFM_HEIGHT,
+			<L0_K, L0_IFM_CH, L0_IFM_DIM, L0_OFM_CH, L0_OFM_DIM, L0_IFM_HEIGHT,
+			L0_OFM_HEIGHT,
 			1, 1, 1, 1, 1,
 #ifdef ACTIVATION_LOG
 			0,
@@ -695,7 +700,7 @@ void DoCompute(
 			L0_SIMD, L0_PE,
 			L0_WAY,	// hwkim added for ternary
 			L0_FANWIDTH,	// hwkim added for ternary
-			2,	// NONZ_SCALE
+			1,	// NONZ_SCALE
 			ap_uint<1>,	// TDstElem, hwkim added for batch norm scale
 			Slice<ap_fixed<8, 1, AP_TRN, AP_SAT>>, Identity, Recast<Binary>>
 				(inter0_2,
@@ -759,8 +764,13 @@ void DoCompute(
 			// hwkim modified for padding
 //			stream<ap_uint<64>> inter1_pad("DoCompute.inter1_pad");
 //			insert_pad<L1_IFM_DIM, L1_IFM_HEIGHT, 64, 1, 1, 1, 1>(inter1, inter1_pad);
-			ConvLayer_Batch<L1_K, L1_IFM_CH, L1_IFM_DIM, L1_OFM_CH, L1_OFM_DIM,
-				L1_IFM_HEIGHT, L1_OFM_HEIGHT, 1, 1, 1, 1, 1,
+			ConvLayer_Batch<L1_K, L1_IFM_CH,
+				L1_IFM_DIM,
+				L1_OFM_CH,
+				L1_OFM_DIM,
+				L1_IFM_HEIGHT,
+				L1_OFM_HEIGHT,	// ** hwkim modified for fast simulation
+				1, 1, 1, 1, 1,
 	#ifdef ACTIVATION_LOG
 				1,
 	#endif

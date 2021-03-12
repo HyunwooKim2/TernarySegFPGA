@@ -1102,7 +1102,8 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 
   // ** hwkim added for PE interleaving
   decltype(activation.init(0,0))  accu[PE];
-  decltype(activation.init(0,0))  accu_pe_way[PE*SIMD/WAY];
+//  decltype(activation.init(0,0))  accu_pe_way[PE*SIMD/WAY];
+  FI  accu_pe_way[PE*SIMD/WAY];
 //  decltype(activation.init(0,0))  accu[PE*NONZ_SCALE];
 //  decltype(activation.init(0,0))  accu_pe_way[PE*SIMD/WAY*NONZ_SCALE];
 #pragma HLS ARRAY_PARTITION variable=accu complete dim=1
@@ -1131,9 +1132,9 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
   unsigned const sf_ch = SF/9;
   // ** hwkim modified for fan-in count
 //  unsigned short fan_in=0;
-  unsigned short fan_in[PE];
+  ap_uint<16> fan_in[PE];
 #pragma HLS ARRAY_PARTITION variable=fan_in complete dim=0
-  unsigned short fan_in_pe_way[PE*(SIMD/WAY)];
+  FI fan_in_pe_way[PE*(SIMD/WAY)];
 #pragma HLS ARRAY_PARTITION variable=fan_in_pe_way complete dim=0
 
   // ** hwkim added for PE interleaving
@@ -1160,22 +1161,35 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
   FI sf_num_buf[PE*SIMD/WAY];
 //  FI sf_num_buf[PE*SIMD/WAY*NONZ_SCALE];
 #pragma HLS ARRAY_PARTITION variable=sf_num_buf complete dim=1
+  // **  hwkim added for SIMD interleaving
+  ap_uint<NONZ_SCALE*FI::width> sf_num_buf_exp[PE*SIMD/WAY];
+#pragma HLS ARRAY_PARTITION variable=sf_num_buf_exp complete dim=1
 
   // ** hwkim modified for PE interleaving
   ap_uint<1> pe_way_sync[PE*SIMD/WAY];
 //  ap_uint<1> pe_way_sync[PE*SIMD/WAY*NONZ_SCALE];
 #pragma HLS ARRAY_PARTITION variable=pe_way_sync complete dim=1
 
+//  ap_uint<PE*SIMD/WAY> pe_way_sync_vec = 0;
   // ** hwkim modified for PE interleaving
-  ap_uint<PE*SIMD/WAY> pe_way_sync_vec = 0;
 //  ap_uint<PE*SIMD/WAY> pe_way_sync_vec[NONZ_SCALE];
 //#pragma HLS ARRAY_PARTITION variable=pe_way_sync_vec complete dim=1
 //  ap_uint<PE*SIMD/WAY> pe_way_sync_vec_anded;
+  // ** hwkim modified for SIMD interleaving
+    ap_uint<PE*SIMD*NONZ_SCALE/WAY> pe_way_sync_vec = 0;
 
   // ** hwkim added to reduce MVTU logic size
 //  ap_uint<WAY*NONZ_SCALE> integ_mask = 0;
 //  ap_uint<PI::width*NONZ_SCALE> integ_inElem = 0;
 //  ap_uint<WAY*NONZ_SCALE> integ_w = 0;
+
+  // ** hwkim added for SIMD interleaving
+  ap_uint<NONZ_SCALE*WAY> mask_pe_way[PE*SIMD/WAY];
+  ap_uint<NONZ_SCALE*PI::width> inElem_pe_way[PE*SIMD/WAY];
+  ap_uint<NONZ_SCALE*WAY> dummy_w_pe_way[PE*SIMD/WAY];
+#pragma HLS ARRAY_PARTITION variable=mask complete dim=1
+#pragma HLS ARRAY_PARTITION variable=inElem complete dim=1
+#pragma HLS ARRAY_PARTITION variable=dummy_w complete dim=1
 
   sf = 0;
 
@@ -1196,16 +1210,19 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 //  for(unsigned char pe_way_cnt = 0; pe_way_cnt < PE*SIMD/WAY*NONZ_SCALE; pe_way_cnt++) {
 #pragma HLS UNROLL
 
-	  accu_pe_way[pe_way_cnt] = activation.init(0,0);
+	  accu_pe_way[pe_way_cnt] = 0;
 #ifdef ACTIVATION_LOG
 	  accu_pe_way_pm[pe_way_cnt] = activation.init(0,0);
 #endif
 	  // ** hwkim added for fan-in count
 	  fan_in_pe_way[pe_way_cnt] = 0;
+	  // ** hwkim added for SIMD interleaving
+	  sf_num_buf[pe_way_cnt] = 0;
+	  sf_num_buf_exp[pe_way_cnt] = 0;
   }
 
   for(unsigned  i = 0; i < reps * TOTAL_FOLD; i++) {
-#pragma HLS PIPELINE II=1 rewind
+#pragma HLS PIPELINE II=1 //rewind
 	  // ** hwkim added for PE interleaving
 	  if(y==OFMHeight)
 		  break;
@@ -1228,13 +1245,30 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 //				  sf_num_buf[mini_nf*(pe_way_num)+pe_way_cnt] = sf_num[mini_nf*(pe_way_num)+pe_way_cnt].read();
 				  // ** hwkim modified for packed_input fifo read carried dependence
 //				  sf_num_buf[pe_way_cnt] = sf_num[(nf%NONZ_SCALE)*(pe_way_num)+pe_way_cnt].read();
-				  sf_num_buf[pe_way_cnt] = sf_num[pe_way_cnt].read();
+				  // ** hwkim modified for SIMD interleaving
+//				  sf_num_buf[pe_way_cnt] = sf_num[pe_way_cnt].read();
+				  for(unsigned char nonz_scale_cnt=0; nonz_scale_cnt<NONZ_SCALE; nonz_scale_cnt++){
+#pragma HLS UNROLL
+//					  sf_num_buf_exp[pe_way_cnt] |= (ap_uint<NONZ_SCALE*FI::width>)sf_num[nonz_scale_cnt*(SIMD/WAY)+(pe_way_cnt/(SIMD/WAY))*(NONZ_SCALE-1)*(SIMD/WAY)+pe_way_cnt].read() << nonz_scale_cnt*FI::width;
+					  sf_num_buf_exp[pe_way_cnt]((nonz_scale_cnt+1)*FI::width-1, nonz_scale_cnt*FI::width)
+							  = sf_num[nonz_scale_cnt*(SIMD/WAY)+(pe_way_cnt/(SIMD/WAY))*(NONZ_SCALE-1)*(SIMD/WAY)+pe_way_cnt].read();
+				  }
 			  }
+			  // ** hwkim added for SIMD interleaving
+//			  sf_num_buf[pe_way_cnt] = (FI)(sf_num_buf_exp[pe_way_cnt] >> (sf%NONZ_SCALE)*FI::width);
+			  sf_num_buf[pe_way_cnt] = sf_num_buf_exp[pe_way_cnt](((sf%NONZ_SCALE)+1)*FI::width-1, (sf%NONZ_SCALE)*FI::width);
+//#ifdef ACTIVATION_LOG
+//			  if(pe_way_cnt==0)
+//				  cout << dec << "sf: " << (int)sf << ", sf_num: " << sf_num_buf[pe_way_cnt] << endl;
+//#endif
+
 //			  if(sf < (sf_num_buf[mini_nf*(pe_way_num)+pe_way_cnt] - SIMD)){
 //				  pe_way_sync[mini_nf*(pe_way_num)+pe_way_cnt] = 0;
 			  // ** hwkim modified to reduce sf_num bit-width
 //			  if(sf < (sf_num_buf[pe_way_cnt] - SIMD)){
-			  if(sf < (sf_num_buf[pe_way_cnt]-1)){
+			  // ** hwkim modified for SIMD interleaving
+//			  if(sf < (sf_num_buf[pe_way_cnt]-1)){
+			  if((sf/NONZ_SCALE) < (sf_num_buf[pe_way_cnt]-1)){
 				  pe_way_sync[pe_way_cnt] = 0;
 			  }
 			  else{
@@ -1242,8 +1276,48 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 				  pe_way_sync[pe_way_cnt] = 1;
 			  }
 
+//			  if(sf%NONZ_SCALE==0){
+//				  mask_pe_way[pe_way_cnt] = 0;
+//				  inElem_pe_way[pe_way_cnt] = 0;
+//				  dummy_w_pe_way[pe_way_cnt] = 0;
+//			  }
+
+			  for(unsigned char nonz_scale_cnt=0; nonz_scale_cnt<NONZ_SCALE; nonz_scale_cnt++){
+#pragma HLS UNROLL
+//				  cout << ((sf_num_buf_exp[pe_way_cnt] >> nonz_scale_cnt*FI::width) & ((ap_uint<FI::width>)~0x0)) << endl;
+//				  if(pe_way_cnt==0)
+//					  cout << dec << (nonz_scale_cnt*(SIMD/WAY)+(pe_way_cnt/(SIMD/WAY))*(NONZ_SCALE-1)*(SIMD/WAY)+pe_way_cnt) << endl;
+				  if((sf%NONZ_SCALE == 0)
+//						  && (sf/NONZ_SCALE) < ((sf_num_buf_exp[pe_way_cnt] >> nonz_scale_cnt*FI::width) & ((ap_uint<FI::width>)~0x0))){
+						  && (sf/NONZ_SCALE) < (sf_num_buf_exp[pe_way_cnt]((nonz_scale_cnt+1)*FI::width-1, nonz_scale_cnt*FI::width))){
+//					  mask_pe_way[pe_way_cnt] |= (ap_uint<NONZ_SCALE*WAY>)(~packed_mask[nonz_scale_cnt*(SIMD/WAY)+(int)(pe_way_cnt/(SIMD/WAY))*(SIMD/WAY)+pe_way_cnt].read()) << nonz_scale_cnt*WAY;
+//					  inElem_pe_way[pe_way_cnt] |= (ap_uint<NONZ_SCALE*PI::width>)packed_input[nonz_scale_cnt*(SIMD/WAY)+(int)(pe_way_cnt/(SIMD/WAY))*(SIMD/WAY)+pe_way_cnt].read() << nonz_scale_cnt*PI::width;
+//					  dummy_w_pe_way[pe_way_cnt] |= (ap_uint<NONZ_SCALE*WAY>)packed_weight[nonz_scale_cnt*(SIMD/WAY)+(int)(pe_way_cnt/(SIMD/WAY))*(SIMD/WAY)+pe_way_cnt].read() << nonz_scale_cnt*WAY;
+//					  mask_pe_way[pe_way_cnt] |= (ap_uint<NONZ_SCALE*WAY>)(~packed_mask[nonz_scale_cnt*(SIMD/WAY)+(pe_way_cnt/(SIMD/WAY))*(NONZ_SCALE-1)*(SIMD/WAY)+pe_way_cnt].read()) << nonz_scale_cnt*WAY;
+//					  inElem_pe_way[pe_way_cnt] |= (ap_uint<NONZ_SCALE*PI::width>)packed_input[nonz_scale_cnt*(SIMD/WAY)+(pe_way_cnt/(SIMD/WAY))*(NONZ_SCALE-1)*(SIMD/WAY)+pe_way_cnt].read() << nonz_scale_cnt*PI::width;
+//					  dummy_w_pe_way[pe_way_cnt] |= (ap_uint<NONZ_SCALE*WAY>)packed_weight[nonz_scale_cnt*(SIMD/WAY)+(pe_way_cnt/(SIMD/WAY))*(NONZ_SCALE-1)*(SIMD/WAY)+pe_way_cnt].read() << nonz_scale_cnt*WAY;
+					  mask_pe_way[pe_way_cnt]((nonz_scale_cnt+1)*WAY-1, nonz_scale_cnt*WAY)
+							  = ~packed_mask[nonz_scale_cnt*(SIMD/WAY)+(pe_way_cnt/(SIMD/WAY))*(NONZ_SCALE-1)*(SIMD/WAY)+pe_way_cnt].read();
+					  inElem_pe_way[pe_way_cnt]((nonz_scale_cnt+1)*PI::width-1, nonz_scale_cnt*PI::width)
+							  = packed_input[nonz_scale_cnt*(SIMD/WAY)+(pe_way_cnt/(SIMD/WAY))*(NONZ_SCALE-1)*(SIMD/WAY)+pe_way_cnt].read();
+					  dummy_w_pe_way[pe_way_cnt]((nonz_scale_cnt+1)*WAY-1, nonz_scale_cnt*WAY)
+							  = packed_weight[nonz_scale_cnt*(SIMD/WAY)+(pe_way_cnt/(SIMD/WAY))*(NONZ_SCALE-1)*(SIMD/WAY)+pe_way_cnt].read();
+//#ifdef ACTIVATION_LOG
+//					  if(nonz_scale_cnt*(SIMD/WAY)+(pe_way_cnt/SIMD/WAY)*(NONZ_SCALE-1)*(SIMD/WAY)+pe_way_cnt==8)
+//						  cout << "pe_way_cnt: " << (int)pe_way_cnt << ", 8 read here" << endl;
+//					  cout << "sf: " << (int)sf << ", pe_way_cnt: " << (int)pe_way_cnt << endl;
+//					  if(pe_way_cnt==0){
+//						  cout << hex << (unsigned long long)mask_pe_way[pe_way_cnt] << endl;
+//						  cout << (unsigned long long)inElem_pe_way[pe_way_cnt] << endl;
+//						  cout << (unsigned long long)dummy_w_pe_way[pe_way_cnt] << endl;
+//					  }
+//#endif
+				  }
+			  }
+
 			  // ** hwkim modified for PE interleaving
-			  if(sf < sf_num_buf[pe_way_cnt]){
+//			  if(sf < sf_num_buf[pe_way_cnt]){
+			  if(sf/NONZ_SCALE < sf_num_buf[pe_way_cnt]){	// ** hwkim modified for SIMD interleaving
 //				  ap_uint<WAY> mask = ~packed_mask[pe_way_cnt].read();
 //				  inElem = packed_input[pe_way_cnt].read();
 //				  ap_uint<SIMD> dummy_w = packed_weight[pe_way_cnt].read();
@@ -1252,10 +1326,35 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 //				  PI inElem = packed_input[(nf%NONZ_SCALE)*(pe_way_num)+pe_way_cnt].read();
 //				  ap_uint<SIMD> dummy_w = packed_weight[(nf%NONZ_SCALE)*(pe_way_num)+pe_way_cnt].read();
 				  // ** hwkim modified for packed_input fifo read carried dependence
-				  ap_uint<WAY> mask = ~packed_mask[pe_way_cnt].read();
-				  PI inElem = packed_input[pe_way_cnt].read();
-				  ap_uint<SIMD> dummy_w = packed_weight[pe_way_cnt].read();
+//				  ap_uint<WAY> mask = ~packed_mask[pe_way_cnt].read();
+//				  PI inElem = packed_input[pe_way_cnt].read();
+//				  ap_uint<SIMD> dummy_w = packed_weight[pe_way_cnt].read();
 
+				  // ** hwkim moved for SIMD interleaving
+//				  if(sf%NONZ_SCALE==0){
+//					  mask_pe_way[pe_way_cnt] = 0;
+//					  inElem_pe_way[pe_way_cnt] = 0;
+//					  dummy_w_pe_way[pe_way_cnt] = 0;
+//					  for(unsigned char nonz_scale_cnt=0; nonz_scale_cnt<NONZ_SCALE; nonz_scale_cnt++){
+//#pragma HLS UNROLL
+////						  cout << ((sf_num_buf_exp[pe_way_cnt] >> nonz_scale_cnt*FI::width) & ((ap_uint<FI::width>)~0x0)) << endl;
+//						  if((sf/NONZ_SCALE) < ((sf_num_buf_exp[pe_way_cnt] >> nonz_scale_cnt*FI::width) & ((ap_uint<FI::width>)~0x0))){
+//							  mask_pe_way[pe_way_cnt] |= (ap_uint<NONZ_SCALE*WAY>)(~packed_mask[nonz_scale_cnt*(SIMD/WAY)+(int)(pe_way_cnt/(SIMD/WAY))*(SIMD/WAY)+pe_way_cnt].read()) << nonz_scale_cnt*WAY;
+//							  inElem_pe_way[pe_way_cnt] |= (ap_uint<NONZ_SCALE*PI::width>)packed_input[nonz_scale_cnt*(SIMD/WAY)+(int)(pe_way_cnt/(SIMD/WAY))*(SIMD/WAY)+pe_way_cnt].read() << nonz_scale_cnt*PI::width;
+//							  dummy_w_pe_way[pe_way_cnt] |= (ap_uint<NONZ_SCALE*WAY>)packed_weight[nonz_scale_cnt*(SIMD/WAY)+(int)(pe_way_cnt/(SIMD/WAY))*(SIMD/WAY)+pe_way_cnt].read() << nonz_scale_cnt*WAY;
+//						  }
+//					  }
+//				  }
+				  ap_uint<WAY> mask = mask_pe_way[pe_way_cnt] >> (sf%NONZ_SCALE)*WAY;
+				  PI inElem = inElem_pe_way[pe_way_cnt] >> (sf%NONZ_SCALE)*PI::width;
+				  ap_uint<WAY> dummy_w = dummy_w_pe_way[pe_way_cnt] >> (sf%NONZ_SCALE)*WAY;
+//#ifdef ACTIVATION_LOG
+//				  if(pe_way_cnt==0){
+//					  cout << hex  << "m: " << (unsigned long long)mask << endl;
+//					  cout << "i: " << (unsigned long long)inElem << endl;
+//					  cout << "w: " << (unsigned long long)dummy_w << endl;
+//				  }
+//#endif
 //				  if(nf%NONZ_SCALE == 0){
 //					  integ_mask = 0;
 //					  integ_inElem = 0;
@@ -1325,14 +1424,20 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 //			  }
 		  }
 
+//		  for(unsigned short pe_way_cnt=0; pe_way_cnt<PE*(SIMD/WAY); pe_way_cnt++){
+//			  pe_way_sync_vec |= (ap_uint<PE*SIMD/WAY>)pe_way_sync[pe_way_cnt] << pe_way_cnt;
+//		  }
 		  // ** hwkim modified for PE interleaving
-		  for(unsigned short pe_way_cnt=0; pe_way_cnt<PE*(SIMD/WAY); pe_way_cnt++){
-			  pe_way_sync_vec |= (ap_uint<PE*SIMD/WAY>)pe_way_sync[pe_way_cnt] << pe_way_cnt;
-		  }
 //		  for(unsigned short pe_way_cnt=0; pe_way_cnt<PE*(SIMD/WAY); pe_way_cnt++){
 //#pragma HLS UNROLL
 //			  pe_way_sync_vec[mini_nf] |= (ap_uint<PE*SIMD/WAY>)pe_way_sync[mini_nf*(pe_way_num)+pe_way_cnt] << pe_way_cnt;
 //		  }
+		  // ** hwkim modified for SIMD interleaving
+		  for(unsigned short pe_way_cnt=0; pe_way_cnt<PE*(SIMD/WAY); pe_way_cnt++){
+#pragma HLS UNROLL
+//			  pe_way_sync_vec |= (ap_uint<PE*SIMD*NONZ_SCALE/WAY>)pe_way_sync[pe_way_cnt] << ((sf%NONZ_SCALE)*(PE*SIMD/WAY)+pe_way_cnt);
+			  pe_way_sync_vec[(sf%NONZ_SCALE)*(PE*SIMD/WAY)+pe_way_cnt] = pe_way_sync[pe_way_cnt];
+		  }
 
 		  // ** hwkim added for PE interleaving
 //		  for(unsigned char nonz_scale_cnt=0; nonz_scale_cnt<NONZ_SCALE; nonz_scale_cnt++){
@@ -1567,6 +1672,9 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 #endif
 				  // ** hwkim added for fan-in count
 				  fan_in_pe_way[pe_way_cnt] = 0;
+				  // ** hwkim added for SIMD interleaving
+				  sf_num_buf[pe_way_cnt] = 0;
+				  sf_num_buf_exp[pe_way_cnt] = 0;
 			  }
 //			  for(unsigned char pe_way_cnt = 0; pe_way_cnt < NONZ_SCALE*PE*SIMD/WAY; pe_way_cnt++) {
 //#pragma HLS UNROLL
@@ -1659,17 +1767,18 @@ void nonzero_activation_weight_stream_gen(
 #ifdef ACTIVATION_LOG
 	extern string snapshot_dir;
 	// ** hwkim modified for PE interleaving
-//	ofstream nonz_i_log_file[PE][SIMD/WAY];
-//	ofstream nonz_w_log_file[PE][SIMD/WAY];
-//	ofstream nonz_m_log_file[PE][SIMD/WAY];
-//	ofstream nonz_f_log_file[PE][SIMD/WAY];
-	ofstream nonz_i_log_file[PE*NONZ_SCALE][SIMD/WAY];
-	ofstream nonz_w_log_file[PE*NONZ_SCALE][SIMD/WAY];
-	ofstream nonz_m_log_file[PE*NONZ_SCALE][SIMD/WAY];
-	ofstream nonz_f_log_file[PE*NONZ_SCALE][SIMD/WAY];
+	ofstream nonz_i_log_file[PE][SIMD/WAY];
+	ofstream nonz_w_log_file[PE][SIMD/WAY];
+	ofstream nonz_m_log_file[PE][SIMD/WAY];
+	ofstream nonz_f_log_file[PE][SIMD/WAY];
+//	ofstream nonz_i_log_file[PE*NONZ_SCALE][SIMD/WAY];
+//	ofstream nonz_w_log_file[PE*NONZ_SCALE][SIMD/WAY];
+//	ofstream nonz_m_log_file[PE*NONZ_SCALE][SIMD/WAY];
+//	ofstream nonz_f_log_file[PE*NONZ_SCALE][SIMD/WAY];
 
 	// ** hwkim modified for PE interleaving
-	for(unsigned char pe=0; pe<PE*NONZ_SCALE; pe++){
+	for(unsigned char pe=0; pe<PE; pe++){
+//	for(unsigned char pe=0; pe<PE*NONZ_SCALE; pe++){
 
 		for(unsigned char way_cnt=0; way_cnt<(SIMD/WAY); way_cnt++){
 			string nonz_i_log_file_name = snapshot_dir + "nonzero_" + to_string(LayerCnt+1)
@@ -1677,7 +1786,7 @@ void nonzero_activation_weight_stream_gen(
 			string nonz_w_log_file_name = snapshot_dir + "nonzero_" + to_string(LayerCnt+1)
 					+ "_" + to_string(pe) + "_" + to_string(way_cnt) + "_weight_log.txt";
 			string nonz_m_log_file_name = snapshot_dir + "nonzero_" + to_string(LayerCnt+1)
-								+ "_" + to_string(pe) + "_" + to_string(way_cnt) + "_mask_log.txt";
+					+ "_" + to_string(pe) + "_" + to_string(way_cnt) + "_mask_log.txt";
 			string nonz_f_log_file_name = snapshot_dir + "nonzero_" + to_string(LayerCnt+1)
 					+ "_" + to_string(pe) + "_" + to_string(way_cnt) + "_fanin_log.txt";
 
@@ -1686,10 +1795,14 @@ void nonzero_activation_weight_stream_gen(
 			nonz_m_log_file[pe][way_cnt].open(nonz_m_log_file_name);
 			nonz_f_log_file[pe][way_cnt].open(nonz_f_log_file_name);
 
-			if(!nonz_i_log_file[pe][way_cnt].is_open())	cout << nonz_i_log_file_name << " open error!" << endl;
-			if(!nonz_w_log_file[pe][way_cnt].is_open())	cout << nonz_w_log_file_name << " open error!" << endl;
-			if(!nonz_m_log_file[pe][way_cnt].is_open())	cout << nonz_m_log_file_name << " open error!" << endl;
-			if(!nonz_f_log_file[pe][way_cnt].is_open())	cout << nonz_f_log_file_name << " open error!" << endl;
+			if(!nonz_i_log_file[pe][way_cnt].is_open())
+				cout << nonz_i_log_file_name << " open error!" << endl;
+			if(!nonz_w_log_file[pe][way_cnt].is_open())
+				cout << nonz_w_log_file_name << " open error!" << endl;
+			if(!nonz_m_log_file[pe][way_cnt].is_open())
+				cout << nonz_m_log_file_name << " open error!" << endl;
+			if(!nonz_f_log_file[pe][way_cnt].is_open())
+				cout << nonz_f_log_file_name << " open error!" << endl;
 
 			nonz_i_log_file[pe][way_cnt] << hex;
 			nonz_w_log_file[pe][way_cnt] << hex;
@@ -1699,8 +1812,8 @@ void nonzero_activation_weight_stream_gen(
 	}
 #endif
 	// ** hwkim modified for PE interleaving
-//	unsigned char const  NF = MatrixH / PE;
-	unsigned char const  NF = MatrixH / (PE*NONZ_SCALE);
+	unsigned char const  NF = MatrixH / PE;
+//	unsigned char const  NF = MatrixH / (PE*NONZ_SCALE);
 
 	unsigned char const  SF = MatrixW / SIMD;
 	// ** hwkim modified for pipeline expansion
@@ -1710,10 +1823,10 @@ void nonzero_activation_weight_stream_gen(
 	TI inElem;
 	TIM imaskElem;
 	// ** hwkim modified for PE interleaving
-//	ap_uint<SIMD> wmaskElem[PE];
-//	ap_uint<SIMD> wgtElem[PE];
-	ap_uint<SIMD> wmaskElem[PE*NONZ_SCALE];
-	ap_uint<SIMD> wgtElem[PE*NONZ_SCALE];
+	ap_uint<SIMD> wmaskElem[PE];
+	ap_uint<SIMD> wgtElem[PE];
+//	ap_uint<SIMD> wmaskElem[PE*NONZ_SCALE];
+//	ap_uint<SIMD> wgtElem[PE*NONZ_SCALE];
 #pragma HLS ARRAY_PARTITION variable=wmaskElem complete dim=1
 #pragma HLS ARRAY_PARTITION variable=wgtElem complete dim=1
 
@@ -1721,26 +1834,26 @@ void nonzero_activation_weight_stream_gen(
 	TIM	imaskBuf[SF];
 
 	// ** hwkim modified for PE interleaving
-//	ap_uint<WAY>	mask_pack_ping[PE*SIMD/WAY];
-//	ap_uint<WAY>	mask_pack_pong[PE*SIMD/WAY];
-//	ap_uint<SrcWidth*WAY>	input_pack_ping[PE*SIMD/WAY];
-//	ap_uint<SrcWidth*WAY>	input_pack_pong[PE*SIMD/WAY];
-//	ap_uint<WAY> w_pack_ping[PE*SIMD/WAY];
-//	ap_uint<WAY> w_pack_pong[PE*SIMD/WAY];
-//	ap_uint<WAY>	mask_delay_buf[PE*SIMD/WAY];
-//	ap_uint<SrcWidth*WAY>	input_delay_buf[PE*SIMD/WAY];
-//	ap_uint<WAY> w_delay_buf[PE*SIMD/WAY];
-//	FI	sf_cnt[PE*SIMD/WAY];
-	ap_uint<WAY>	mask_pack_ping[PE*NONZ_SCALE*SIMD/WAY];
-	ap_uint<WAY>	mask_pack_pong[PE*NONZ_SCALE*SIMD/WAY];
-	ap_uint<SrcWidth*WAY>	input_pack_ping[PE*NONZ_SCALE*SIMD/WAY];
-	ap_uint<SrcWidth*WAY>	input_pack_pong[PE*NONZ_SCALE*SIMD/WAY];
-	ap_uint<WAY> w_pack_ping[PE*NONZ_SCALE*SIMD/WAY];
-	ap_uint<WAY> w_pack_pong[PE*NONZ_SCALE*SIMD/WAY];
-	ap_uint<WAY>	mask_delay_buf[PE*NONZ_SCALE*SIMD/WAY];
-	ap_uint<SrcWidth*WAY>	input_delay_buf[PE*NONZ_SCALE*SIMD/WAY];
-	ap_uint<WAY> w_delay_buf[PE*NONZ_SCALE*SIMD/WAY];
-	FI	sf_cnt[PE*NONZ_SCALE*SIMD/WAY];
+	ap_uint<WAY>	mask_pack_ping[PE*SIMD/WAY];
+	ap_uint<WAY>	mask_pack_pong[PE*SIMD/WAY];
+	ap_uint<SrcWidth*WAY>	input_pack_ping[PE*SIMD/WAY];
+	ap_uint<SrcWidth*WAY>	input_pack_pong[PE*SIMD/WAY];
+	ap_uint<WAY> w_pack_ping[PE*SIMD/WAY];
+	ap_uint<WAY> w_pack_pong[PE*SIMD/WAY];
+	ap_uint<WAY>	mask_delay_buf[PE*SIMD/WAY];
+	ap_uint<SrcWidth*WAY>	input_delay_buf[PE*SIMD/WAY];
+	ap_uint<WAY> w_delay_buf[PE*SIMD/WAY];
+	FI	sf_cnt[PE*SIMD/WAY];
+//	ap_uint<WAY>	mask_pack_ping[PE*NONZ_SCALE*SIMD/WAY];
+//	ap_uint<WAY>	mask_pack_pong[PE*NONZ_SCALE*SIMD/WAY];
+//	ap_uint<SrcWidth*WAY>	input_pack_ping[PE*NONZ_SCALE*SIMD/WAY];
+//	ap_uint<SrcWidth*WAY>	input_pack_pong[PE*NONZ_SCALE*SIMD/WAY];
+//	ap_uint<WAY> w_pack_ping[PE*NONZ_SCALE*SIMD/WAY];
+//	ap_uint<WAY> w_pack_pong[PE*NONZ_SCALE*SIMD/WAY];
+//	ap_uint<WAY>	mask_delay_buf[PE*NONZ_SCALE*SIMD/WAY];
+//	ap_uint<SrcWidth*WAY>	input_delay_buf[PE*NONZ_SCALE*SIMD/WAY];
+//	ap_uint<WAY> w_delay_buf[PE*NONZ_SCALE*SIMD/WAY];
+//	FI	sf_cnt[PE*NONZ_SCALE*SIMD/WAY];
 #pragma HLS ARRAY_PARTITION variable=mask_pack_ping complete dim=1
 #pragma HLS ARRAY_PARTITION variable=mask_pack_pong complete dim=1
 #pragma HLS ARRAY_PARTITION variable=input_pack_ping complete dim=1
@@ -1771,8 +1884,8 @@ void nonzero_activation_weight_stream_gen(
 			tile = 0;
 		}
 		// ** hwkim modified for PE interleaving
-//		for(unsigned short pe_way_cnt=0; pe_way_cnt<PE*(SIMD/WAY); pe_way_cnt++){
-		for(unsigned short pe_way_cnt=0; pe_way_cnt<PE*NONZ_SCALE*(SIMD/WAY); pe_way_cnt++){
+		for(unsigned short pe_way_cnt=0; pe_way_cnt<PE*(SIMD/WAY); pe_way_cnt++){
+//		for(unsigned short pe_way_cnt=0; pe_way_cnt<PE*NONZ_SCALE*(SIMD/WAY); pe_way_cnt++){
 #pragma HLS UNROLL
 
 			if(sf==0)
@@ -1807,32 +1920,46 @@ void nonzero_activation_weight_stream_gen(
 //				wgtElem[pe] = w[pe];
 //				wmaskElem[pe] = wm[pe];
 //			}
-			for(unsigned char pe=0; pe<NONZ_SCALE*PE; pe++){
+			// ** hwkim modified for SIMD interleaving
+//			for(unsigned char pe=0; pe<NONZ_SCALE*PE; pe++){
+//#pragma HLS UNROLL
+//				unsigned char new_tile = (int)(pe/PE+(NONZ_SCALE-1)*nf)*SF + tile;	//(pe/(PE/2)), pe_offset+nf_offset+tile
+//				unsigned char new_pe = pe%PE;
+////				cout << "nf: " << (int)nf;
+////				cout << ", new_tile: " << (int)new_tile;
+////				cout << ", new_pe: " << (int)new_pe << endl;
+//				auto const &w = weights.weights(new_tile);
+//				auto const &wm = wmasks.masks(new_tile);
+//				wgtElem[pe] = w[new_pe];
+//				wmaskElem[pe] = wm[new_pe];
+//			}
+
+			for(unsigned char pe=0; pe<PE; pe++){
 #pragma HLS UNROLL
-				unsigned char new_tile = (int)(pe/PE+(NONZ_SCALE-1)*nf)*SF + tile;	//(pe/(PE/2)), pe_offset+nf_offset+tile
-				unsigned char new_pe = pe%PE;
-//				cout << "nf: " << (int)nf;
-//				cout << ", new_tile: " << (int)new_tile;
-//				cout << ", new_pe: " << (int)new_pe << endl;
-				auto const &w = weights.weights(new_tile);
-				auto const &wm = wmasks.masks(new_tile);
-				wgtElem[pe] = w[new_pe];
-				wmaskElem[pe] = wm[new_pe];
+				wgtElem[pe] = 0;
+				wmaskElem[pe] = 0;
+				for(unsigned char nonz_scale_cnt=0; nonz_scale_cnt<NONZ_SCALE; nonz_scale_cnt++){
+#pragma HLS UNROLL
+					auto const &w = weights.weights(tile+nonz_scale_cnt);
+					auto const &wm = wmasks.masks(tile+nonz_scale_cnt);
+					wgtElem[pe] |= (ap_uint<SIMD>)w[pe] << nonz_scale_cnt*(SIMD/NONZ_SCALE);
+					wmaskElem[pe] |= (ap_uint<SIMD>)wm[pe] << nonz_scale_cnt*(SIMD/NONZ_SCALE);
+				}
 			}
 		}
 
 #if defined(ACTIVATION_LOG) & defined(DEBUG)
-			cout << "(" << y << "," << x << ") ";
-			cout << "[" << ky << "," << kx << "] ";
-			cout << "nf: " << (int)nf << " sf: " << (int)sf;
-			cout << "-------------------------------------" << endl;
+		nonz_dbg_file << dec << "(" << y << "," << x << ") ";
+		nonz_dbg_file << "[" << ky << "," << kx << "] ";
+		nonz_dbg_file << "nf: " << (int)nf << " sf: " << (int)sf;
+		nonz_dbg_file << "-------------------------------------" << endl;
 #endif
 
 			pe = 0;
 			way_cnt = 0;
 			// ** hwkim modified for PE interleaving
-//			for(unsigned short pe_way_cnt=0; pe_way_cnt<PE*(SIMD/WAY); pe_way_cnt++){
-			for(unsigned short pe_way_cnt=0; pe_way_cnt<NONZ_SCALE*PE*(SIMD/WAY); pe_way_cnt++){
+			for(unsigned short pe_way_cnt=0; pe_way_cnt<PE*(SIMD/WAY); pe_way_cnt++){
+//			for(unsigned short pe_way_cnt=0; pe_way_cnt<NONZ_SCALE*PE*(SIMD/WAY); pe_way_cnt++){
 #pragma HLS UNROLL
 
 				ap_uint<2*WAY-1> mask_delay_exp[WAY];
@@ -1959,7 +2086,7 @@ void nonzero_activation_weight_stream_gen(
 					nonz_m_log_file[pe][way_cnt] << (unsigned long)mask_pack_ping[pe_way_cnt] << endl;
 #endif
 #if defined(ACTIVATION_LOG) & defined(DEBUG)
-					cout << "push ping................" << hex << input_pack_ping[pe_way_cnt] << endl;
+					nonz_dbg_file << "push ping................" << hex << (unsigned long long)input_pack_ping[pe_way_cnt] << endl;
 #endif
 					mask_pack_ping[pe_way_cnt] = mask_delay_buf[pe_way_cnt];
 					input_pack_ping[pe_way_cnt] = input_delay_buf[pe_way_cnt];
@@ -1979,7 +2106,7 @@ void nonzero_activation_weight_stream_gen(
 					nonz_m_log_file[pe][way_cnt] << (unsigned long)mask_pack_pong[pe_way_cnt] << endl;
 #endif
 #if defined(ACTIVATION_LOG) & defined(DEBUG)
-					cout << "push pong................" << hex << input_pack_pong[pe_way_cnt] << endl;
+					nonz_dbg_file << "push pong................" << hex << (unsigned long long)input_pack_pong[pe_way_cnt] << endl;
 #endif
 					mask_pack_ping[pe_way_cnt] = mask_delay_buf[pe_way_cnt] | remain_mask;
 					input_pack_ping[pe_way_cnt] = input_delay_buf[pe_way_cnt];
@@ -1998,21 +2125,24 @@ void nonzero_activation_weight_stream_gen(
 				mask_delay_buf[pe_way_cnt] = (wmaskElem[pe] | imaskElem) >> (way_cnt*WAY);
 				input_delay_buf[pe_way_cnt] = inElem >> (way_cnt*WAY*SrcWidth);
 				w_delay_buf[pe_way_cnt] = wgtElem[pe] >> (way_cnt*WAY);
-
 #if defined(ACTIVATION_LOG) & defined(DEBUG)
-				cout << dec << "***** pe: " << (int)pe << " way: " << (int)way_cnt << endl;
-				cout << hex;
-				cout << "m_buf: " << mask_delay_buf[pe_way_cnt];
-				cout << " i_buf: " << input_delay_buf[pe_way_cnt];
-				cout << " w_buf: " << w_delay_buf[pe_way_cnt] << endl;
-				cout << "m_pac: " << mask_pack_ping[pe_way_cnt];
-				cout << " i_pac: " << input_pack_ping[pe_way_cnt];
-				cout << " w_pac: " << w_pack_ping[pe_way_cnt] << endl;
-				cout << "m_pac: " << mask_pack_pong[pe_way_cnt];
-				cout << " i_pac: " << input_pack_pong[pe_way_cnt];
-				cout << " w_pac: " << w_pack_pong[pe_way_cnt] << endl;
-				cout << dec;
-				cout << "sf_cnt: " << sf_cnt[pe_way_cnt] << endl;
+//				if(y==1 && pe_way_cnt==0){
+//					cout << dec <<  "sf: " << (int)sf << " ";
+//					cout << hex << (unsigned long long)wmaskElem[pe] << ", " << (unsigned long long)imaskElem << endl;
+//				}
+				nonz_dbg_file << dec << "***** pe: " << (int)pe << " way: " << (int)way_cnt << endl;
+				nonz_dbg_file << hex;
+				nonz_dbg_file << "m_buf: " << (unsigned long long)mask_delay_buf[pe_way_cnt];
+				nonz_dbg_file << " i_buf: " << (unsigned long long)input_delay_buf[pe_way_cnt];
+				nonz_dbg_file << " w_buf: " << (unsigned long long)w_delay_buf[pe_way_cnt] << endl;
+				nonz_dbg_file << "m_pac: " << (unsigned long long)mask_pack_ping[pe_way_cnt];
+				nonz_dbg_file << " i_pac: " << (unsigned long long)input_pack_ping[pe_way_cnt];
+				nonz_dbg_file << " w_pac: " << (unsigned long long)w_pack_ping[pe_way_cnt] << endl;
+				nonz_dbg_file << "m_pac: " << (unsigned long long)mask_pack_pong[pe_way_cnt];
+				nonz_dbg_file << " i_pac: " << (unsigned long long)input_pack_pong[pe_way_cnt];
+				nonz_dbg_file << " w_pac: " << (unsigned long long)w_pack_pong[pe_way_cnt] << endl;
+				nonz_dbg_file << dec;
+				nonz_dbg_file << "sf_cnt: " << sf_cnt[pe_way_cnt] << endl;
 #endif
 
 				if(sf==SF+1){
@@ -2029,7 +2159,10 @@ void nonzero_activation_weight_stream_gen(
 			}
 
 			if(sf<SF){
-				tile++;
+				// ** hwkim modified for SIMD interleaving
+//				tile++;
+				tile = tile + NONZ_SCALE;
+
 				if(++sf_ch_cnt==sf_ch){
 					sf_ch_cnt=0;
 					if(++kx==3){
@@ -2063,8 +2196,8 @@ void nonzero_activation_weight_stream_gen(
 
 #ifdef ACTIVATION_LOG
 	// ** hwkim modified for PE interleaving
-//	for(unsigned char pe=0; pe<PE; pe++){
-	for(unsigned char pe=0; pe<NONZ_SCALE*PE; pe++){
+	for(unsigned char pe=0; pe<PE; pe++){
+//	for(unsigned char pe=0; pe<NONZ_SCALE*PE; pe++){
 		for(unsigned char way_cnt=0; way_cnt<(SIMD/WAY); way_cnt++){
 			nonz_i_log_file[pe][way_cnt].close();
 			nonz_w_log_file[pe][way_cnt].close();

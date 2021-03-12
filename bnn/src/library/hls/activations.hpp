@@ -147,26 +147,20 @@ public:
 #pragma HLS inline
 		TR result=ActVal;
 		// original code
-		/*
-		for(unsigned int i=0; i< NumTH; i++){
-#pragma HLS unroll
-		  result+=Compare()(m_thresholds[pe][nf][i], accu);
-		}
-		*/
-		// hwkim modified for ternary
-		TA act = accu + (m_thresholds[pe][nf][0]>>1);	// sign of thres is inverted by trainer
-		if(act >= (fan_in>>1))
-			result = (TR)1;
-		else
-			result = (TR)0;
-//		TA thres_p_new =  (-m_thresholds[pe][nf][0])>>1 + fan_in>>1;	//threshold scaling and shift
-//		TA thres_n_new =  (-m_thresholds[pe][nf][1])>>1 + fan_in>>1;
-//		if(accu >= thres_p_new)
+//		for(unsigned int i=0; i< NumTH; i++){
+//#pragma HLS unroll
+//		  result+=Compare()(m_thresholds[pe][nf][i], accu);
+//		}
+		// hwkim modified for binary segmentation
+//		TA act = accu + (m_thresholds[pe][nf][0]>>1);	// sign of thres is inverted by trainer
+//		if(act >= (fan_in>>1))
 //			result = (TR)1;
-//		else if(accu < thres_n_new)
-//			result = (TR)(-1);
 //		else
 //			result = (TR)0;
+	    // hwkim modified for ternary
+		auto th_sh_accu = (accu << 1) - fan_in;
+		result[0] = Compare()(m_thresholds[pe][nf][0], th_sh_accu);	// +1(1), -1(0)
+		result[1] = (m_thresholds[pe][nf][1] <= th_sh_accu) & (~result[0]);	// zero mask, 0(1), others(0)
 		return result;
     }
 };

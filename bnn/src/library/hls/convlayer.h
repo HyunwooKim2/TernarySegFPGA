@@ -111,15 +111,23 @@ void ConvLayer_Batch(
   unsigned const MatrixH = OFMChannels;
   unsigned const InpPerImage = (float)(IFMDim*IFMHeight*IFMChannels)/InStreamW * TSrcI::width;
 
-  WidthAdjustedInputStream <InStreamW, SIMD*TSrcI::width, InpPerImage>  wa_in (in,  reps);
-  hls::stream<ap_uint<SIMD*TSrcI::width> > convInp("StreamingConvLayer_Batch.convInp");
+  // ** hwkim modified for SIMD interleaving
+//  WidthAdjustedInputStream <InStreamW, SIMD*TSrcI::width, InpPerImage>  wa_in (in,  reps);
+//  hls::stream<ap_uint<SIMD*TSrcI::width> > convInp("StreamingConvLayer_Batch.convInp");
+  WidthAdjustedInputStream <InStreamW, NONZ_SCALE*SIMD*TSrcI::width, InpPerImage>  wa_in (in,  reps);
+  hls::stream<ap_uint<NONZ_SCALE*SIMD*TSrcI::width> > convInp("StreamingConvLayer_Batch.convInp");
+
   // ** hwkim modified for PE interleaving
   WidthAdjustedOutputStream <PE*TDstI::width, OutStreamW, OFMDim * OFMHeight * (OFMChannels / PE)> mvOut (out,  reps);
 //  WidthAdjustedOutputStream <NONZ_SCALE*PE*TDstI::width, OutStreamW, OFMDim * OFMHeight * (OFMChannels / PE) / 2> mvOut (out,  reps);
 
   // hwkim added for ternary
-  WidthAdjustedInputStream <InMaskStreamW, SIMD, InpPerImage>  wa_in_mask (in_mask,  reps);
-  hls::stream<ap_uint<SIMD>> convInp_mask("StreamingConvLayer_Batch.convInp_mask");
+  // ** hwkim modified for SIMD interleaving
+//  WidthAdjustedInputStream <InMaskStreamW, SIMD, InpPerImage>  wa_in_mask (in_mask,  reps);
+//  hls::stream<ap_uint<SIMD>> convInp_mask("StreamingConvLayer_Batch.convInp_mask");
+  WidthAdjustedInputStream <InMaskStreamW, NONZ_SCALE*SIMD, InpPerImage>  wa_in_mask (in_mask,  reps);
+  hls::stream<ap_uint<NONZ_SCALE*SIMD>> convInp_mask("StreamingConvLayer_Batch.convInp_mask");
+
   // ** hwkim modified for PE interleaving
   WidthAdjustedOutputStream <PE, OutMaskStreamW, OFMDim * OFMHeight * (OFMChannels / PE)> mvOutMask (out_mask,  reps);
 //  WidthAdjustedOutputStream <NONZ_SCALE*PE, OutMaskStreamW, OFMDim * OFMHeight * (OFMChannels / PE) / 2> mvOutMask (out_mask,  reps);
@@ -127,7 +135,7 @@ void ConvLayer_Batch(
 
   ConvolutionInputGenerator<ConvKernelDim, IFMChannels, TSrcI::width, IFMDim, OFMDim,
 	  IFMHeight, OFMHeight, Top, Bottom, Left, Right,	// hwkim added for segmentation
-  	  SIMD,
+	  NONZ_SCALE*SIMD,	// SIMD,	// ** hwkim modified for SIMD interleaving
 	  Stride>
   	  	  (wa_in,
 		  wa_in_mask,	// hwkim added for ternary
@@ -141,10 +149,15 @@ void ConvLayer_Batch(
 //	hls::stream<ap_uint<WAY>> packed_weight[PE*(SIMD/WAY)];
 //	hls::stream<ap_uint<FanInCntWidth>> sf_num[PE*(SIMD/WAY)];
 //	hls::stream<ap_uint<WAY>> packed_mask[PE*(SIMD/WAY)];
-	hls::stream<ap_uint<WAY*TSrcI::width>> packed_input[NONZ_SCALE*PE*(SIMD/WAY)];
-	hls::stream<ap_uint<WAY>> packed_weight[NONZ_SCALE*PE*(SIMD/WAY)];
-	hls::stream<ap_uint<FanInCntWidth>> sf_num[NONZ_SCALE*PE*(SIMD/WAY)];
-	hls::stream<ap_uint<WAY>> packed_mask[NONZ_SCALE*PE*(SIMD/WAY)];
+  // ** hwkim modified for SIMD interleaving
+//	hls::stream<ap_uint<WAY*TSrcI::width>> packed_input[NONZ_SCALE*PE*(SIMD/WAY)];
+//	hls::stream<ap_uint<WAY>> packed_weight[NONZ_SCALE*PE*(SIMD/WAY)];
+//	hls::stream<ap_uint<FanInCntWidth>> sf_num[NONZ_SCALE*PE*(SIMD/WAY)];
+//	hls::stream<ap_uint<WAY>> packed_mask[NONZ_SCALE*PE*(SIMD/WAY)];
+	hls::stream<ap_uint<WAY*TSrcI::width>> packed_input[PE*(NONZ_SCALE*SIMD/WAY)];
+	hls::stream<ap_uint<WAY>> packed_weight[PE*(NONZ_SCALE*SIMD/WAY)];
+	hls::stream<ap_uint<FanInCntWidth>> sf_num[PE*(NONZ_SCALE*SIMD/WAY)];
+	hls::stream<ap_uint<WAY>> packed_mask[PE*(NONZ_SCALE*SIMD/WAY)];
 #pragma HLS STREAM variable=packed_input
 #pragma HLS STREAM variable=packed_weight
 #pragma HLS STREAM variable=sf_num
@@ -158,15 +171,20 @@ void ConvLayer_Batch(
 	if(nonzero_en==1)
 #endif
 		nonzero_activation_weight_stream_gen
-		// ** hwkim modified for PE interleaving
-//		<MatrixW, MatrixH, SIMD, PE, OFMDim, OFMHeight, Top, Bottom, Left, Right, TSrcI::width, WAY
-		<MatrixW, MatrixH, SIMD, PE, OFMDim, OFMHeight, Top, Bottom, Left, Right, TSrcI::width, WAY, NONZ_SCALE
+			<MatrixW, MatrixH,
+			NONZ_SCALE*SIMD, // SIMD, // ** hwkim modified for SIMD interleaving
+			PE, OFMDim, OFMHeight, Top, Bottom, Left, Right, TSrcI::width, WAY
+			, NONZ_SCALE		// ** hwkim added for PE interleaving
 
 #ifdef ACTIVATION_LOG
 			, LayerCnt
 #endif
 			>
-			(static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>&>(convInp),
+			(
+					// ** hwkim modified for SIMD interleaving
+//					static_cast<hls::stream<ap_uint<SIMD*TSrcI::width>>&>(convInp),
+					static_cast<hls::stream<ap_uint<NONZ_SCALE*SIMD*TSrcI::width>>&>(convInp),
+
 					convInp_mask,
 					weights,
 					wmasks,
@@ -183,10 +201,15 @@ void ConvLayer_Batch(
 //		ifstream nonz_w_log_file[PE][SIMD/WAY];
 //		ifstream nonz_m_log_file[PE][SIMD/WAY];
 //		ifstream nonz_f_log_file[PE][SIMD/WAY];
-		ifstream nonz_i_log_file[NONZ_SCALE*PE][SIMD/WAY];
-		ifstream nonz_w_log_file[NONZ_SCALE*PE][SIMD/WAY];
-		ifstream nonz_m_log_file[NONZ_SCALE*PE][SIMD/WAY];
-		ifstream nonz_f_log_file[NONZ_SCALE*PE][SIMD/WAY];
+		// ** hwkim modified for SIMD interleaving
+//		ifstream nonz_i_log_file[NONZ_SCALE*PE][SIMD/WAY];
+//		ifstream nonz_w_log_file[NONZ_SCALE*PE][SIMD/WAY];
+//		ifstream nonz_m_log_file[NONZ_SCALE*PE][SIMD/WAY];
+//		ifstream nonz_f_log_file[NONZ_SCALE*PE][SIMD/WAY];
+		ifstream nonz_i_log_file[PE][NONZ_SCALE*SIMD/WAY];
+		ifstream nonz_w_log_file[PE][NONZ_SCALE*SIMD/WAY];
+		ifstream nonz_m_log_file[PE][NONZ_SCALE*SIMD/WAY];
+		ifstream nonz_f_log_file[PE][NONZ_SCALE*SIMD/WAY];
 
 		ap_uint<WAY*TSrcI::width> nonz_i_buf;
 		ap_uint<WAY> nonz_w_buf;
@@ -199,10 +222,12 @@ void ConvLayer_Batch(
 			convInp_mask.read();
 
 		// ** hwkim modified for PE interleaving
-//		for(unsigned char pe=0; pe<PE; pe++){
-		for(unsigned char pe=0; pe<NONZ_SCALE*PE; pe++){
+		for(unsigned char pe=0; pe<PE; pe++){
+//		for(unsigned char pe=0; pe<NONZ_SCALE*PE; pe++){
+			// ** hwkim modified for SIMD interleaving
+//			for(unsigned char way_cnt=0; way_cnt<(SIMD/WAY); way_cnt++){
+			for(unsigned char way_cnt=0; way_cnt<(NONZ_SCALE*SIMD/WAY); way_cnt++){
 
-			for(unsigned char way_cnt=0; way_cnt<(SIMD/WAY); way_cnt++){
 				string nonz_i_log_file_name = snapshot_dir + "nonzero_" + to_string(LayerCnt+1)
 						+ "_" + to_string(pe) + "_" + to_string(way_cnt) + "_input_log.txt";
 				string nonz_w_log_file_name = snapshot_dir + "nonzero_" + to_string(LayerCnt+1)
@@ -226,47 +251,61 @@ void ConvLayer_Batch(
 				if(!nonz_f_log_file[pe][way_cnt].is_open())	cout << nonz_f_log_file_name << " open error!" << endl;
 				else	cout << "Reading " << nonz_f_log_file_name << " to skip nonzero_activation_gen..." << endl;
 
-//				while(!nonz_i_log_file[pe][way_cnt].eof()){
+				int dbg_cnt=0;
 				while(1){
+					if(++dbg_cnt==1000){
+						dbg_cnt=0;
+						break;
+					}
 					nonz_i_log_file[pe][way_cnt] >> hex >> nonz_i_buf;
 					if(nonz_i_log_file[pe][way_cnt].eof())
 						break;
-					packed_input[pe*(SIMD/WAY)+way_cnt].write(nonz_i_buf);
+					// ** hwkim modified for SIMD interleaving
+//					packed_input[pe*(SIMD/WAY)+way_cnt].write(nonz_i_buf);
+					packed_input[pe*(NONZ_SCALE*SIMD/WAY)+way_cnt].write(nonz_i_buf);
 				}
 
-//				while(!nonz_w_log_file[pe][way_cnt].eof()){
 				while(1){
+					if(++dbg_cnt==1000){
+						dbg_cnt=0;
+						break;
+					}
 					nonz_w_log_file[pe][way_cnt] >> hex >> nonz_w_buf;
 					if(nonz_w_log_file[pe][way_cnt].eof()){
 						break;
 					}
-					packed_weight[pe*(SIMD/WAY)+way_cnt].write(nonz_w_buf);
+					// ** hwkim modified for SIMD interleaving
+//					packed_weight[pe*(SIMD/WAY)+way_cnt].write(nonz_w_buf);
+					packed_weight[pe*(NONZ_SCALE*SIMD/WAY)+way_cnt].write(nonz_w_buf);
 				}
 
-//				while(!nonz_m_log_file[pe][way_cnt].eof()){
 				while(1){
+					if(++dbg_cnt==1000){
+						dbg_cnt=0;
+						break;
+					}
 					nonz_m_log_file[pe][way_cnt] >> hex >> nonz_m_buf;
 					if(nonz_m_log_file[pe][way_cnt].eof()){
 						break;
 					}
-					packed_mask[pe*(SIMD/WAY)+way_cnt].write(nonz_m_buf);
+					// ** hwkim modified for SIMD interleaving
+//					packed_mask[pe*(SIMD/WAY)+way_cnt].write(nonz_m_buf);
+					packed_mask[pe*(NONZ_SCALE*SIMD/WAY)+way_cnt].write(nonz_m_buf);
 				}
 
-//				while(!nonz_f_log_file[pe][way_cnt].eof()){
 				while(1){
+					if(++dbg_cnt==1000){
+						dbg_cnt=0;
+						break;
+					}
 					nonz_f_log_file[pe][way_cnt] >> nonz_f_buf;
 					if(nonz_f_log_file[pe][way_cnt].eof()){
 						break;
 					}
-					sf_num[pe*(SIMD/WAY)+way_cnt].write(nonz_f_buf);
+					// ** hwkim modified for SIMD interleaving
+//					sf_num[pe*(SIMD/WAY)+way_cnt].write(nonz_f_buf);
+					sf_num[pe*(NONZ_SCALE*SIMD/WAY)+way_cnt].write(nonz_f_buf);
 				}
-
-//				  cout << dec << "------------------ pe:way: " << (int)pe << ":" << (int)way_cnt << endl;
-//				  cout << "sf num: " << sf_num[pe*(SIMD/WAY)+way_cnt].size() << endl;
-//				  cout << "pi: " << packed_input[pe*(SIMD/WAY)+way_cnt].size() << endl;
-//				  cout << "pw: " << packed_weight[pe*(SIMD/WAY)+way_cnt].size() << endl;
-//				  cout << "pm: " << packed_mask[pe*(SIMD/WAY)+way_cnt].size() << endl;
-
 			}
 		}
 	}
@@ -274,76 +313,76 @@ void ConvLayer_Batch(
 
 
 	// ** hwkim added for PE interleaving
-	hls::stream<ap_uint<WAY*TSrcI::width>> integ_packed_input[PE*(SIMD/WAY)];
-	hls::stream<ap_uint<WAY>> integ_packed_weight[PE*(SIMD/WAY)];
-	hls::stream<ap_uint<FanInCntWidth>> integ_sf_num[PE*(SIMD/WAY)];
-	hls::stream<ap_uint<WAY>> integ_packed_mask[PE*(SIMD/WAY)];
-#pragma HLS STREAM variable=integ_packed_input
-#pragma HLS STREAM variable=integ_packed_weight
-#pragma HLS STREAM variable=integ_sf_num
-#pragma HLS STREAM variable=integ_packed_mask
-#pragma HLS ARRAY_PARTITION variable=integ_packed_input complete dim=1
-#pragma HLS ARRAY_PARTITION variable=integ_packed_weight complete dim=1
-#pragma HLS ARRAY_PARTITION variable=integ_sf_num complete dim=1
-#pragma HLS ARRAY_PARTITION variable=integ_packed_mask complete dim=1
-	unsigned const  NF = MatrixH / PE;
-	unsigned const  SF = MatrixW / SIMD;
-	unsigned const  PE_WAY_NUM = PE*(SIMD/WAY);
-	ap_uint<FanInCntWidth> sf_num_tmp[PE_WAY_NUM];
-	ap_uint<1> pe_way_sync[PE_WAY_NUM];
-#pragma HLS ARRAY_PARTITION variable=pe_way_sync complete dim=1
-	ap_uint<PE_WAY_NUM>	pe_way_sync_vec = 0;
-//	ofstream integ_sf_num_log("integ_sf_num_log.txt");
-//	if(!integ_sf_num_log.is_open())	cout << "integ_sf_num_log file open error" << endl;
-//	ofstream integ_packed_input_log("integ_packed_input_log.txt");
-//	if(!integ_packed_input_log.is_open())	cout << "integ_packed_input_log file open error" << endl;
-//	cout << packed_input[0].size() << endl;
-	for(unsigned int swu_cnt=0; swu_cnt<(OFMHeight*OFMDim*NF/NONZ_SCALE); swu_cnt++){
-		for(unsigned char nonz_scale_cnt=0; nonz_scale_cnt<NONZ_SCALE; nonz_scale_cnt++){
-//			for(unsigned int sf_cnt=0; sf_cnt<sf_num_tmp[pe_way_cnt]; sf_cnt++){
-			pe_way_sync_vec = 0;
-			for(unsigned int sf_cnt=0; sf_cnt<SF; sf_cnt++){
-#pragma HLS PIPELINE II=1
-				if(~pe_way_sync_vec == 0)
-					break;
-				for(unsigned short pe_way_cnt=0; pe_way_cnt<PE*(SIMD/WAY); pe_way_cnt++){
-#pragma HLS UNROLL
-					if(sf_cnt==0){
-						sf_num_tmp[pe_way_cnt] = sf_num[nonz_scale_cnt*PE_WAY_NUM+pe_way_cnt].read();
-						integ_sf_num[pe_way_cnt].write(sf_num_tmp[pe_way_cnt]);
-					}
-					if(sf_cnt < sf_num_tmp[pe_way_cnt]){
-						integ_packed_input[pe_way_cnt].write(packed_input[nonz_scale_cnt*PE_WAY_NUM+pe_way_cnt].read());
-						integ_packed_weight[pe_way_cnt].write(packed_weight[nonz_scale_cnt*PE_WAY_NUM+pe_way_cnt].read());
-						integ_packed_mask[pe_way_cnt].write(packed_mask[nonz_scale_cnt*PE_WAY_NUM+pe_way_cnt].read());
-					}
-					if(sf_cnt==0){
-						pe_way_sync[pe_way_cnt] = 0;
-					}
-					else if(sf_cnt >= sf_num_tmp[pe_way_cnt]){
-						pe_way_sync[pe_way_cnt] = 1;
-					}
-#ifdef ACTIVATION_LOG
-					if(sf_num_tmp[pe_way_cnt]==0){
-						cout << "Error! SWU has all zero values" << endl;
-					}
-#endif
-					pe_way_sync_vec |= (ap_uint<PE_WAY_NUM>)pe_way_sync[pe_way_cnt] << pe_way_cnt;
-//					if(pe_way_cnt==0){
-//						integ_packed_input_log << hex << (unsigned long long)integ_packed_input[0].read() << endl;
+//	hls::stream<ap_uint<WAY*TSrcI::width>> integ_packed_input[PE*(SIMD/WAY)];
+//	hls::stream<ap_uint<WAY>> integ_packed_weight[PE*(SIMD/WAY)];
+//	hls::stream<ap_uint<FanInCntWidth>> integ_sf_num[PE*(SIMD/WAY)];
+//	hls::stream<ap_uint<WAY>> integ_packed_mask[PE*(SIMD/WAY)];
+//#pragma HLS STREAM variable=integ_packed_input
+//#pragma HLS STREAM variable=integ_packed_weight
+//#pragma HLS STREAM variable=integ_sf_num
+//#pragma HLS STREAM variable=integ_packed_mask
+//#pragma HLS ARRAY_PARTITION variable=integ_packed_input complete dim=1
+//#pragma HLS ARRAY_PARTITION variable=integ_packed_weight complete dim=1
+//#pragma HLS ARRAY_PARTITION variable=integ_sf_num complete dim=1
+//#pragma HLS ARRAY_PARTITION variable=integ_packed_mask complete dim=1
+//	unsigned const  NF = MatrixH / PE;
+//	unsigned const  SF = MatrixW / SIMD;
+//	unsigned const  PE_WAY_NUM = PE*(SIMD/WAY);
+//	ap_uint<FanInCntWidth> sf_num_tmp[PE_WAY_NUM];
+//	ap_uint<1> pe_way_sync[PE_WAY_NUM];
+//#pragma HLS ARRAY_PARTITION variable=pe_way_sync complete dim=1
+//	ap_uint<PE_WAY_NUM>	pe_way_sync_vec = 0;
+////	ofstream integ_sf_num_log("integ_sf_num_log.txt");
+////	if(!integ_sf_num_log.is_open())	cout << "integ_sf_num_log file open error" << endl;
+////	ofstream integ_packed_input_log("integ_packed_input_log.txt");
+////	if(!integ_packed_input_log.is_open())	cout << "integ_packed_input_log file open error" << endl;
+////	cout << packed_input[0].size() << endl;
+//	for(unsigned int swu_cnt=0; swu_cnt<(OFMHeight*OFMDim*NF/NONZ_SCALE); swu_cnt++){
+//		for(unsigned char nonz_scale_cnt=0; nonz_scale_cnt<NONZ_SCALE; nonz_scale_cnt++){
+////			for(unsigned int sf_cnt=0; sf_cnt<sf_num_tmp[pe_way_cnt]; sf_cnt++){
+//			pe_way_sync_vec = 0;
+//			for(unsigned int sf_cnt=0; sf_cnt<SF; sf_cnt++){
+//#pragma HLS PIPELINE II=1
+//				if(~pe_way_sync_vec == 0)
+//					break;
+//				for(unsigned short pe_way_cnt=0; pe_way_cnt<PE*(SIMD/WAY); pe_way_cnt++){
+//#pragma HLS UNROLL
+//					if(sf_cnt==0){
+//						sf_num_tmp[pe_way_cnt] = sf_num[nonz_scale_cnt*PE_WAY_NUM+pe_way_cnt].read();
+//						integ_sf_num[pe_way_cnt].write(sf_num_tmp[pe_way_cnt]);
 //					}
-				}
-//				if(pe_way_cnt==0){
-//					integ_sf_num_log << dec << (unsigned long long)sf_num_tmp[0] << endl;
+//					if(sf_cnt < sf_num_tmp[pe_way_cnt]){
+//						integ_packed_input[pe_way_cnt].write(packed_input[nonz_scale_cnt*PE_WAY_NUM+pe_way_cnt].read());
+//						integ_packed_weight[pe_way_cnt].write(packed_weight[nonz_scale_cnt*PE_WAY_NUM+pe_way_cnt].read());
+//						integ_packed_mask[pe_way_cnt].write(packed_mask[nonz_scale_cnt*PE_WAY_NUM+pe_way_cnt].read());
+//					}
+//					if(sf_cnt==0){
+//						pe_way_sync[pe_way_cnt] = 0;
+//					}
+//					else if(sf_cnt >= sf_num_tmp[pe_way_cnt]){
+//						pe_way_sync[pe_way_cnt] = 1;
+//					}
+//#ifdef ACTIVATION_LOG
+//					if(sf_num_tmp[pe_way_cnt]==0){
+//						cout << "Error! SWU has all zero values" << endl;
+//					}
+//#endif
+//					pe_way_sync_vec |= (ap_uint<PE_WAY_NUM>)pe_way_sync[pe_way_cnt] << pe_way_cnt;
+////					if(pe_way_cnt==0){
+////						integ_packed_input_log << hex << (unsigned long long)integ_packed_input[0].read() << endl;
+////					}
 //				}
-			}
-		}
-	}
-//	integ_sf_num_log.close();
-//	integ_packed_input_log.close();
-//	cout << packed_input[0].size() << endl;
-//	cout << packed_input[PE_WAY_NUM].size() << endl;
-//	cout << integ_packed_input[0].size() << endl;
+////				if(pe_way_cnt==0){
+////					integ_sf_num_log << dec << (unsigned long long)sf_num_tmp[0] << endl;
+////				}
+//			}
+//		}
+//	}
+////	integ_sf_num_log.close();
+////	integ_packed_input_log.close();
+////	cout << packed_input[0].size() << endl;
+////	cout << packed_input[PE_WAY_NUM].size() << endl;
+////	cout << integ_packed_input[0].size() << endl;
 
 
 
@@ -384,14 +423,14 @@ void ConvLayer_Batch(
 //			static_cast<hls::stream<ap_uint<NONZ_SCALE*PE>>&>(mvOutMask),
 
 			// ** hwkim added for PE interleaving
-//			static_cast<hls::stream<ap_uint<WAY*TSrcI::width>>*>(packed_input),
-//			static_cast<hls::stream<ap_uint<WAY>>*>(packed_weight),
-//			static_cast<hls::stream<ap_uint<FanInCntWidth>>*>(sf_num),
-//			static_cast<hls::stream<ap_uint<WAY>>*>(packed_mask),
-			static_cast<hls::stream<ap_uint<WAY*TSrcI::width>>*>(integ_packed_input),
-			static_cast<hls::stream<ap_uint<WAY>>*>(integ_packed_weight),
-			static_cast<hls::stream<ap_uint<FanInCntWidth>>*>(integ_sf_num),
-			static_cast<hls::stream<ap_uint<WAY>>*>(integ_packed_mask),
+			static_cast<hls::stream<ap_uint<WAY*TSrcI::width>>*>(packed_input),
+			static_cast<hls::stream<ap_uint<WAY>>*>(packed_weight),
+			static_cast<hls::stream<ap_uint<FanInCntWidth>>*>(sf_num),
+			static_cast<hls::stream<ap_uint<WAY>>*>(packed_mask),
+//			static_cast<hls::stream<ap_uint<WAY*TSrcI::width>>*>(integ_packed_input),
+//			static_cast<hls::stream<ap_uint<WAY>>*>(integ_packed_weight),
+//			static_cast<hls::stream<ap_uint<FanInCntWidth>>*>(integ_sf_num),
+//			static_cast<hls::stream<ap_uint<WAY>>*>(integ_packed_mask),
 
 			activation,
 			reps * OFMDim * OFMHeight, r);	//reps* OFMDim * OFMDim, r);	// hwkim modified for segmentation
