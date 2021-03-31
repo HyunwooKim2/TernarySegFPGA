@@ -2315,11 +2315,15 @@ void Matrix_Vector_Activate_Batch_Ternary_Masking(	// hwkim: from Batch_Padding
 	  				activation_log_file << uppercase << hex;
 	  				if((NF*OutWidth)>=64){
 	  					for(int i=0; i<(NF*OutWidth)/64; i++){
+	  		  				activation_log_file.width(16);
+	  		  				activation_log_file.fill('0');
 	  						activation_log_file << (unsigned long long )(act_buf >> 64*(NF*OutWidth/64-i-1));
 	  					}
 	  					activation_log_file << endl;
 	  				}
 	  				else{
+		  				activation_log_file.width(16);
+		  				activation_log_file.fill('0');
 	  					activation_log_file << (unsigned long long )act_buf << endl;
 	  				}
 
@@ -2327,11 +2331,15 @@ void Matrix_Vector_Activate_Batch_Ternary_Masking(	// hwkim: from Batch_Padding
 	  				activation_mask_log_file << uppercase << hex;
 	  				if((NF*PE)>=64){
 	  					for(int i=0; i<(NF*PE)/64; i++){
+	  						activation_mask_log_file.width(16);
+	  						activation_mask_log_file.fill('0');
 	  						activation_mask_log_file << (unsigned long long )(act_mask_buf >> 64*(NF*PE/64-i-1));
 	  					}
 	  					activation_mask_log_file << endl;
 	  				}
 	  				else{
+	  					activation_mask_log_file.width(16);
+	  					activation_mask_log_file.fill('0');
 	  					activation_mask_log_file << (unsigned long long )act_mask_buf << endl;
 	  				}
 
@@ -2594,19 +2602,19 @@ void Matrix_Vector_Activate_Batch_Ternary_Skip_Masking(	// hwkim: from Batch_Ski
 //#endif
 //    			  );
     	  accu[pe] = mac_masked<SIMD>(accu[pe], wgt, act, r, packed_mask);
+    	  fan_in[pe] = fan_in_cnt<SIMD>(fan_in[pe], packed_mask);
 #ifdef ACTIVATION_LOG
 //    	  accu_pm[pe] = mac<SIMD>(accu_pm[pe], wgt, act, r, 1);
     	  accu_pm[pe] = mac_masked_pm<SIMD>(accu_pm[pe], wgt, act, r, packed_mask);
+//    	  cout << dec << "pe: " << (int)pe;
+//    	  cout << ", simd: " << (int)simd_cnt;
+//    	  cout << hex << ", i: " << inElem;
+//    	  cout << ", w: " << w[pe];
+//    	  cout << ", i_m: " << imaskElem;
+//    	  cout << ", w_m: " << wm[pe];
+//    	  cout << ", p_m: " << packed_mask;
+//    	  cout << dec << ", accu: " << accu_pm[pe] << endl;
 #endif
-    	  fan_in[pe] = fan_in_cnt<SIMD>(fan_in[pe], packed_mask);
-    	  cout << dec << "pe: " << (int)pe;
-    	  cout << ", simd: " << (int)simd_cnt;
-    	  cout << hex << ", i: " << inElem;
-    	  cout << ", w: " << w[pe];
-    	  cout << ", i_m: " << imaskElem;
-    	  cout << ", w_m: " << wm[pe];
-    	  cout << ", p_m: " << packed_mask;
-    	  cout << dec << ", accu: " << accu_pm[pe] << endl;
     	  // hwkim modified for positive only accumulation
 //    	  if((pe==0) && (simd_cnt==0))
 //    		  fan_in += fan_in_step;
@@ -2700,11 +2708,15 @@ void Matrix_Vector_Activate_Batch_Ternary_Skip_Masking(	// hwkim: from Batch_Ski
 				activation_log_file << uppercase << hex;
 				if((NF*OutWidth)>=64){
 					for(int i=0; i<(NF*OutWidth)/64; i++){
+						activation_log_file.width(16);
+						activation_log_file.fill('0');
 						activation_log_file << (unsigned long long )(act_buf >> 64*(NF*OutWidth/64-i-1));
 					}
 					activation_log_file << endl;
 				}
 				else{
+					activation_log_file.width(16);
+					activation_log_file.fill('0');
 					activation_log_file << (unsigned long long )act_buf << endl;
 				}
 
@@ -2712,11 +2724,15 @@ void Matrix_Vector_Activate_Batch_Ternary_Skip_Masking(	// hwkim: from Batch_Ski
 				activation_mask_log_file << uppercase << hex;
 				if((NF*PE)>=64){
 					for(int i=0; i<(NF*PE)/64; i++){
+						activation_mask_log_file.width(16);
+						activation_mask_log_file.fill('0');
 						activation_mask_log_file << (unsigned long long )(act_mask_buf >> 64*(NF*PE/64-i-1));
 					}
 					activation_mask_log_file << endl;
 				}
 				else{
+					activation_mask_log_file.width(16);
+					activation_mask_log_file.fill('0');
 					activation_mask_log_file << (unsigned long long )act_mask_buf << endl;
 				}
 
@@ -2802,10 +2818,8 @@ void Matrix_Vector_Activate_Batch_Ternary_Skip_Masking(	// hwkim: from Batch_Ski
 //    			fan_in = 0;
     			if(++nf==NF){
     				nf=0;
-//    				cout << "==================================" << endl;
     				if(++x==OFMDim){
     					x=0;
-        				cout << dec << y << "/" << OFMHeight << endl;
     					if(++y==OFMHeight){
     						y=0;
     					}

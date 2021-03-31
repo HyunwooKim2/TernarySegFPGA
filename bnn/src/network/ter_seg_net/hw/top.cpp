@@ -112,7 +112,8 @@ static PassThroughAndBatchNorm<L10_TMEM, L10_PE, L10_API, ap_int<16>, ap_fixed<2
 
 #ifdef ACTIVATION_LOG
 string golden_file_dir = "/home/hwkim/work/params/matlab_ter_params/camvid/1123/Activations/";
-string snapshot_dir = "/home/hwkim/work/params/finn_ter_params/camvid_params/1123/base_config/snapshots/single_image/";
+//string snapshot_dir = "/home/hwkim/work/params/finn_ter_params/camvid_params/1123/base_config/snapshots/single_image/";
+string snapshot_dir = "/data_drive/params/finn_ter_params/camvid_params/1123/base_config/snapshots/single_image/";
 #endif
 
 // hwkim added for ternary
@@ -467,11 +468,12 @@ void read_activation_file(
 //			act_snap_buf = act_snap_buf | (*reinterpret_cast<ap_uint<64> *>(&act_snap_long));
 //		}
 		for(int word_cnt=0; word_cnt<OutWidth/4; word_cnt++){
-			if(act_snap_ch_arr[word_cnt]==NULL){
-//				cout << "here" << endl;
-				break;
-			}
-			else if(act_snap_ch_arr[word_cnt]>0x40)
+//			if(act_snap_ch_arr[word_cnt]==NULL){
+////				cout << "here" << endl;
+//				break;
+//			}
+//			else
+			if(act_snap_ch_arr[word_cnt]>0x40)
 				act_snap_int = act_snap_ch_arr[word_cnt]-55;
 			else
 				act_snap_int = act_snap_ch_arr[word_cnt]-0x30;
@@ -654,8 +656,8 @@ void DoCompute(
 	int sep_sim_layer10_en = 1;
 	int sep_sim_layer11_en = 1;
 
-	int nonzero_layer1_en = 0;
-	int nonzero_layer2_en = 0;
+	int nonzero_layer1_en = 1;
+	int nonzero_layer2_en = 1;
 	int nonzero_layer3_en = 1;
 	int nonzero_layer4_en = 1;
 	int nonzero_layer5_en = 1;
