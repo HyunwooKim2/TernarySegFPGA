@@ -113,7 +113,7 @@ static PassThroughAndBatchNorm<L10_TMEM, L10_PE, L10_API, ap_int<16>, ap_fixed<2
 #ifdef ACTIVATION_LOG
 string golden_file_dir = "/home/hwkim/work/params/matlab_ter_params/camvid/1123/Activations/";
 //string snapshot_dir = "/home/hwkim/work/params/finn_ter_params/camvid_params/1123/base_config/snapshots/single_image/";
-string snapshot_dir = "/data_drive/params/finn_ter_params/camvid_params/1123/base_config/snapshots/single_image/";
+string snapshot_dir = "/data_drive/params/finn_ter_params/camvid_params/1123/ter_base_config/snapshots/single_image/";
 
 #endif
 
@@ -469,11 +469,12 @@ void read_activation_file(
 //			act_snap_buf = act_snap_buf | (*reinterpret_cast<ap_uint<64> *>(&act_snap_long));
 //		}
 		for(int word_cnt=0; word_cnt<OutWidth/4; word_cnt++){
-			if(act_snap_ch_arr[word_cnt]==NULL){
-//				cout << "here" << endl;
-				break;
-			}
-			else if(act_snap_ch_arr[word_cnt]>0x40)
+//			if(act_snap_ch_arr[word_cnt]==NULL){
+////				cout << "here" << endl;
+//				break;
+//			}
+//			else
+			if(act_snap_ch_arr[word_cnt]>0x40)
 				act_snap_int = act_snap_ch_arr[word_cnt]-55;
 			else
 				act_snap_int = act_snap_ch_arr[word_cnt]-0x30;
@@ -645,7 +646,7 @@ void DoCompute(
 #ifdef SEP_SIM
   string snapshot_file_name;
 	int sep_sim_layer1_en = 0;
-	int sep_sim_layer2_en = 1;
+	int sep_sim_layer2_en = 0;
 	int sep_sim_layer3_en = 1;
 	int sep_sim_layer4_en = 1;
 	int sep_sim_layer5_en = 1;
@@ -702,6 +703,7 @@ void DoCompute(
 			L0_FANWIDTH,	// hwkim added for ternary
 			1,	// NONZ_SCALE
 			ap_uint<1>,	// TDstElem, hwkim added for batch norm scale
+			ap_fixed<24, 16>,	// TDstWay, hwkim added for accu_pe_way type
 			Slice<ap_fixed<8, 1, AP_TRN, AP_SAT>>, Identity, Recast<Binary>>
 				(inter0_2,
 				inter0_2_mask,
@@ -779,6 +781,7 @@ void DoCompute(
 				L1_FANWIDTH,	// hwkim added for ternary
 				2,	// NONZ_SCALE
 				ap_uint<1>,	// hwkim added for batch norm scale
+				ap_uint<L1_FANWIDTH>,	// TDstWay, hwkim added for accu_pe_way type
 				Recast<XnorMul>>
 					(inter1,
 					inter1_mask,	// hwkim added for ternary
@@ -839,8 +842,9 @@ void DoCompute(
 			// hwkim modified for padding
 //			stream<ap_uint<64>> inter2_pad("DoCompute.inter2_pad");
 //			insert_pad<L2_IFM_DIM, L2_IFM_HEIGHT, 64, 0, 1, 0, 1>(inter2, inter2_pad);
-			ConvLayer_Batch<L2_K, L2_IFM_CH, L2_IFM_DIM, L2_OFM_CH, L2_OFM_DIM,
-				L2_IFM_HEIGHT, L2_OFM_HEIGHT, 2, 0, 1, 0, 1,
+			ConvLayer_Batch<L2_K, L2_IFM_CH, L2_IFM_DIM, L2_OFM_CH, L2_OFM_DIM, L2_IFM_HEIGHT,
+				L2_OFM_HEIGHT,	// hwkim modified for fast simulation
+				2, 0, 1, 0, 1,
 	#ifdef ACTIVATION_LOG
 				2,
 	#endif
@@ -849,6 +853,7 @@ void DoCompute(
 				L2_FANWIDTH,	// hwkim added for ternary
 				2,	// NONZ_SCALE
 				ap_uint<1>,	// hwkim added for batch norm scale
+				ap_uint<L2_FANWIDTH>,	// TDstWay, hwkim added for accu_pe_way type
 				Recast<XnorMul>>
 					(inter2,
 					inter2_mask,	// hwkim added for ternary
@@ -919,6 +924,7 @@ void DoCompute(
 				L3_FANWIDTH,	// hwkim added for ternary
 				2,	// NONZ_SCALE
 				ap_uint<1>,	// hwkim added for batch norm scale
+				ap_uint<L3_FANWIDTH>,	// TDstWay, hwkim added for accu_pe_way type
 				Recast<XnorMul>>
 					(inter3,
 					inter3_mask,	// hwkim added for ternary
@@ -989,6 +995,7 @@ void DoCompute(
 				L4_FANWIDTH,	// hwkim added for ternary
 				2,	// NONZ_SCALE
 				ap_uint<1>,	// hwkim added for batch norm scale
+				ap_uint<L4_FANWIDTH>,	// TDstWay, hwkim added for accu_pe_way type
 				Recast<XnorMul>>
 					(inter4,
 					inter4_mask,	// hwkim added for ternary
@@ -1059,6 +1066,7 @@ void DoCompute(
 				L5_FANWIDTH,	// hwkim added for ternary
 				2,	// NONZ_SCALE
 				ap_uint<1>,	// hwkim added for batch norm scale
+				ap_uint<L5_FANWIDTH>,	// TDstWay, hwkim added for accu_pe_way type
 				Recast<XnorMul>>
 					(inter5,
 					inter5_mask,	// hwkim added for ternary
@@ -1145,6 +1153,7 @@ void DoCompute(
 				L6_FANWIDTH,	// hwkim added for ternary
 				2,	// NONZ_SCALE
 				ap_uint<1>,	// hwkim added for batch norm scale
+				ap_uint<L6_FANWIDTH>,	// TDstWay, hwkim added for accu_pe_way type
 				Recast<XnorMul>>
 					(inter6,
 					inter6_mask,	// hwkim added for ternary
@@ -1213,6 +1222,7 @@ void DoCompute(
 				L7_FANWIDTH,	// hwkim added for ternary
 				2,	// NONZ_SCALE
 				ap_uint<1>,	// hwkim added for batch norm scale
+				ap_uint<L7_FANWIDTH>,	// TDstWay, hwkim added for accu_pe_way type
 				Recast<XnorMul>>
 					(inter7,
 					inter7_mask,	// hwkim added for ternary
@@ -1299,6 +1309,7 @@ void DoCompute(
 				L8_FANWIDTH,	// hwkim added for ternary
 				2,	// NONZ_SCALE
 				ap_uint<1>,	// hwkim added for batch norm scale
+				ap_uint<L8_FANWIDTH>,	// TDstWay, hwkim added for accu_pe_way type
 				Recast<XnorMul>>
 					(inter8,
 					inter8_mask,	// hwkim added for ternary
@@ -1363,6 +1374,7 @@ void DoCompute(
 				L9_FANWIDTH,	// hwkim added for ternary
 				2,	// NONZ_SCALE
 				ap_uint<1>,	// hwkim added for batch norm scale
+				ap_uint<L9_FANWIDTH>,	// TDstWay, hwkim added for accu_pe_way type
 				Recast<XnorMul>>
 					(inter9,
 					inter9_mask,	// hwkim added for ternary
@@ -1432,6 +1444,7 @@ void DoCompute(
 				L10_FANWIDTH,	// hwkim added for ternary
 				1,	// NONZ_SCALE
 				ap_fixed<24,16,AP_TRN,AP_SAT>,	// hwkim added for batch norm scale
+				ap_uint<L10_FANWIDTH>,	// TDstWay, hwkim added for accu_pe_way type
 				Recast<XnorMul>,
 				Slice<ap_fixed<24,16,AP_TRN,AP_SAT> >>	//Slice<ap_int<16> >>	// hwkim modified for batch norm scale
 					(inter10,

@@ -82,6 +82,7 @@ template<
 		unsigned char FanInCntWidth,	// hwkim added for ternary, log2(fan-in/WAY)
 		unsigned NONZ_SCALE,
 		typename TDstElem,	// hwkim added for batch norm scale
+		typename TDstWay,	// hwkim added for accu_pe_way type
 		typename TSrcI = Identity,      // redefine I/O interpretation as needed for input activations
 		typename TDstI = Identity,		// redefine I/O interpretation as needed for output activations
 		typename TWeightI = Identity,	// redefine I/O interpretation as needed for weigths
@@ -228,13 +229,13 @@ void ConvLayer_Batch(
 //			for(unsigned char way_cnt=0; way_cnt<(SIMD/WAY); way_cnt++){
 			for(unsigned char way_cnt=0; way_cnt<(NONZ_SCALE*SIMD/WAY); way_cnt++){
 
-				string nonz_i_log_file_name = snapshot_dir + "nonzero_" + to_string(LayerCnt+1)
+				string nonz_i_log_file_name = snapshot_dir + "nonzero_log/" + "nonzero_" + to_string(LayerCnt+1)
 						+ "_" + to_string(pe) + "_" + to_string(way_cnt) + "_input_log.txt";
-				string nonz_w_log_file_name = snapshot_dir + "nonzero_" + to_string(LayerCnt+1)
+				string nonz_w_log_file_name = snapshot_dir + "nonzero_log/" + "nonzero_" + to_string(LayerCnt+1)
 						+ "_" + to_string(pe) + "_" + to_string(way_cnt) + "_weight_log.txt";
-				string nonz_m_log_file_name = snapshot_dir + "nonzero_" + to_string(LayerCnt+1)
+				string nonz_m_log_file_name = snapshot_dir + "nonzero_log/" + "nonzero_" + to_string(LayerCnt+1)
 						+ "_" + to_string(pe) + "_" + to_string(way_cnt) + "_mask_log.txt";
-				string nonz_f_log_file_name = snapshot_dir + "nonzero_" + to_string(LayerCnt+1)
+				string nonz_f_log_file_name = snapshot_dir + "nonzero_log/" + "nonzero_" + to_string(LayerCnt+1)
 						+ "_" + to_string(pe) + "_" + to_string(way_cnt) + "_fanin_log.txt";
 
 				nonz_i_log_file[pe][way_cnt].open(nonz_i_log_file_name);
@@ -414,6 +415,7 @@ void ConvLayer_Batch(
 		LayerCnt, (PE*TDstI::width),
 #endif
 		TDstElem,	// hwkim added for batch norm scale
+		TDstWay,	// hwkim added for accu_pe_way type
 		TSrcI, TDstI, TWeightI>
 			(
 			// ** hwkim modified for PE interleaving

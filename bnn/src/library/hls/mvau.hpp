@@ -1021,6 +1021,7 @@ template<unsigned MatrixW, unsigned MatrixH, unsigned SIMD, unsigned PE, unsigne
   unsigned int LayerCnt, unsigned int OutWidth,	// hwkim added for log
 #endif
   typename TDstElem,	// hwkim added for batch norm scale
+  typename TDstWay,	// hwkim added for accu_pe_way type
   typename TSrcI = Identity, typename TDstI = Identity, typename TWeightI = Identity,
   typename TO,
   typename TOM,
@@ -1103,7 +1104,8 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
   // ** hwkim added for PE interleaving
   decltype(activation.init(0,0))  accu[PE];
 //  decltype(activation.init(0,0))  accu_pe_way[PE*SIMD/WAY];
-  FI  accu_pe_way[PE*SIMD/WAY];
+  TDstWay	accu_pe_way[PE*SIMD/WAY];
+//  FI  accu_pe_way[PE*SIMD/WAY];
 //  decltype(activation.init(0,0))  accu[PE*NONZ_SCALE];
 //  decltype(activation.init(0,0))  accu_pe_way[PE*SIMD/WAY*NONZ_SCALE];
 #pragma HLS ARRAY_PARTITION variable=accu complete dim=1
@@ -1450,18 +1452,18 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 		  if((~pe_way_sync_vec==0) || (sf==(SF-1))){	// ** hwkim modified to reduce sf_num bit-width
 //		  if(((~pe_way_sync_vec_anded==0) || (sf==(SF-1)*SIMD)) &&(mini_nf==(NONZ_SCALE-1))){	// for fine-grained
 
-			  unsigned char pe=0;
+			  unsigned char pe_cnt=0;
 			  unsigned char way_cnt=0;
 			  for(unsigned short pe_way_cnt = 0; pe_way_cnt < PE*SIMD/WAY; pe_way_cnt++) {
 #pragma HLS UNROLL
-				  accu[pe] += accu_pe_way[pe_way_cnt];
+				  accu[pe_cnt] += accu_pe_way[pe_way_cnt];
 #ifdef ACTIVATION_LOG
 				  if(TSrcI::width==1){	// hwkim: for the rest layer
-					  accu_pm[pe] += accu_pe_way_pm[pe_way_cnt];
+					  accu_pm[pe_cnt] += accu_pe_way_pm[pe_way_cnt];
 				  }
 #endif
 				  // ** hwkim added for fan-in count
-				  fan_in[pe] += fan_in_pe_way[pe_way_cnt];
+				  fan_in[pe_cnt] += fan_in_pe_way[pe_way_cnt];
 
 //				  // ** hwkim added for PE interleaving
 //				  for(unsigned char nonz_scale_cnt=0; nonz_scale_cnt<NONZ_SCALE; nonz_scale_cnt++){
@@ -1476,7 +1478,7 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 //#endif
 //				  }
 				  if(++way_cnt==(SIMD/WAY)){
-					  pe++;
+					  pe_cnt++;
 					  way_cnt=0;
 				  }
 			  }
@@ -1556,17 +1558,21 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 				gold_buf_ch64[16] = 0;
 				unsigned long gold_buf_long;
 
-				if(compare_skip==0){
+//				if(compare_skip==0){
 
 					// hwkim: write activation log
 					activation_log_file << uppercase << hex;
 					if((NF*OutWidth)>=64){
 						for(int i=0; i<(NF*OutWidth)/64; i++){
+							activation_log_file.width(16);
+							activation_log_file.fill('0');
 							activation_log_file << (unsigned long long )(act_buf >> 64*(NF*OutWidth/64-i-1));
 						}
 						activation_log_file << endl;
 					}
 					else{
+						activation_log_file.width(16);
+						activation_log_file.fill('0');
 						activation_log_file << (unsigned long long )act_buf << endl;
 					}
 
@@ -1574,14 +1580,19 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 					activation_mask_log_file << uppercase << hex;
 					if((NF*PE)>=64){
 						for(int i=0; i<(NF*PE)/64; i++){
+							activation_mask_log_file.width(16);
+							activation_mask_log_file.fill('0');
 							activation_mask_log_file << (unsigned long long )(act_mask_buf >> 64*(NF*PE/64-i-1));
 						}
 						activation_mask_log_file << endl;
 					}
 					else{
+						activation_mask_log_file.width(16);
+						activation_mask_log_file.fill('0');
 						activation_mask_log_file << (unsigned long long )act_mask_buf << endl;
 					}
 
+				if(compare_skip==0){
 					// read golden results (activation)
 					fscanf(golden_file, "%s", gold_buf_ch);
 					for(int word_cnt=0; word_cnt<(NF*OutWidth)/64; word_cnt++){	// there's no layers with channel count smaller than 64
@@ -1709,6 +1720,8 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 //				  if(++nf == (NF/NONZ_SCALE)) {		// constant (MACRO)
 
 					  nf = 0;
+//					  if(x==182)
+//						  cout << "here" << endl;
 					  if(++x==OFMDim){
 						  x=0;
 #ifdef ACTIVATION_LOG
@@ -1781,13 +1794,13 @@ void nonzero_activation_weight_stream_gen(
 //	for(unsigned char pe=0; pe<PE*NONZ_SCALE; pe++){
 
 		for(unsigned char way_cnt=0; way_cnt<(SIMD/WAY); way_cnt++){
-			string nonz_i_log_file_name = snapshot_dir + "nonzero_" + to_string(LayerCnt+1)
+			string nonz_i_log_file_name = snapshot_dir + "nonzero_log/" + "nonzero_" + to_string(LayerCnt+1)
 					+ "_" + to_string(pe) + "_" + to_string(way_cnt) + "_input_log.txt";
-			string nonz_w_log_file_name = snapshot_dir + "nonzero_" + to_string(LayerCnt+1)
+			string nonz_w_log_file_name = snapshot_dir + "nonzero_log/" + "nonzero_" + to_string(LayerCnt+1)
 					+ "_" + to_string(pe) + "_" + to_string(way_cnt) + "_weight_log.txt";
-			string nonz_m_log_file_name = snapshot_dir + "nonzero_" + to_string(LayerCnt+1)
+			string nonz_m_log_file_name = snapshot_dir + "nonzero_log/" + "nonzero_" + to_string(LayerCnt+1)
 					+ "_" + to_string(pe) + "_" + to_string(way_cnt) + "_mask_log.txt";
-			string nonz_f_log_file_name = snapshot_dir + "nonzero_" + to_string(LayerCnt+1)
+			string nonz_f_log_file_name = snapshot_dir + "nonzero_log/" + "nonzero_" + to_string(LayerCnt+1)
 					+ "_" + to_string(pe) + "_" + to_string(way_cnt) + "_fanin_log.txt";
 
 			nonz_i_log_file[pe][way_cnt].open(nonz_i_log_file_name);
@@ -1871,7 +1884,7 @@ void nonzero_activation_weight_stream_gen(
 	unsigned char nf   = 0;
 	unsigned char sf_ch_cnt=0;
 	unsigned char sf   = 0;
-	unsigned char tile = 0;
+	unsigned short tile = 0;
 	unsigned char pe=0;
 	unsigned char way_cnt=0;
 

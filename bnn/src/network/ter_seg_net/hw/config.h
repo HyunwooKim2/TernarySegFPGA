@@ -80,17 +80,17 @@
 #define L10_OFM_DIM 	480
 
 // for base & base new perf
-#define L0_SIMD 	3
-#define L1_SIMD 	32
-#define L2_SIMD 	32
-#define L3_SIMD 	32
-#define L4_SIMD 	32
-#define L5_SIMD 	32
-#define L6_SIMD 	32
-#define L7_SIMD 	32
-#define L8_SIMD 	32
-#define L9_SIMD 	32
-#define L10_SIMD 	16
+//#define L0_SIMD 	3
+//#define L1_SIMD 	32
+//#define L2_SIMD 	32
+//#define L3_SIMD 	32
+//#define L4_SIMD 	32
+//#define L5_SIMD 	32
+//#define L6_SIMD 	32
+//#define L7_SIMD 	32
+//#define L8_SIMD 	32
+//#define L9_SIMD 	32
+//#define L10_SIMD 	16
 // for 2x perf
 //#define L0_SIMD 	3
 //#define L1_SIMD 	32
@@ -127,19 +127,31 @@
 //#define L8_SIMD 	8
 //#define L9_SIMD 	8
 //#define L10_SIMD	8
+// for ternary zero skip
+#define L0_SIMD 	3
+#define L1_SIMD 	16	//32
+#define L2_SIMD 	16	//32
+#define L3_SIMD 	16	//32
+#define L4_SIMD 	16	//32
+#define L5_SIMD 	16	//32
+#define L6_SIMD 	16	//32
+#define L7_SIMD 	16	//32
+#define L8_SIMD 	16	//32
+#define L9_SIMD 	16	//32
+#define L10_SIMD 	16
 
 // hwkim modified for balancing pipeline stage latency
-#define L0_PE 	16
-#define L1_PE 	32
-#define L2_PE 	16
-#define L3_PE 	32
-#define L4_PE 	16
-#define L5_PE 	32
-#define L6_PE 	16
-#define L7_PE 	32
-#define L8_PE 	16
-#define L9_PE 	32
-#define L10_PE 	11
+//#define L0_PE 	16
+//#define L1_PE 	32
+//#define L2_PE 	16
+//#define L3_PE 	32
+//#define L4_PE 	16
+//#define L5_PE 	32
+//#define L6_PE 	16
+//#define L7_PE 	32
+//#define L8_PE 	16
+//#define L9_PE 	32
+//#define L10_PE 	11
 // for 2x perf
 //#define L0_PE 	32
 //#define L1_PE 	64
@@ -176,6 +188,18 @@
 //#define L8_PE 	8
 //#define L9_PE 	8
 //#define L10_PE 	11
+// for ternary zero skip
+#define L0_PE 	8	//16
+#define L1_PE 	16	//32
+#define L2_PE 	8	//16
+#define L3_PE 	16	//32
+#define L4_PE 	8	//16
+#define L5_PE 	16	//32
+#define L6_PE 	8	//16
+#define L7_PE 	16	//32
+#define L8_PE 	8	//16
+#define L9_PE 	16	//32
+#define L10_PE 	11
 
 // hwkim modified for balancing pipeline stage latency
 //#define L0_WMEM 	36
@@ -309,17 +333,17 @@
 #define L10_WAY	4
 
 // log2(fan-in/WAY)*WAY
-#define L0_FANWIDTH	4	//3*3*3/(3/3)=27 -> 5-bit
-#define L1_FANWIDTH	7	//3*3*64/(32/4)= -> 7-bit
-#define L2_FANWIDTH	7
-#define L3_FANWIDTH	8
-#define L4_FANWIDTH	8
-#define L5_FANWIDTH	9
-#define L6_FANWIDTH	9
-#define L7_FANWIDTH	8
-#define L8_FANWIDTH	8
-#define L9_FANWIDTH	7
-#define L10_FANWIDTH	7
+#define L0_FANWIDTH	5	//3*3*3/(3/3)=27 -> 5-bit
+#define L1_FANWIDTH	8	//3*3*64/(32/4)= -> 7-bit
+#define L2_FANWIDTH	8
+#define L3_FANWIDTH	9
+#define L4_FANWIDTH	9
+#define L5_FANWIDTH	10
+#define L6_FANWIDTH	10
+#define L7_FANWIDTH	9
+#define L8_FANWIDTH	9
+#define L9_FANWIDTH	8
+#define L10_FANWIDTH	8
 
 
 #endif //__LAYER_CONFIG_H_
