@@ -95,8 +95,9 @@ config_interface -m_axi_addr64
 # syntesize and export
 create_clock -period $config_clkperiod -name default
 
+csim_design -argv "/data_drive/params/finn_ter_params/camvid_params/1123/ter_base_config /data_drive/params/finn_ter_params/camvid_params/1123/ter_base_config/input.bin 10 3" -compiler clang	
 # for ternary camvind input & params
-csim_design -argv "/home/hwkim/work/params/finn_ter_params/camvid_params/1123/base_config /home/hwkim/work/params/finn_ter_params/camvid_params/1123/base_config/input.bin 10 3" -compiler clang	
+#csim_design -argv "/home/hwkim/work/params/finn_ter_params/camvid_params/1123/base_config /home/hwkim/work/params/finn_ter_params/camvid_params/1123/base_config/input.bin 10 3" -compiler clang	
 # for ternary using camvid input & fake params
 #csim_design -argv "/home/hwkim/work/params/finn_ter_params/camvid_params/fake_params/single_size /home/hwkim/work/params/finn_params/camvid_params/1017/input.bin 10 3" -compiler clang	
 # for ternary using fake input & fake params
