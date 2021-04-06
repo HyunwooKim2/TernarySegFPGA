@@ -266,28 +266,28 @@ void average_pooling(
 
 
 // hwkim modified for padding & segmentation
-template <int IFMDim, int IFMHeight, int InWidth,
-unsigned int Top, unsigned int Bottom, unsigned int Left, unsigned int Right>
+template <int IFMDim, int IFMHeight, int InWidth>
 void insert_pad(stream<ap_uint<InWidth>> & in_stream,
 		stream<ap_uint<InWidth>>& out_stream)
 {
-  for(unsigned int y=0; y<IFMHeight; y++){
-	  for(unsigned int x=0; x<IFMDim; x++){
-		  // hwkim modified for individual padding
-		  //if(x==0 || y==0 || x==(IFMDim-1) || y==(IFMHeight-1)){
-		  if(x<Left || y<Top || x>(IFMDim-1-Right) || y>(IFMHeight-1-Bottom)){
-
-			  out_stream.write(0);
-			  //inter1_pad.write((ap_uint<64>)0xFFFFFFFFFFFFFFFF);
+  for(unsigned int y=0; y<(IFMHeight*2+1); y++){
+	  for(unsigned int x=0; x<(IFMDim*2+1); x++){
+		  if((x%2==1) || (y%2==1)
+				  || (x==0)
+				  || (y==0)
+				  ){
+			  out_stream.write(~0x0);
+//			  cout << "0 ";
 		  }
 		  else{
 			  out_stream.write(in_stream.read());
+//			  cout << "1 ";
 		  }
-//		  cout << setw(20) << hex << inter1_pad.read() << "|";
 	  }
 //	  cout << endl;
   }
-//  cout << "padded stream size = " << out_stream.size() << endl;
+//  cout << "In stream size: " << dec << in_stream.size() << endl;
+//  cout << "Padded stream size: " << dec << out_stream.size() << endl;
 }
 
 
@@ -576,6 +576,8 @@ void DoCompute(
 #pragma HLS STREAM variable=inter5 //depth=256
   stream<ap_uint<256>> inter6("DoCompute.inter6");
 #pragma HLS STREAM variable=inter6 //depth=256
+  stream<ap_uint<256>> inter6_pad("DoCompute.inter6_pad");
+#pragma HLS STREAM variable=inter6_pad //depth=256
   stream<ap_uint<128>> inter7("DoCompute.inter7");
 #pragma HLS STREAM variable=inter7 //depth=256
   stream<ap_uint<128>> inter8("DoCompute.inter8");
@@ -621,6 +623,8 @@ void DoCompute(
 #pragma HLS STREAM variable=inter5_mask //depth=256
   stream<ap_uint<256>> inter6_mask("DoCompute.inter6_mask");
 #pragma HLS STREAM variable=inter6_mask //depth=256
+  stream<ap_uint<256>> inter6_mask_pad("DoCompute.inter6_mask_pad");
+#pragma HLS STREAM variable=inter6_mask_pad //depth=256
   stream<ap_uint<128>> inter7_mask("DoCompute.inter7_mask");
 #pragma HLS STREAM variable=inter7_mask //depth=256
   stream<ap_uint<128>> inter8_mask("DoCompute.inter8_mask");
@@ -647,10 +651,10 @@ void DoCompute(
   string snapshot_file_name;
 	int sep_sim_layer1_en = 0;
 	int sep_sim_layer2_en = 0;
-	int sep_sim_layer3_en = 1;
-	int sep_sim_layer4_en = 1;
-	int sep_sim_layer5_en = 1;
-	int sep_sim_layer6_en = 1;
+	int sep_sim_layer3_en = 0;
+	int sep_sim_layer4_en = 0;
+	int sep_sim_layer5_en = 0;
+	int sep_sim_layer6_en = 0;
 	int sep_sim_layer7_en = 1;
 	int sep_sim_layer8_en = 1;
 	int sep_sim_layer9_en = 1;
@@ -659,10 +663,10 @@ void DoCompute(
 
 	int nonzero_layer1_en = 0;
 	int nonzero_layer2_en = 0;
-	int nonzero_layer3_en = 1;
-	int nonzero_layer4_en = 1;
-	int nonzero_layer5_en = 1;
-	int nonzero_layer6_en = 1;
+	int nonzero_layer3_en = 0;
+	int nonzero_layer4_en = 0;
+	int nonzero_layer5_en = 0;
+	int nonzero_layer6_en = 0;
 	int nonzero_layer7_en = 1;
 	int nonzero_layer8_en = 1;
 	int nonzero_layer9_en = 1;
@@ -1141,10 +1145,19 @@ void DoCompute(
 	#endif	*/
 		// Layer 7 - binary deconvolution - deconv layer should be implemented!
 	#ifdef SEP_SIM
-		if(sep_sim_layer7_en)
+		if(sep_sim_layer7_en){
 	#endif
-			ConvLayer_Batch<L6_K, L6_IFM_CH, L6_IFM_DIM, L6_OFM_CH, L6_OFM_DIM,
-				L6_IFM_HEIGHT, L6_OFM_HEIGHT, 1, 1, 1, 1, 1,
+			// insert zero padding between activations, not on edge
+			insert_pad<L6_IFM_DIM, L6_IFM_HEIGHT, 256>(inter6, inter6_pad);
+			insert_pad<L6_IFM_DIM, L6_IFM_HEIGHT, 256>(inter6_mask, inter6_mask_pad);
+			ConvLayer_Batch<L6_K, L6_IFM_CH,
+				(L6_IFM_DIM*2+1),	//L6_IFM_DIM,	// hwkim modified for deconvolution zero padding
+				L6_OFM_CH,
+				L6_OFM_DIM,	// hwkim modified for fast sim
+				(L6_IFM_HEIGHT*2+1),	//L6_IFM_HEIGHT,	// hwkim modified for deconvolution zero padding
+				L6_OFM_HEIGHT,	// hwkim modified for fast sim
+				1,
+				0, 1, 0, 1,	//1, 1, 1, 1,	// hwkim modified for deconvolution zero padding
 	#ifdef ACTIVATION_LOG
 				6,
 	#endif
@@ -1155,8 +1168,8 @@ void DoCompute(
 				ap_uint<1>,	// hwkim added for batch norm scale
 				ap_uint<L6_FANWIDTH>,	// TDstWay, hwkim added for accu_pe_way type
 				Recast<XnorMul>>
-					(inter6,
-					inter6_mask,	// hwkim added for ternary
+					(inter6_pad,	//inter6,	// hwkim modified for ternary deconvolution zero padding
+					inter6_mask_pad,	//inter6_mask,	// hwkim modified for ternary deconvolution zero padding
 					inter7,
 					inter7_mask,
 					weights6,
@@ -1167,6 +1180,7 @@ void DoCompute(
 	#endif
 					numReps, ap_resource_lut());
 	#ifdef SEP_SIM
+			}
 			else{
 				snapshot_file_name = snapshot_dir + "activation_7_log.txt";
 				read_activation_file<L6_OFM_CH>(inter7, snapshot_file_name);

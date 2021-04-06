@@ -133,7 +133,6 @@ void ConvLayer_Batch(
   WidthAdjustedOutputStream <PE, OutMaskStreamW, OFMDim * OFMHeight * (OFMChannels / PE)> mvOutMask (out_mask,  reps);
 //  WidthAdjustedOutputStream <NONZ_SCALE*PE, OutMaskStreamW, OFMDim * OFMHeight * (OFMChannels / PE) / 2> mvOutMask (out_mask,  reps);
 
-
   ConvolutionInputGenerator<ConvKernelDim, IFMChannels, TSrcI::width, IFMDim, OFMDim,
 	  IFMHeight, OFMHeight, Top, Bottom, Left, Right,	// hwkim added for segmentation
 	  NONZ_SCALE*SIMD,	// SIMD,	// ** hwkim modified for SIMD interleaving

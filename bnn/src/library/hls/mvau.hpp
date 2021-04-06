@@ -1385,8 +1385,6 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 //				  cout << inElem << endl;
 //				  cout << dummy_w << endl;
 //				  cout << "---------------" << endl;
-
-
 				  auto const  act = TSrcI()(inElem);
 				  auto const  wgt = TWeightI()(dummy_w);
 
@@ -1396,10 +1394,13 @@ void Matrix_Vector_Activate_Batch_SkipSeparately(
 					  accu_pe_way_pm[pe_way_cnt] = mac_masked_pm<WAY>(accu_pe_way_pm[pe_way_cnt], wgt, act, r, mask);	// should be modified - N = WAY
 
 #ifdef DEBUG
-				  cout << fixed;
-				  cout.precision(8);
-				  cout << "nf " << (int)nf << ", accu[" << (int)pe_way_cnt << "]: " << accu[pe_way_cnt];
+				  cout << dec << "nf " << (int)nf << ", sf " << (int)sf;
+				  cout << ", accu[" << (int)(pe_way_cnt/(SIMD/WAY)) << "]: " << accu_pe_way[pe_way_cnt];
 				  cout << hex << "\tact: " << inElem << "\twgt: " << dummy_w << endl;
+//				  cout << fixed;
+//				  cout.precision(8);
+//				  cout << "nf " << (int)nf << ", accu[" << (int)pe_way_cnt << "]: " << accu[pe_way_cnt];
+//				  cout << hex << "\tact: " << inElem << "\twgt: " << dummy_w << endl;
 #endif
 #endif
 				  // ** hwkim added for fan-in count
