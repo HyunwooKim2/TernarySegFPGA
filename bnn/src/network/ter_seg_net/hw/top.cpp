@@ -655,8 +655,8 @@ void DoCompute(
 	int sep_sim_layer4_en = 0;
 	int sep_sim_layer5_en = 0;
 	int sep_sim_layer6_en = 0;
-	int sep_sim_layer7_en = 1;
-	int sep_sim_layer8_en = 1;
+	int sep_sim_layer7_en = 0;
+	int sep_sim_layer8_en = 0;
 	int sep_sim_layer9_en = 1;
 	int sep_sim_layer10_en = 1;
 	int sep_sim_layer11_en = 1;
@@ -667,8 +667,8 @@ void DoCompute(
 	int nonzero_layer4_en = 0;
 	int nonzero_layer5_en = 0;
 	int nonzero_layer6_en = 0;
-	int nonzero_layer7_en = 1;
-	int nonzero_layer8_en = 1;
+	int nonzero_layer7_en = 0;
+	int nonzero_layer8_en = 0;
 	int nonzero_layer9_en = 1;
 	int nonzero_layer10_en = 1;
 	int nonzero_layer11_en = 1;
@@ -1121,46 +1121,20 @@ void DoCompute(
 		#endif
 	#endif
 #else
-			/* hwkim modified for synthesis - deconv layer should be implemented!
-		// Layer 7 - binary transposed convolution - stride 2
+		// Layer 7 - binary deconvolution for ternary zero edge padding skip
 	#ifdef SEP_SIM
 		if(sep_sim_layer7_en)
 	#endif
 //			stream<ap_uint<256>> inter6_pad("DoCompute.inter6_pad");
 //			insert_pad<L6_IFM_DIM, L6_IFM_HEIGHT, 256, 1, 1, 1, 1>(inter6, inter6_pad);
-			UpConvLayer_Batch<L6_K, L6_IFM_CH, L6_IFM_DIM, L6_OFM_CH, L6_OFM_DIM,
-				L6_IFM_HEIGHT, L6_OFM_HEIGHT, 1, 0, 1, 0, 1,
-	#ifdef ACTIVATION_LOG
-				6,
-	#endif
-				L6_SIMD, L6_PE, Recast<XnorMul>>
-					(inter6, inter7, weights6, threshs6, numReps, ap_resource_lut());
-	#ifdef SEP_SIM
-			else{
-				snapshot_file_name = snapshot_dir + "activation_7_log.txt";
-				read_activation_file<L6_OFM_CH>(inter7, snapshot_file_name);
-				snapshot_file_name = snapshot_dir + "activation_mask_7_log.txt";
-				read_activation_file<L6_OFM_CH>(inter7_mask, snapshot_file_name);
-			}
-	#endif	*/
-		// Layer 7 - binary deconvolution - deconv layer should be implemented!
-	#ifdef SEP_SIM
-		if(sep_sim_layer7_en){
-	#endif
-			// insert zero padding between activations, not on edge
-			insert_pad<L6_IFM_DIM, L6_IFM_HEIGHT, 256>(inter6, inter6_pad);
-			insert_pad<L6_IFM_DIM, L6_IFM_HEIGHT, 256>(inter6_mask, inter6_mask_pad);
-			ConvLayer_Batch<L6_K, L6_IFM_CH,
-				(L6_IFM_DIM*2+1),	//L6_IFM_DIM,	// hwkim modified for deconvolution zero padding
-				L6_OFM_CH,
+			UpConvLayer_Batch<L6_K, L6_IFM_CH, L6_IFM_DIM, L6_OFM_CH,
 				L6_OFM_DIM,	// hwkim modified for fast sim
-				(L6_IFM_HEIGHT*2+1),	//L6_IFM_HEIGHT,	// hwkim modified for deconvolution zero padding
+				L6_IFM_HEIGHT,
 				L6_OFM_HEIGHT,	// hwkim modified for fast sim
-				1,
-				0, 1, 0, 1,	//1, 1, 1, 1,	// hwkim modified for deconvolution zero padding
-	#ifdef ACTIVATION_LOG
+				1, 0, 1, 0, 1,
+#ifdef ACTIVATION_LOG
 				6,
-	#endif
+#endif
 				L6_SIMD, L6_PE,
 				L6_WAY,	// hwkim added for ternary
 				L6_FANWIDTH,	// hwkim added for ternary
@@ -1168,19 +1142,18 @@ void DoCompute(
 				ap_uint<1>,	// hwkim added for batch norm scale
 				ap_uint<L6_FANWIDTH>,	// TDstWay, hwkim added for accu_pe_way type
 				Recast<XnorMul>>
-					(inter6_pad,	//inter6,	// hwkim modified for ternary deconvolution zero padding
-					inter6_mask_pad,	//inter6_mask,	// hwkim modified for ternary deconvolution zero padding
+					(inter6,
+					inter6_mask,
 					inter7,
 					inter7_mask,
 					weights6,
-					wmasks6,	// hwkim added for ternary
+					wmasks6,
 					threshs6,
-	#ifdef SEP_SIM
+#ifdef SEP_SIM
 					nonzero_layer7_en,
-	#endif
+#endif
 					numReps, ap_resource_lut());
 	#ifdef SEP_SIM
-			}
 			else{
 				snapshot_file_name = snapshot_dir + "activation_7_log.txt";
 				read_activation_file<L6_OFM_CH>(inter7, snapshot_file_name);
@@ -1188,6 +1161,51 @@ void DoCompute(
 				read_activation_file<L6_OFM_CH>(inter7_mask, snapshot_file_name);
 			}
 	#endif
+		// Layer 7 - binary deconvolution - deconv layer should be implemented!
+//	#ifdef SEP_SIM
+//		if(sep_sim_layer7_en){
+//	#endif
+//			// insert zero padding between activations, not on edge
+//			insert_pad<L6_IFM_DIM, L6_IFM_HEIGHT, 256>(inter6, inter6_pad);
+//			insert_pad<L6_IFM_DIM, L6_IFM_HEIGHT, 256>(inter6_mask, inter6_mask_pad);
+//			ConvLayer_Batch<L6_K, L6_IFM_CH,
+//				(L6_IFM_DIM*2+1),	//L6_IFM_DIM,	// hwkim modified for deconvolution zero padding
+//				L6_OFM_CH,
+//				L6_OFM_DIM,	// hwkim modified for fast sim
+//				(L6_IFM_HEIGHT*2+1),	//L6_IFM_HEIGHT,	// hwkim modified for deconvolution zero padding
+//				L6_OFM_HEIGHT,	// hwkim modified for fast sim
+//				1,
+//				0, 1, 0, 1,	//1, 1, 1, 1,	// hwkim modified for deconvolution zero padding
+//	#ifdef ACTIVATION_LOG
+//				6,
+//	#endif
+//				L6_SIMD, L6_PE,
+//				L6_WAY,	// hwkim added for ternary
+//				L6_FANWIDTH,	// hwkim added for ternary
+//				2,	// NONZ_SCALE
+//				ap_uint<1>,	// hwkim added for batch norm scale
+//				ap_uint<L6_FANWIDTH>,	// TDstWay, hwkim added for accu_pe_way type
+//				Recast<XnorMul>>
+//					(inter6_pad,	//inter6,	// hwkim modified for ternary deconvolution zero padding
+//					inter6_mask_pad,	//inter6_mask,	// hwkim modified for ternary deconvolution zero padding
+//					inter7,
+//					inter7_mask,
+//					weights6,
+//					wmasks6,	// hwkim added for ternary
+//					threshs6,
+//	#ifdef SEP_SIM
+//					nonzero_layer7_en,
+//	#endif
+//					numReps, ap_resource_lut());
+//	#ifdef SEP_SIM
+//			}
+//			else{
+//				snapshot_file_name = snapshot_dir + "activation_7_log.txt";
+//				read_activation_file<L6_OFM_CH>(inter7, snapshot_file_name);
+//				snapshot_file_name = snapshot_dir + "activation_mask_7_log.txt";
+//				read_activation_file<L6_OFM_CH>(inter7_mask, snapshot_file_name);
+//			}
+//	#endif
 #endif
 
 #ifdef FPGA_DEBUG
@@ -1287,20 +1305,45 @@ void DoCompute(
 		#endif
 	#endif
 #else
-				/* hwkim modified for synthesis - deconv layer should be implemented!
 		// Layer 9 - binary transposed convolution - stride 2
 	#ifdef SEP_SIM
 		if(sep_sim_layer9_en)
 	#endif
 //			stream<ap_uint<128>> inter8_pad("DoCompute.inter8_pad");
 //			insert_pad<L8_IFM_DIM, L8_IFM_HEIGHT, 128, 0, 1, 0, 1>(inter8, inter8_pad);
-			UpConvLayer_Batch<L8_K, L8_IFM_CH, L8_IFM_DIM, L8_OFM_CH, L8_OFM_DIM,
-				L8_IFM_HEIGHT, L8_OFM_HEIGHT, 1, 0, 1, 0, 1,
-	#ifdef ACTIVATION_LOG
-				8,
-	#endif
-				L8_SIMD, L8_PE, Recast<XnorMul>>
-					(inter8, inter9, weights8, threshs8, numReps, ap_resource_lut());
+//			UpConvLayer_Batch<L8_K, L8_IFM_CH, L8_IFM_DIM, L8_OFM_CH, L8_OFM_DIM,
+//				L8_IFM_HEIGHT, L8_OFM_HEIGHT, 1, 0, 1, 0, 1,
+//	#ifdef ACTIVATION_LOG
+//				8,
+//	#endif
+//				L8_SIMD, L8_PE, Recast<XnorMul>>
+//					(inter8, inter9, weights8, threshs8, numReps, ap_resource_lut());
+		UpConvLayer_Batch<L8_K, L8_IFM_CH, L8_IFM_DIM, L8_OFM_CH,
+			L8_OFM_DIM,
+			L8_IFM_HEIGHT,
+			L8_OFM_HEIGHT,	// hwkim modified for fast sim
+			1, 0, 1, 0, 1,
+#ifdef ACTIVATION_LOG
+			8,
+#endif
+			L8_SIMD, L8_PE,
+			L8_WAY,	// hwkim added for ternary
+			L8_FANWIDTH,	// hwkim added for ternary
+			2,	// NONZ_SCALE
+			ap_uint<1>,	// hwkim added for batch norm scale
+			ap_uint<L8_FANWIDTH>,	// TDstWay, hwkim added for accu_pe_way type
+			Recast<XnorMul>>
+				(inter8,
+				inter8_mask,
+				inter9,
+				inter9_mask,
+				weights8,
+				wmasks8,
+				threshs8,
+#ifdef SEP_SIM
+				nonzero_layer9_en,
+#endif
+				numReps, ap_resource_lut());
 	#ifdef SEP_SIM
 		else{
 			snapshot_file_name = snapshot_dir + "activation_9_log.txt";
@@ -1308,42 +1351,42 @@ void DoCompute(
 			snapshot_file_name = snapshot_dir + "activation_mask_9_log.txt";
 			read_activation_file<L8_OFM_CH>(inter9_mask, snapshot_file_name);
 		}
-	#endif	*/
+	#endif
 		// Layer 9 - binary deconvolution
-	#ifdef SEP_SIM
-		if(sep_sim_layer9_en)
-	#endif
-			ConvLayer_Batch<L8_K, L8_IFM_CH, L8_IFM_DIM, L8_OFM_CH, L8_OFM_DIM,
-				L8_IFM_HEIGHT, L8_OFM_HEIGHT, 1, 1, 1, 1, 1,
-	#ifdef ACTIVATION_LOG
-				8,
-	#endif
-				L8_SIMD, L8_PE,
-				L8_WAY,	// hwkim added for ternary
-				L8_FANWIDTH,	// hwkim added for ternary
-				2,	// NONZ_SCALE
-				ap_uint<1>,	// hwkim added for batch norm scale
-				ap_uint<L8_FANWIDTH>,	// TDstWay, hwkim added for accu_pe_way type
-				Recast<XnorMul>>
-					(inter8,
-					inter8_mask,	// hwkim added for ternary
-					inter9,
-					inter9_mask,
-					weights8,
-					wmasks8,	// hwkim added for ternary
-					threshs8,
-#ifdef SEP_SIM
-				nonzero_layer7_en,
-#endif
-					numReps, ap_resource_lut());
-	#ifdef SEP_SIM
-			else{
-				snapshot_file_name = snapshot_dir + "activation_9_log.txt";
-				read_activation_file<L8_OFM_CH>(inter9, snapshot_file_name);
-				snapshot_file_name = snapshot_dir + "activation_mask_9_log.txt";
-				read_activation_file<L8_OFM_CH>(inter9_mask, snapshot_file_name);
-			}
-	#endif
+//	#ifdef SEP_SIM
+//		if(sep_sim_layer9_en)
+//	#endif
+//			ConvLayer_Batch<L8_K, L8_IFM_CH, L8_IFM_DIM, L8_OFM_CH, L8_OFM_DIM,
+//				L8_IFM_HEIGHT, L8_OFM_HEIGHT, 1, 1, 1, 1, 1,
+//	#ifdef ACTIVATION_LOG
+//				8,
+//	#endif
+//				L8_SIMD, L8_PE,
+//				L8_WAY,	// hwkim added for ternary
+//				L8_FANWIDTH,	// hwkim added for ternary
+//				2,	// NONZ_SCALE
+//				ap_uint<1>,	// hwkim added for batch norm scale
+//				ap_uint<L8_FANWIDTH>,	// TDstWay, hwkim added for accu_pe_way type
+//				Recast<XnorMul>>
+//					(inter8,
+//					inter8_mask,	// hwkim added for ternary
+//					inter9,
+//					inter9_mask,
+//					weights8,
+//					wmasks8,	// hwkim added for ternary
+//					threshs8,
+//#ifdef SEP_SIM
+//				nonzero_layer7_en,
+//#endif
+//					numReps, ap_resource_lut());
+//	#ifdef SEP_SIM
+//			else{
+//				snapshot_file_name = snapshot_dir + "activation_9_log.txt";
+//				read_activation_file<L8_OFM_CH>(inter9, snapshot_file_name);
+//				snapshot_file_name = snapshot_dir + "activation_mask_9_log.txt";
+//				read_activation_file<L8_OFM_CH>(inter9_mask, snapshot_file_name);
+//			}
+//	#endif
 #endif
 
 #ifdef FPGA_DEBUG

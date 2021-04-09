@@ -98,12 +98,12 @@ void ConvolutionInputGenerator(
   //ap_uint<SIMD*Input_precision> inputBuf[number_blocks][Stride * IFMDim * multiplying_factor];
   const unsigned int number_blocks = ConvKernelDim + Stride;
   ap_uint<SIMD*Input_precision> inputBuf[number_blocks][IFMDim * multiplying_factor];
-
-  // hwkim added for ternary
-  ap_uint<SIMD> imaskBuf[number_blocks][IFMDim * multiplying_factor];
-
 #pragma HLS ARRAY_PARTITION variable=inputBuf complete dim=1
 #pragma HLS RESOURCE variable inputBuf core=RAM_2P
+  // hwkim added for ternary
+  ap_uint<SIMD> imaskBuf[number_blocks][IFMDim * multiplying_factor];
+#pragma HLS ARRAY_PARTITION variable=imaskBuf complete dim=1
+#pragma HLS RESOURCE variable imaskBuf core=RAM_2P
 
   const unsigned int cycles_write_block = (OFMDim * ConvKernelDim * ConvKernelDim * multiplying_factor);
   const unsigned int cycles_read_block = Stride * IFMDim * multiplying_factor;
@@ -280,9 +280,11 @@ void ConvolutionInputGenerator(
         	  // hwkim modified for ternary
         	  ap_uint<SIMD> imaskElem;
 
+#ifdef ACTIVATION_LOG
         	  // hwkim modified for debug
 			  if(in.empty())	printf("ConvInpGen in stream read empty!!\n");
 			  if(in_mask.empty())	printf("ConvInpGen in_mask stream read empty!!\n");	// hwkim added for ternary
+#endif
 
         	  inElem = in.read();
         	  inputBuf[current_block_write][current_line] = inElem;
@@ -345,7 +347,9 @@ template<unsigned int ConvKernelDim,
 		 unsigned int SIMD>
 void TConvolutionInputGenerator(
 		stream<ap_uint<SIMD*Input_precision> > & in,
+		stream<ap_uint<SIMD>> & in_mask,	//hwkim added for ternary
 		stream<ap_uint<SIMD*Input_precision> > & out,
+		stream<ap_uint<SIMD>> & out_mask,	// hwkim added for ternary
 		const unsigned int numReps = 1) {
   if(IFMChannels % SIMD != 0) {
     cout << "Error: IFM channels has to be a multiple of SIMD" << endl;
@@ -358,6 +362,10 @@ void TConvolutionInputGenerator(
   ap_uint<SIMD*Input_precision> inputBuf[number_blocks][IFMDim * multiplying_factor];
 #pragma HLS ARRAY_PARTITION variable=inputBuf complete dim=1
 #pragma HLS RESOURCE variable inputBuf core=RAM_2P
+  //hwkim added for ternary
+  ap_uint<SIMD> imaskBuf[number_blocks][IFMDim * multiplying_factor];
+#pragma HLS ARRAY_PARTITION variable=imaskBuf complete dim=1
+#pragma HLS RESOURCE variable imaskBuf core=RAM_2P
 
   const unsigned int cycles_write_block = (((OFMDim/2*2) + (OFMDim/2*4)	// hwkim's comment - first line
 		  + (OFMDim/2*1) + (OFMDim/2*2))	// hwkim's comment - second line
@@ -384,7 +392,13 @@ void TConvolutionInputGenerator(
 	  string conv_in_gen_log_file_name = "tconv_in_gen_log_" + to_string(count_image) + ".txt";
 	  ofstream conv_in_gen_log_file(conv_in_gen_log_file_name);
 	  if(!conv_in_gen_log_file.is_open()){
-		  cout << "conv_in_gen_log_file open error!!" << endl;
+		  cout << conv_in_gen_log_file_name << " open error!!" << endl;
+	  }
+	  // hwkim added for ternary
+	  string conv_imask_gen_log_file_name = "tconv_imask_gen_log_" + to_string(count_image) + ".txt";
+	  ofstream conv_imask_gen_log_file(conv_imask_gen_log_file_name);
+	  if(!conv_imask_gen_log_file.is_open()){
+		  cout << conv_imask_gen_log_file_name << " open error!!" << endl;
 	  }
 #endif
 	unsigned int counter_internal_block = 0;
@@ -401,6 +415,10 @@ void TConvolutionInputGenerator(
     	  ap_uint<SIMD*Input_precision> inElem;
     	  inElem = in.read();
     	  inputBuf[current_block_write][current_line] = inElem;
+    	  // hwkim added for ternary
+		  ap_uint<SIMD> imaskElem;
+		  imaskElem = in_mask.read();
+		  imaskBuf[current_block_write][current_line] = imaskElem;
 
     	  current_line++;
     	  inp++;
@@ -440,6 +458,7 @@ void TConvolutionInputGenerator(
 				  current_block_read_kernel-= number_blocks;
 			  }
 			  ap_uint<SIMD*Input_precision> outElem = inputBuf[current_block_read_kernel][(current_line_in_block)];
+			  ap_uint<SIMD> omaskElem = imaskBuf[current_block_read_kernel][(current_line_in_block)];	// hwkim added for ternary
 
 			  // hwkim modified for Tconv
 			  if((ofm_y==0 && k_y==1)
@@ -447,6 +466,7 @@ void TConvolutionInputGenerator(
 				  // hwkim added for debug
 //				  if (count_simd == multiplying_factor-1)
 //					  cout << "skipped" << endl;	//skip
+				  ;
 		      }
 		     else{
 		    	 // hwkim added for debug
@@ -458,8 +478,10 @@ void TConvolutionInputGenerator(
 //				  }
 
 			  	  out.write(outElem);
+				  out_mask.write(omaskElem);	// hwkim added for ternary
 #ifdef ACTIVATION_LOG
 		    	  conv_in_gen_log_file << hex << outElem << " ";
+		    	  conv_imask_gen_log_file << hex << (unsigned int)omaskElem << " ";	// hwkim added for ternary
 #endif
 		      }
 			  count_simd++;
@@ -479,6 +501,7 @@ void TConvolutionInputGenerator(
 					  if (k_y == (!(ofm_y&0x1) + 1)) {
 #ifdef ACTIVATION_LOG
 						  conv_in_gen_log_file << dec << "x,y=" << (ofm_x) << "," << (ofm_y) << endl;
+						  conv_imask_gen_log_file << dec << "x,y=" << (ofm_x) << "," << (ofm_y) << endl;	// hwkim added for ternary
 #endif
 						  k_y = 0;
 						  ofm_x ++;
@@ -495,6 +518,7 @@ void TConvolutionInputGenerator(
 							  if (ofm_y == OFMHeight) {
 								  ofm_y = 0;
 								  inp = 0;
+								  break;
 							  }}}}}
     	  }
 
@@ -504,11 +528,17 @@ void TConvolutionInputGenerator(
 
         	  // In parallel we write in the buffer, in the current block write if we still need to
         	  ap_uint<SIMD*Input_precision> inElem;
+        	  ap_uint<SIMD> imaskElem;	// hwkim modified for ternary
 
         	  inElem = in.read();
         	  inputBuf[current_block_write][current_line] = inElem;
 #pragma AP dependence variable=inputBuf intra false
 #pragma AP dependence variable=inputBuf inter false
+        	  // hwkim added for ternary
+        	  imaskElem = in_mask.read();
+        	  imaskBuf[current_block_write][current_line] = imaskElem;
+#pragma AP dependence variable=imaskBuf intra false
+#pragma AP dependence variable=imaskBuf inter false
 
         	  current_line++;
 			  if (current_line == IFMDim * multiplying_factor) {
@@ -536,6 +566,8 @@ void TConvolutionInputGenerator(
     } // End base_iter
 	read_block = 0;
 #ifdef ACTIVATION_LOG
+	cout << in.size() << endl;
+	cout << in_mask.size() << endl;
 	conv_in_gen_log_file.close();
 #endif
   } // End count_image

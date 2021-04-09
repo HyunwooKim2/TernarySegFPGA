@@ -2223,4 +2223,454 @@ void nonzero_activation_weight_stream_gen(
 
 }
 
+template<unsigned MatrixW, unsigned MatrixH,
+	unsigned SIMD, unsigned PE,
+	unsigned OFMDim, unsigned OFMHeight,
+	unsigned Top, unsigned Bottom, unsigned Left, unsigned Right,
+	unsigned SrcWidth,
+	unsigned WAY,
+	unsigned NONZ_SCALE,
+#ifdef ACTIVATION_LOG
+	unsigned LayerCnt,
+#endif
+	typename TI, typename TIM, typename TW, typename TM,
+	typename PI, typename PW, typename FI, typename PM
+  >
+void nonzero_activation_weight_stream_gen_pad_skip(
+		hls::stream<TI> & in,
+		hls::stream<TIM> & in_mask,
+		TW  const &weights,
+		TM  const &wmasks,
+		hls::stream<PI>* packed_input,
+		hls::stream<PW>* packed_weight,
+		hls::stream<FI>* sf_num,
+		hls::stream<PM>* packed_mask,
+		int const reps
+)
+{
+#if defined (ACTIVATION_LOG) & defined (DEBUG)
+	string nonz_dbg_file_name = "nonz_" + to_string(LayerCnt+1) + "debug.txt";
+	ofstream nonz_dbg_file(nonz_dbg_file_name);
+	if(!nonz_dbg_file.is_open())	cout << nonz_dbg_file_name << " open error!" << endl;
+#endif
+#ifdef ACTIVATION_LOG
+	extern string snapshot_dir;
+	ofstream nonz_i_log_file[PE][SIMD/WAY];
+	ofstream nonz_w_log_file[PE][SIMD/WAY];
+	ofstream nonz_m_log_file[PE][SIMD/WAY];
+	ofstream nonz_f_log_file[PE][SIMD/WAY];
+
+	for(unsigned char pe=0; pe<PE; pe++){
+		for(unsigned char way_cnt=0; way_cnt<(SIMD/WAY); way_cnt++){
+			string nonz_i_log_file_name = snapshot_dir + "nonzero_log/" + "nonzero_" + to_string(LayerCnt+1)
+					+ "_" + to_string(pe) + "_" + to_string(way_cnt) + "_input_log.txt";
+			string nonz_w_log_file_name = snapshot_dir + "nonzero_log/" + "nonzero_" + to_string(LayerCnt+1)
+					+ "_" + to_string(pe) + "_" + to_string(way_cnt) + "_weight_log.txt";
+			string nonz_m_log_file_name = snapshot_dir + "nonzero_log/" + "nonzero_" + to_string(LayerCnt+1)
+					+ "_" + to_string(pe) + "_" + to_string(way_cnt) + "_mask_log.txt";
+			string nonz_f_log_file_name = snapshot_dir + "nonzero_log/" + "nonzero_" + to_string(LayerCnt+1)
+					+ "_" + to_string(pe) + "_" + to_string(way_cnt) + "_fanin_log.txt";
+
+			nonz_i_log_file[pe][way_cnt].open(nonz_i_log_file_name);
+			nonz_w_log_file[pe][way_cnt].open(nonz_w_log_file_name);
+			nonz_m_log_file[pe][way_cnt].open(nonz_m_log_file_name);
+			nonz_f_log_file[pe][way_cnt].open(nonz_f_log_file_name);
+
+			if(!nonz_i_log_file[pe][way_cnt].is_open())
+				cout << nonz_i_log_file_name << " open error!" << endl;
+			if(!nonz_w_log_file[pe][way_cnt].is_open())
+				cout << nonz_w_log_file_name << " open error!" << endl;
+			if(!nonz_m_log_file[pe][way_cnt].is_open())
+				cout << nonz_m_log_file_name << " open error!" << endl;
+			if(!nonz_f_log_file[pe][way_cnt].is_open())
+				cout << nonz_f_log_file_name << " open error!" << endl;
+
+			nonz_i_log_file[pe][way_cnt] << hex;
+			nonz_w_log_file[pe][way_cnt] << hex;
+			nonz_m_log_file[pe][way_cnt] << hex;
+			nonz_f_log_file[pe][way_cnt] << dec;
+		}
+	}
+#endif
+	unsigned char const  NF = MatrixH / PE;
+	unsigned char const  SF = MatrixW / SIMD;
+	unsigned char const  sf_ch = SF/9;
+	// hwkim modified for padding skip
+//	unsigned short const TOTAL_FOLD = NF * (SF+2);
+	unsigned const TOTAL_FOLD = (reps/4 + reps + reps) * NF * sf_ch	//(IFMChannels/SIMD);	// for padding of 0, 1, 0, 1 only
+									+ reps * NF * 2;
+	  	  	  //(reps/4 + reps/4*2*2 + reps/4*4) * NF * (IFMChannels/SIMD);
+
+	TI inElem;
+	TIM imaskElem;
+	ap_uint<SIMD> wmaskElem[PE];
+	ap_uint<SIMD> wgtElem[PE];
+#pragma HLS ARRAY_PARTITION variable=wmaskElem complete dim=1
+#pragma HLS ARRAY_PARTITION variable=wgtElem complete dim=1
+
+	TI	inputBuf[SF];
+	TIM	imaskBuf[SF];
+
+	ap_uint<WAY>	mask_pack_ping[PE*SIMD/WAY];
+	ap_uint<WAY>	mask_pack_pong[PE*SIMD/WAY];
+	ap_uint<SrcWidth*WAY>	input_pack_ping[PE*SIMD/WAY];
+	ap_uint<SrcWidth*WAY>	input_pack_pong[PE*SIMD/WAY];
+	ap_uint<WAY> w_pack_ping[PE*SIMD/WAY];
+	ap_uint<WAY> w_pack_pong[PE*SIMD/WAY];
+	ap_uint<WAY>	mask_delay_buf[PE*SIMD/WAY];
+	ap_uint<SrcWidth*WAY>	input_delay_buf[PE*SIMD/WAY];
+	ap_uint<WAY> w_delay_buf[PE*SIMD/WAY];
+	FI	sf_cnt[PE*SIMD/WAY];
+#pragma HLS ARRAY_PARTITION variable=mask_pack_ping complete dim=1
+#pragma HLS ARRAY_PARTITION variable=mask_pack_pong complete dim=1
+#pragma HLS ARRAY_PARTITION variable=input_pack_ping complete dim=1
+#pragma HLS ARRAY_PARTITION variable=input_pack_pong complete dim=1
+#pragma HLS ARRAY_PARTITION variable=w_pack_ping complete dim=1
+#pragma HLS ARRAY_PARTITION variable=w_pack_pong complete dim=1
+#pragma HLS ARRAY_PARTITION variable=mask_delay_buf complete dim=1
+#pragma HLS ARRAY_PARTITION variable=input_delay_buf complete dim=1
+#pragma HLS ARRAY_PARTITION variable=w_delay_buf complete dim=1
+#pragma HLS ARRAY_PARTITION variable=sf_cnt complete dim=1
+
+	ap_uint<2> kx=0, ky=0;
+	unsigned short x=0, y=0;
+	unsigned char nf   = 0;
+	unsigned char sf_ch_cnt=0;
+	unsigned char sf   = 0;
+	unsigned short tile = 0;
+	unsigned char pe=0;
+	unsigned char way_cnt=0;
+	unsigned char const way_num = SIMD/WAY;
+	// hwkim added for padding skip
+	unsigned char sf_max=0;
+
+	// hwkim modified for padding skip
+//	for(unsigned  i = 0; i < reps * TOTAL_FOLD; i++) {
+	for(unsigned  i = 0; i < TOTAL_FOLD; i++) {
+#pragma HLS PIPELINE II=1 rewind
+
+		if(nf==0 && sf==0){
+//			tile = 0;
+			// hwkim added for padding skip
+			sf_max = (1<<(!(y&0x1)+!(x&0x1)))*sf_ch;
+		}
+
+		for(unsigned short pe_way_cnt=0; pe_way_cnt<PE*(SIMD/WAY); pe_way_cnt++){
+#pragma HLS UNROLL
+			if(sf==0)
+				sf_cnt[pe_way_cnt] = 0;
+		}
+
+		// hwkim modified for padding skip
+//		if((sf>=SF) ||
+//				((x<Left && kx<Left)
+//				||(y<Top && ky<Top)
+//				||(x>(OFMDim-1-Right) && kx>(3-1-Right))
+//				||(y>(OFMHeight-1-Bottom) && ky>(3-1-Bottom)))){
+		if((sf>=sf_max)	//((1<<(!(y&0x1)+!(x&0x1)))*sf_ch))	//(IFMChannels/SIMD)))
+				|| ((y==0)&&(ky==0))
+				|| ((x==0)&&(kx==0))){
+			inElem = TI(~0x0);
+			imaskElem = ~0x0;
+		}
+		else if(nf==0){
+			inElem = in.read();
+			imaskElem = in_mask.read();
+			inputBuf[sf] = inElem;
+			imaskBuf[sf] = imaskElem;
+		}
+		else{
+			inElem = inputBuf[sf];
+			imaskElem = imaskBuf[sf];
+		}
+
+		// hwkim modified for padding skip
+//		if(sf<SF){
+		if(sf < sf_max){	//((1<<(!(y&0x1)+!(x&0x1)))*sf_ch)){	//(IFMChannels/SIMD))){
+
+			for(unsigned char pe=0; pe<PE; pe++){
+#pragma HLS UNROLL
+				wgtElem[pe] = 0;
+				wmaskElem[pe] = 0;
+				unsigned int w_addr = nf * SF * NONZ_SCALE	//3*3*(IFMChannels/SIMD)
+			    		// hwkim modified for weight flip
+			    		//+ (((y&0x1) + ((!(y&0x1)-ky)<<1))*3 + (x&0x1) + ((!(x&0x1)-kx)<<1))*(IFMChannels/SIMD)
+						+ (((y&0x1) + (ky<<1))*3 + (x&0x1) + (kx<<1)) * sf_ch * NONZ_SCALE		//(IFMChannels/SIMD)
+						+ sf_ch_cnt * NONZ_SCALE	;	//simd_cnt;
+//				if((sf>=sf_max)	//((1<<(!(y&0x1)+!(x&0x1)))*sf_ch))	//(IFMChannels/SIMD)))
+//						|| ((y==0)&&(ky==0))
+//						|| ((x==0)&&(kx==0))){
+//					;
+//				}
+//				else{
+					for(unsigned char nonz_scale_cnt=0; nonz_scale_cnt<NONZ_SCALE; nonz_scale_cnt++){
+	#pragma HLS UNROLL
+	//					auto const &w = weights.weights(tile+nonz_scale_cnt);
+	//					auto const &wm = wmasks.masks(tile+nonz_scale_cnt);
+						auto const &w = weights.weights(w_addr+nonz_scale_cnt);
+						auto const &wm = wmasks.masks(w_addr+nonz_scale_cnt);
+						wgtElem[pe] |= (ap_uint<SIMD>)w[pe] << nonz_scale_cnt*(SIMD/NONZ_SCALE);
+						wmaskElem[pe] |= (ap_uint<SIMD>)wm[pe] << nonz_scale_cnt*(SIMD/NONZ_SCALE);
+					}
+//					cout << dec << "nf: " << (int)nf << " sf: " << (int)sf << " pe: " << (int)pe;
+//					cout << " ky: " << (int)ky << " kx: " << (int)kx;
+//					cout << " w_addr: " << w_addr;
+//					cout << hex << " i: " << inElem << " w: " << wgtElem[pe] << endl;
+//				}
+			}
+		}
+
+#if defined(ACTIVATION_LOG) & defined(DEBUG)
+		nonz_dbg_file << dec << "(" << y << "," << x << ") ";
+		nonz_dbg_file << "[" << ky << "," << kx << "] ";
+		nonz_dbg_file << "nf: " << (int)nf << " sf: " << (int)sf;
+		nonz_dbg_file << "-------------------------------------" << endl;
+#endif
+
+			pe = 0;
+			way_cnt = 0;
+			// ** hwkim modified for PE interleaving
+			for(unsigned short pe_way_cnt=0; pe_way_cnt<PE*(SIMD/WAY); pe_way_cnt++){
+//			for(unsigned short pe_way_cnt=0; pe_way_cnt<NONZ_SCALE*PE*(SIMD/WAY); pe_way_cnt++){
+#pragma HLS UNROLL
+
+				ap_uint<2*WAY-1> mask_delay_exp[WAY];
+
+#if defined(ACTIVATION_LOG) & defined(DDEBUG)
+				cout << hex << "m_d_buf: " << mask_delay_buf[pe_way_cnt] << endl;
+				cout << "m_pi_buf: " << mask_pack_ping[pe_way_cnt] << endl;
+#endif
+				for(unsigned char shift_cnt=0; shift_cnt<WAY; shift_cnt++){
+#pragma HLS UNROLL
+					// rotate shift right, NOT, AND w/ input
+					mask_delay_exp[shift_cnt] = ~((mask_delay_buf[pe_way_cnt] << (WAY-shift_cnt))
+							| (mask_delay_buf[pe_way_cnt] >> shift_cnt)) & mask_pack_ping[pe_way_cnt];
+#if defined(ACTIVATION_LOG) & defined(DDEBUG)
+					cout << dec << "shift " << (int)shift_cnt << ", ";
+					cout << hex << "rotate, NOT, AND w/ input: " << mask_delay_exp[shift_cnt] << endl;
+#endif
+				}
+#if defined(ACTIVATION_LOG) & defined(DDEBUG)
+				cout << hex << "shift 0, final mask: " << mask_delay_exp[0] << endl;
+#endif
+				ap_uint<2*WAY-1> mask_delay_used_rm[WAY];
+				mask_delay_used_rm[0] = mask_delay_exp[0];
+				for(unsigned char shift_cnt=1; shift_cnt<WAY; shift_cnt++){
+#pragma HLS UNROLL
+					ap_uint<WAY> mask_delay_align_or[WAY-1];	//no need for 1st OR mask
+					mask_delay_align_or[shift_cnt] = 0;
+					for(char search_cnt=0; search_cnt < shift_cnt; search_cnt++){
+						mask_delay_align_or[shift_cnt] |= (ap_uint<WAY>)((((mask_delay_exp[search_cnt] & mask_delay_used_rm[search_cnt]) << WAY)
+									| (mask_delay_exp[search_cnt] & mask_delay_used_rm[search_cnt])) >> (shift_cnt-search_cnt))
+								| ((ap_uint<WAY>)(((mask_delay_exp[search_cnt] & mask_delay_used_rm[search_cnt]) << WAY)
+									| (mask_delay_exp[search_cnt] & mask_delay_used_rm[search_cnt])));
+					}
+					mask_delay_used_rm[shift_cnt] = mask_delay_exp[shift_cnt] & ~(ap_uint<2*WAY-1>)mask_delay_align_or[shift_cnt];
+#if defined(ACTIVATION_LOG) & defined(DDEBUG)
+					cout << dec << "shift " << (int)shift_cnt << ", ";
+					cout << hex << "ORed: " << mask_delay_align_or[shift_cnt] << ", ";
+					cout << "final mask: " << mask_delay_used_rm[shift_cnt] << endl;
+#endif
+				}
+
+				ap_uint<SrcWidth*WAY> input_mask_exp[WAY];
+				for(unsigned char shift_cnt=0; shift_cnt<WAY; shift_cnt++){
+#pragma HLS UNROLL
+					input_mask_exp[shift_cnt] = 0;
+					for(unsigned char bit_cnt=0; bit_cnt<WAY; bit_cnt++){
+						if(mask_delay_used_rm[shift_cnt][bit_cnt])
+							input_mask_exp[shift_cnt] |= (ap_uint<SrcWidth*WAY>)(~(ap_uint<SrcWidth>)0x0) << bit_cnt*SrcWidth;
+					}
+#if defined(ACTIVATION_LOG) & defined(DDEBUG)
+					cout << "input mask[" << (int)shift_cnt << "]: " << hex << input_mask_exp[shift_cnt] << endl;
+#endif
+				}
+#if defined(ACTIVATION_LOG) & defined(DDEBUG)
+				cout << hex << "i_d_buf: " << input_delay_buf[pe_way_cnt] << endl;
+				cout << "w_d_buf: " << w_delay_buf[pe_way_cnt] << endl;
+#endif
+				ap_uint<SrcWidth*WAY> masked_new_input = 0;
+				ap_uint<WAY> masked_new_w = 0;
+				for(unsigned char shift_cnt=0; shift_cnt<WAY; shift_cnt++){
+#pragma HLS UNROLL
+					// rotate shift, AND w/ mask, OR shifted values
+					masked_new_input |= ((input_delay_buf[pe_way_cnt] << (SrcWidth*(WAY-shift_cnt)))
+							| (input_delay_buf[pe_way_cnt] >> SrcWidth*shift_cnt)) & input_mask_exp[shift_cnt];
+					masked_new_w |= ((w_delay_buf[pe_way_cnt] << (WAY-shift_cnt))
+							| (w_delay_buf[pe_way_cnt] >> shift_cnt)) & (ap_uint<WAY>)mask_delay_used_rm[shift_cnt];
+				}
+				ap_uint<WAY> push_mask = 0;
+				ap_uint<SrcWidth*WAY> push_input_mask = 0;
+				ap_uint<WAY> remain_mask = 0;
+				for(unsigned char shift_cnt=0; shift_cnt<WAY; shift_cnt++){
+					push_input_mask |= input_mask_exp[shift_cnt];
+					push_mask |= (ap_uint<WAY>)mask_delay_used_rm[shift_cnt];
+					remain_mask |= (ap_uint<WAY>)((mask_delay_used_rm[shift_cnt] << shift_cnt)
+							| (mask_delay_used_rm[shift_cnt] >> (WAY-shift_cnt)));
+				}
+#if defined(ACTIVATION_LOG) & defined(DDEBUG)
+				cout << "ORed new input: " << hex << masked_new_input << endl;
+				cout << "ORed new weight: " << hex << masked_new_w << endl;
+				cout << "remain mask for next ping: " << hex << remain_mask << endl;
+#endif
+				mask_pack_pong[pe_way_cnt] = ~push_mask & mask_pack_ping[pe_way_cnt];	// bits for new mask should be 0
+				input_pack_pong[pe_way_cnt] = masked_new_input | (~push_input_mask & input_pack_ping[pe_way_cnt]);
+				w_pack_pong[pe_way_cnt] = masked_new_w | (~push_mask & w_pack_ping[pe_way_cnt]);
+
+				if(sf < 2){
+					mask_pack_ping[pe_way_cnt] = mask_delay_buf[pe_way_cnt];
+					input_pack_ping[pe_way_cnt] = input_delay_buf[pe_way_cnt];
+					w_pack_ping[pe_way_cnt] = w_delay_buf[pe_way_cnt];
+				}
+				else if((mask_pack_ping[pe_way_cnt]==0)
+						// hwkim modified for padding skip
+//						|| ((sf==SF+1) && (~mask_pack_ping[pe_way_cnt]!=0))){
+//						|| ((sf==((1<<(!(y&0x1)+!(x&0x1)))*sf_ch)+1) && (~mask_pack_ping[pe_way_cnt]!=0))){
+						|| ((sf==sf_max+1) && (~mask_pack_ping[pe_way_cnt]!=0))){
+
+					packed_input[pe_way_cnt].write(input_pack_ping[pe_way_cnt]);
+					packed_weight[pe_way_cnt].write(w_pack_ping[pe_way_cnt]);
+					packed_mask[pe_way_cnt].write(mask_pack_ping[pe_way_cnt]);
+#ifdef ACTIVATION_LOG
+					nonz_i_log_file[pe][way_cnt] << (unsigned long)input_pack_ping[pe_way_cnt] << endl;
+					nonz_w_log_file[pe][way_cnt] << (unsigned long)w_pack_ping[pe_way_cnt] << endl;
+					nonz_m_log_file[pe][way_cnt] << (unsigned long)mask_pack_ping[pe_way_cnt] << endl;
+#endif
+#if defined(ACTIVATION_LOG) & defined(DEBUG)
+					nonz_dbg_file << "push ping................" << hex << (unsigned long long)input_pack_ping[pe_way_cnt] << endl;
+#endif
+					mask_pack_ping[pe_way_cnt] = mask_delay_buf[pe_way_cnt];
+					input_pack_ping[pe_way_cnt] = input_delay_buf[pe_way_cnt];
+					w_pack_ping[pe_way_cnt] = w_delay_buf[pe_way_cnt];
+
+					sf_cnt[pe_way_cnt]++;
+				}
+				else if(mask_pack_pong[pe_way_cnt]==0){
+					packed_input[pe_way_cnt].write(input_pack_pong[pe_way_cnt]);
+					packed_weight[pe_way_cnt].write(w_pack_pong[pe_way_cnt]);
+					packed_mask[pe_way_cnt].write(mask_pack_pong[pe_way_cnt]);
+#ifdef ACTIVATION_LOG
+					nonz_i_log_file[pe][way_cnt] << (unsigned long)input_pack_pong[pe_way_cnt] << endl;
+					nonz_w_log_file[pe][way_cnt] << (unsigned long)w_pack_pong[pe_way_cnt] << endl;
+					nonz_m_log_file[pe][way_cnt] << (unsigned long)mask_pack_pong[pe_way_cnt] << endl;
+#endif
+#if defined(ACTIVATION_LOG) & defined(DEBUG)
+					nonz_dbg_file << "push pong................" << hex << (unsigned long long)input_pack_pong[pe_way_cnt] << endl;
+#endif
+					mask_pack_ping[pe_way_cnt] = mask_delay_buf[pe_way_cnt] | remain_mask;
+					input_pack_ping[pe_way_cnt] = input_delay_buf[pe_way_cnt];
+					w_pack_ping[pe_way_cnt] = w_delay_buf[pe_way_cnt];
+
+					sf_cnt[pe_way_cnt]++;
+				}
+				else{	// bit packing attempted but still have zero values...
+					mask_pack_ping[pe_way_cnt] = mask_pack_pong[pe_way_cnt];
+					input_pack_ping[pe_way_cnt] = input_pack_pong[pe_way_cnt];
+					w_pack_ping[pe_way_cnt] = w_pack_pong[pe_way_cnt];
+				}
+
+				mask_delay_buf[pe_way_cnt] = (wmaskElem[pe] | imaskElem) >> (way_cnt*WAY);
+				input_delay_buf[pe_way_cnt] = inElem >> (way_cnt*WAY*SrcWidth);
+				w_delay_buf[pe_way_cnt] = wgtElem[pe] >> (way_cnt*WAY);
+#if defined(ACTIVATION_LOG) & defined(DEBUG)
+//				if(y==1 && pe_way_cnt==0){
+//					cout << dec <<  "sf: " << (int)sf << " ";
+//					cout << hex << (unsigned long long)wmaskElem[pe] << ", " << (unsigned long long)imaskElem << endl;
+//				}
+				nonz_dbg_file << dec << "***** pe: " << (int)pe << " way: " << (int)way_cnt << endl;
+				nonz_dbg_file << hex;
+				nonz_dbg_file << "m_buf: " << (unsigned long long)mask_delay_buf[pe_way_cnt];
+				nonz_dbg_file << " i_buf: " << (unsigned long long)input_delay_buf[pe_way_cnt];
+				nonz_dbg_file << " w_buf: " << (unsigned long long)w_delay_buf[pe_way_cnt] << endl;
+				nonz_dbg_file << "m_pac: " << (unsigned long long)mask_pack_ping[pe_way_cnt];
+				nonz_dbg_file << " i_pac: " << (unsigned long long)input_pack_ping[pe_way_cnt];
+				nonz_dbg_file << " w_pac: " << (unsigned long long)w_pack_ping[pe_way_cnt] << endl;
+				nonz_dbg_file << "m_pac: " << (unsigned long long)mask_pack_pong[pe_way_cnt];
+				nonz_dbg_file << " i_pac: " << (unsigned long long)input_pack_pong[pe_way_cnt];
+				nonz_dbg_file << " w_pac: " << (unsigned long long)w_pack_pong[pe_way_cnt] << endl;
+				nonz_dbg_file << dec;
+				nonz_dbg_file << "sf_cnt: " << sf_cnt[pe_way_cnt] << endl;
+#endif
+
+				// hwkim modified for padding skip
+//				if(sf==SF+1){
+//				if(sf==((1<<(!(y&0x1)+!(x&0x1)))*sf_ch)+1){
+				if(sf==sf_max+1){
+
+					sf_num[pe_way_cnt].write(sf_cnt[pe_way_cnt]);
+#ifdef ACTIVATION_LOG
+					nonz_f_log_file[pe][way_cnt] << (unsigned long)sf_cnt[pe_way_cnt] << endl;
+#endif
+				}
+
+				if(++way_cnt==(SIMD/WAY)){
+					way_cnt=0;
+					pe++;
+				}
+			}
+
+			// hwkim modified for padding skip
+//			if(sf<SF){
+			if(sf < sf_max){	//((1<<(!(y&0x1)+!(x&0x1)))*sf_ch)){
+
+				// ** hwkim modified for SIMD interleaving
+//				tile++;
+//				tile = tile + NONZ_SCALE;
+
+				if(++sf_ch_cnt==sf_ch){
+					sf_ch_cnt=0;
+					// hwkim modified for padding skip
+//					if(++kx==3){
+					if(++kx==(!(x&0x1)+1)){
+
+						kx=0;
+						// hwkim modified for padding skip
+//						if(++ky==3){
+						if(++ky==(!(y&0x1)+1)){
+
+							ky=0;
+							if(++nf==NF){
+								nf=0;
+								if(++x==OFMDim){
+									x=0;
+									if(++y==OFMHeight){
+										y=0;
+									}
+#ifdef ACTIVATION_LOG
+								cout << "nonz func: " << y << "/" << OFMHeight << endl;
+#endif
+								}
+							}
+						}
+					}
+				}
+			}
+			// hwkim modified for padding skip
+	//		if(++sf==(SF+2)){
+//			if(++sf==((1<<(!(y&0x1)+!(x&0x1)))*sf_ch)+2){
+			if(++sf==sf_max+2){
+				sf = 0;
+			}
+	}
+
+#if defined (ACTIVATION_LOG) & defined (DEBUG)
+	nonz_dbg_file.close();
+#endif
+
+#ifdef ACTIVATION_LOG
+	// ** hwkim modified for PE interleaving
+	for(unsigned char pe=0; pe<PE; pe++){
+//	for(unsigned char pe=0; pe<NONZ_SCALE*PE; pe++){
+		for(unsigned char way_cnt=0; way_cnt<(SIMD/WAY); way_cnt++){
+			nonz_i_log_file[pe][way_cnt].close();
+			nonz_w_log_file[pe][way_cnt].close();
+			nonz_m_log_file[pe][way_cnt].close();
+			nonz_f_log_file[pe][way_cnt].close();
+		}
+	}
+#endif
+
+}
+
+
 #endif
